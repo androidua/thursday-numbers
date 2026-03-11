@@ -271,79 +271,131 @@ function renderTrends() {
 }
 
 // ─── Picker tab ──────────────────────────────────────────────────────────────
-async function setupPicker() {
-  // Try to load saved picks first
-  try {
-    const resp = await fetch(PICKS_URL);
-    if (resp.ok) {
-      const history = await resp.json();
-      if (history && history.length > 0) {
-        renderPickerGames(history[history.length - 1]);
-        return;
-      }
-    }
-  } catch (_) { /* fall through to generate */ }
+let pickerMode  = "hot";  // hot | cold | mixed | random
+let pickerCount = 1;      // 1 | 18
 
-  // Generate fresh games client-side
-  renderPickerGames(generateGamesLocal());
-
-  document.getElementById("btn-generate").addEventListener("click", () => {
-    renderPickerGames(generateGamesLocal());
+function setupPicker() {
+  // Strategy card selection
+  document.querySelectorAll(".strategy-card").forEach(card => {
+    card.addEventListener("click", () => {
+      document.querySelectorAll(".strategy-card").forEach(c => c.classList.remove("active"));
+      card.classList.add("active");
+      pickerMode = card.dataset.mode;
+    });
   });
+
+  // Quantity toggle
+  document.querySelectorAll(".qty-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".qty-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      pickerCount = +btn.dataset.count;
+    });
+  });
+
+  // Generate button
+  document.getElementById("btn-generate").addEventListener("click", () => {
+    const result = generateGamesLocal(pickerMode, pickerCount);
+    renderPickerResult(result, pickerCount === 1);
+  });
+
+  // Show a default single hot game on load
+  renderPickerResult(generateGamesLocal("hot", 1), true);
 }
 
-function generateGamesLocal() {
-  const games = [];
-  const seen = new Set();
+function generateGameWithStrategy(mode) {
+  let pool;
+  if (mode === "hot")        pool = [...hotMain];
+  else if (mode === "cold")  pool = [...coldMain];
+  else if (mode === "mixed") pool = hotMain.slice(0, 5).concat(coldMain.slice(0, 5));
+  else /* random */          pool = Array.from({ length: 35 }, (_, i) => i + 1);
 
-  while (games.length < 18) {
-    const main = sample(hotMain, 7).sort((a, b) => a - b);
-    const pb   = hotPb[Math.floor(Math.random() * hotPb.length)];
-    const key  = main.join(",") + "|" + pb;
+  const main   = sample(pool, 7).sort((a, b) => a - b);
+  const pbPool = mode === "hot" ? hotPb : Array.from({ length: 20 }, (_, i) => i + 1);
+  const pb     = pbPool[Math.floor(Math.random() * pbPool.length)];
+  return { main, powerball: pb };
+}
+
+function generateGamesLocal(mode = "hot", count = 1) {
+  const games = [];
+  const seen  = new Set();
+
+  for (let i = 0; i < count * 1000 && games.length < count; i++) {
+    const g   = generateGameWithStrategy(mode);
+    const key = g.main.join(",") + "|" + g.powerball;
     if (!seen.has(key)) {
       seen.add(key);
-      games.push({ game: games.length + 1, main, powerball: pb });
+      games.push({ game: games.length + 1, ...g });
     }
   }
 
   return {
-    generated_at: new Date().toISOString().slice(0, 19),
+    generated_at:   new Date().toISOString().slice(0, 19),
     draws_analysed: draws.length,
-    data_range: `${draws[0].date} to ${draws[draws.length - 1].date}`,
+    data_range:     `${draws[0].date} to ${draws[draws.length - 1].date}`,
+    strategy:       mode,
     hot_main_balls: hotMain,
     hot_powerballs: hotPb,
     games,
   };
 }
 
-function renderPickerGames(result) {
-  const meta = document.getElementById("picker-meta");
-  meta.textContent = `Generated ${result.generated_at.slice(0, 10)} · ` +
-    `${result.draws_analysed} draws analysed · ` +
-    `Hot: ${result.hot_main_balls.join(", ")} · PB: ${result.hot_powerballs.join(", ")}`;
+function renderPickerResult(result, singleMode) {
+  const container = document.getElementById("picker-result");
+  container.innerHTML = "";
+  if (singleMode && result.games.length === 1) {
+    renderSingleGame(container, result);
+  } else {
+    renderGamesGrid(container, result);
+  }
+}
+
+const STRATEGY_LABELS = {
+  hot: "🔥 Hot Numbers", cold: "❄️ Cold Numbers", mixed: "🌀 Mix Strategy", random: "🎲 True Random",
+};
+
+function renderSingleGame(container, result) {
+  const g     = result.games[0];
+  const label = STRATEGY_LABELS[result.strategy] || "Generated";
+  const panel = document.createElement("div");
+  panel.className = "panel single-result";
+  panel.innerHTML = `
+    <div class="single-result-header">
+      <span class="single-strategy-badge">${label}</span>
+      <span class="single-meta">${result.draws_analysed} draws analysed · ${result.generated_at.slice(0, 10)}</span>
+    </div>
+    <div class="single-balls">
+      ${g.main.map(b => `<span class="ball-lg ball-lg-main">${b}</span>`).join("")}
+      <span class="ball-lg-divider">+</span>
+      <span class="ball-lg ball-lg-pb">${g.powerball}</span>
+    </div>
+    <div class="single-labels">
+      <span>Main Balls (7)</span>
+      <span>Powerball</span>
+    </div>
+    <div class="single-odds">Jackpot odds: 1 in 134,490,400 · For entertainment only</div>
+  `;
+  container.appendChild(panel);
+}
+
+function renderGamesGrid(container, result) {
+  const label = STRATEGY_LABELS[result.strategy] || "";
+  const panel = document.createElement("div");
+  panel.className = "panel";
+  panel.innerHTML = `<p class="panel-sub">${label} · ${result.draws_analysed} draws analysed · ${result.generated_at.slice(0, 10)}</p>`;
 
   const grid = document.createElement("div");
   grid.className = "games-grid";
-
   for (const g of result.games) {
-    const row = document.createElement("div");
+    const row  = document.createElement("div");
     row.className = "game-row";
-
-    const label = `<span class="game-num">Game ${g.game}</span>`;
     const balls = g.main.map(b => `<span class="ball-sm main">${b}</span>`).join("");
-    const pb    = `<span class="ball-sm pb">${g.powerball}</span>`;
-
-    row.innerHTML = `${label}<div class="game-balls">${balls}<span class="game-divider">+</span>${pb}</div>`;
+    row.innerHTML = `<span class="game-num">Game ${g.game}</span><div class="game-balls">${balls}<span class="game-divider">+</span><span class="ball-sm pb">${g.powerball}</span></div>`;
     grid.appendChild(row);
   }
 
-  const container = document.getElementById("picker-games");
-  container.innerHTML = "";
-  container.appendChild(grid);
-
-  // Wire up regenerate button for local generation
-  const btn = document.getElementById("btn-generate");
-  btn.onclick = () => renderPickerGames(generateGamesLocal());
+  panel.appendChild(grid);
+  container.appendChild(panel);
 }
 
 // ─── History tab ─────────────────────────────────────────────────────────────
