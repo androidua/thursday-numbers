@@ -242,6 +242,7 @@ main {
   display: flex;
   gap: 10px;
   margin-top: 16px;
+  margin-bottom: 16px;
 }
 .count-btn {
   all: unset;
