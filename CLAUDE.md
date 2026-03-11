@@ -99,6 +99,9 @@ thursday-numbers/
     ├── index.html                         ← static site
     ├── app.js                             ← vanilla JS analyser (loads data via fetch)
     ├── style.css                          ← dark-themed styles
+    ├── _headers                           ← Cloudflare Pages HTTP security headers (CSP, HSTS, etc.)
+    ├── robots.txt                         ← crawler policy + sitemap reference
+    ├── sitemap.xml                        ← XML sitemap for search engine indexing
     ├── data/
     │   └── powerball_draws.json           ← copy of draw data served to the web app
     └── picks/
@@ -112,7 +115,7 @@ thursday-numbers/
 
 ---
 
-## What Has Been Built (v1.2.0)
+## What Has Been Built (v1.3.1)
 
 ### Data
 - **412 draws** scraped from `australia.national-lottery.com`
@@ -129,7 +132,9 @@ thursday-numbers/
 
 ### Web App
 - Dark-themed single-page app: Dashboard, Frequency, Recent Trends, Number Picker, History
-- Chart.js from CDN — no build step
+- Number Picker supports 1-game or 18-game generation with 4 strategies (hot/cold/mixed/random)
+- Game results displayed as card grid (3-col desktop, 2-col tablet, 1-col mobile)
+- Chart.js from CDN with SRI integrity check — no build step
 - Loads `data/powerball_draws.json` and `picks/picks_history.json` via `fetch()` (paths relative to `web/`)
 - Version displayed in footer (read at runtime from `web/VERSION`)
 
@@ -192,6 +197,48 @@ Repo → Settings → Secrets and variables → Actions → New repository secre
 
 ---
 
+## SEO & Security (v1.3.1+)
+
+This is a **public GitHub repo**. All web assets are intentionally public — no secrets live in `web/`.
+
+### SEO implemented
+| Element | File | Detail |
+|---|---|---|
+| Title + meta description | `index.html` | Descriptive, keyword-rich |
+| Canonical URL | `index.html` | `<link rel="canonical" href="https://thursdaynumbers.com/">` |
+| Open Graph tags | `index.html` | `og:title`, `og:description`, `og:url`, `og:type`, `og:site_name`, `og:locale` |
+| Twitter Card | `index.html` | `twitter:card=summary`, title, description |
+| Schema.org JSON-LD | `index.html` | `WebApplication` type, applicationCategory, free offer |
+| `<h1>` heading | `index.html` | Header logo promoted from `<div>` to `<h1>` |
+| `robots.txt` | `web/robots.txt` | Allows all crawlers; references sitemap |
+| `sitemap.xml` | `web/sitemap.xml` | Single URL, `changefreq=weekly` |
+| External link safety | `index.html` | All external links use `rel="noopener noreferrer"` |
+
+### Security implemented
+| Header / Feature | Where | Detail |
+|---|---|---|
+| Content-Security-Policy | `web/_headers` | `default-src 'none'`; allows only local scripts/styles, jsDelivr CDN, same-origin fetch |
+| X-Frame-Options | `web/_headers` | `DENY` — prevents all iframe embedding (clickjacking) |
+| X-Content-Type-Options | `web/_headers` | `nosniff` — prevents MIME-type confusion attacks |
+| Referrer-Policy | `web/_headers` + `index.html` | `strict-origin-when-cross-origin` |
+| Permissions-Policy | `web/_headers` | Blocks camera, mic, geolocation, payment, USB, FLoC |
+| HSTS | `web/_headers` | `max-age=31536000; includeSubDomains` (supplementary to Cloudflare's own HSTS) |
+| X-XSS-Protection | `web/_headers` | Legacy browser fallback |
+| SRI on Chart.js | `index.html` | `integrity="sha384-..."` + `crossorigin="anonymous"` — CDN tampering protection |
+| No inline styles | `app.js` + `style.css` | Inline styles replaced with CSS classes; enables clean CSP without `unsafe-inline` |
+
+### SRI maintenance rule
+**If Chart.js version is ever upgraded**, the SRI hash in `index.html` must be recomputed:
+```bash
+curl -s "https://cdn.jsdelivr.net/npm/chart.js@VERSION/dist/chart.umd.min.js" | openssl dgst -sha384 -binary | base64
+```
+Then update the `integrity="sha384-..."` attribute in `index.html` to match.
+
+Current locked version: `chart.js@4.4.0`
+Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g`
+
+---
+
 ## Key Technical Decisions
 
 | Decision | Choice | Reason |
@@ -205,6 +252,8 @@ Repo → Settings → Secrets and variables → Actions → New repository secre
 | Web framework | Vanilla JS + Chart.js CDN | No build step; Cloudflare Pages serves static files directly |
 | Data storage | JSON files in repo | Simple, version-controlled, human-readable diffs |
 | Branch strategy | Push directly to `main` | Solo project; no branching needed |
+| Security headers | `web/_headers` file | Cloudflare Pages native approach — zero infrastructure, applied at edge |
+| No inline styles in JS | CSS classes only | Keeps CSP clean (`style-src 'self'` with no `unsafe-inline`) |
 
 ---
 
@@ -227,3 +276,6 @@ Repo → Settings → Secrets and variables → Actions → New repository secre
 - Use `argparse` for CLI flags; `json.dumps(..., indent=2)` for all JSON writes
 - Write clear `print()` statements so GitHub Actions logs are readable
 - The web app needs an HTTP server to run locally (uses `fetch()` for JSON)
+- **Never add inline `style="..."` attributes to JS-generated HTML** — use CSS classes to preserve the strict CSP
+- **If upgrading Chart.js**, recompute the SRI hash (see SRI maintenance rule above) and update `integrity` in `index.html`
+- The `web/_headers` file controls all HTTP security headers — edit there, not in `index.html` meta tags (meta tags are a fallback only)

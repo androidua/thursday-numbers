@@ -50,6 +50,9 @@ thursday-numbers/
 │   ├── index.html                    ← Static site
 │   ├── app.js                        ← Vanilla JS analyser
 │   ├── style.css                     ← Dark-themed styles
+│   ├── _headers                      ← Cloudflare Pages HTTP security headers
+│   ├── robots.txt                    ← Crawler policy
+│   ├── sitemap.xml                   ← XML sitemap
 │   ├── data/
 │   │   └── powerball_draws.json      ← Draw data served to the web app
 │   └── picks/
@@ -148,6 +151,43 @@ The workflow:
 ## Data source
 
 Draw data scraped from [australia.national-lottery.com](https://australia.national-lottery.com/powerball). Data available from approximately April 2018 onward.
+
+---
+
+## Security & SEO
+
+### SEO
+
+| Practice | Implementation |
+|---|---|
+| Primary meta tags | `<title>`, `<meta name="description">`, `<meta name="robots">` |
+| Canonical URL | `<link rel="canonical" href="https://thursdaynumbers.com/">` |
+| Open Graph | `og:type`, `og:title`, `og:description`, `og:url`, `og:site_name`, `og:locale` |
+| Twitter / X Card | `twitter:card`, `twitter:title`, `twitter:description` |
+| Schema.org JSON-LD | `WebApplication` structured data (name, URL, description, free offer) |
+| Semantic HTML | Page title is an `<h1>`; logical heading hierarchy throughout |
+| Sitemap | `web/sitemap.xml` — referenced in `robots.txt` |
+| Crawler policy | `web/robots.txt` — `Allow: /` with sitemap pointer |
+
+### Security
+
+All HTTP security headers are applied at the Cloudflare edge via `web/_headers`:
+
+| Header | Value / Purpose |
+|---|---|
+| `Content-Security-Policy` | `default-src 'none'`; allowlist-only for scripts, styles, images, and fetch — no `unsafe-inline` |
+| `X-Frame-Options` | `DENY` — prevents clickjacking |
+| `X-Content-Type-Options` | `nosniff` — prevents MIME-sniffing attacks |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `Permissions-Policy` | Disables camera, mic, geolocation, payment, USB, and FLoC |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` — enforces HTTPS |
+| `X-XSS-Protection` | `1; mode=block` — legacy XSS filter for older browsers |
+
+Additional hardening:
+- **Subresource Integrity (SRI)** — Chart.js CDN locked to a SHA-384 hash; tampered files are rejected by the browser
+- **`rel="noopener noreferrer"`** on all external links — prevents `window.opener` access and referrer leakage
+- **No inline styles in JS** — all dynamic styles use CSS classes, enabling a strict `style-src 'self'` CSP with no `unsafe-inline`
+- **No secrets in repo** — SendGrid API key and email addresses are GitHub Secrets only; `web/` contains zero credentials
 
 ---
 
