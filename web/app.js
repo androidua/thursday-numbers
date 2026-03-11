@@ -379,11 +379,17 @@ function renderGamesGrid(container, result) {
   const grid = document.createElement("div");
   grid.className = "games-grid";
   for (const g of result.games) {
-    const row  = document.createElement("div");
-    row.className = "game-row";
+    const card = document.createElement("div");
+    card.className = "game-card";
     const balls = g.main.map(b => `<span class="ball-sm main">${b}</span>`).join("");
-    row.innerHTML = `<span class="game-num">Game ${g.game}</span><div class="game-balls">${balls}<span class="game-divider">+</span><span class="ball-sm pb">${g.powerball}</span></div>`;
-    grid.appendChild(row);
+    card.innerHTML = `
+      <div class="gc-header">Game ${g.game}</div>
+      <div class="gc-main">${balls}</div>
+      <div class="gc-pb">
+        <span class="gc-pb-label">Powerball</span>
+        <span class="ball-sm pb">${g.powerball}</span>
+      </div>`;
+    grid.appendChild(card);
   }
 
   panel.appendChild(grid);

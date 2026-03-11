@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.2.5**
+**Current version: v1.3.0**
 
 ---
 
@@ -165,6 +165,10 @@ Draw data scraped from [australia.national-lottery.com](https://australia.nation
 ---
 
 ## Changelog
+
+### v1.3.0 — 2026-03-12
+- Number Picker: complete game card redesign — vertical card layout with header, main balls section, and visually separated powerball row
+- Replaced flat single-row layout with 3-column CSS Grid of cards for better readability at 18 games
 
 ### v1.2.5 — 2026-03-11
 - Fix powerball clipped on game cards (remove overflow:hidden, widen card min-width to 370px)
