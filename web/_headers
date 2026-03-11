@@ -1,0 +1,26 @@
+/*
+  # Prevent clickjacking — deny all iframe embedding
+  X-Frame-Options: DENY
+
+  # Prevent MIME-type sniffing — always use declared Content-Type
+  X-Content-Type-Options: nosniff
+
+  # Referrer policy — only send origin on cross-origin requests
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Restrict browser feature/API access to only what the app needs
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+
+  # Content Security Policy
+  # - script-src: local JS + Chart.js CDN only
+  # - style-src:  local CSS only (no inline styles in use)
+  # - img-src:    local + data URI (emoji favicon)
+  # - connect-src: local fetch() calls only (draws JSON, picks JSON, VERSION)
+  # - frame-ancestors: deny all iframing (duplicates X-Frame-Options for modern browsers)
+  Content-Security-Policy: default-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+
+  # HTTPS enforcement (supplementary — Cloudflare also enforces this at the edge)
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+  # Legacy XSS filter for older browsers
+  X-XSS-Protection: 1; mode=block

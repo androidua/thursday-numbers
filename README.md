@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.3.0**
+**Current version: v1.3.1**
 
 ---
 
@@ -165,6 +165,13 @@ Draw data scraped from [australia.national-lottery.com](https://australia.nation
 ---
 
 ## Changelog
+
+### v1.3.1 — 2026-03-12
+- SEO: Open Graph, Twitter Card, canonical URL, robots meta, Schema.org JSON-LD structured data
+- SEO: Page header promoted to `<h1>`; sitemap.xml and robots.txt added
+- Security: Cloudflare Pages `_headers` file — CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, HSTS
+- Security: SRI + crossorigin added to Chart.js CDN script tag
+- Security: `rel="noopener noreferrer"` on all external links; inline styles in app.js replaced with CSS classes to enable strict CSP
 
 ### v1.3.0 — 2026-03-12
 - Number Picker: complete game card redesign — vertical card layout with header, main balls section, and visually separated powerball row

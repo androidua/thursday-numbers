@@ -3,17 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Primary SEO -->
   <title>Thursday Numbers — Australian Powerball Analyser</title>
   <meta name="description" content="Statistical analysis of Australian Powerball draws. Hot numbers, frequency charts, and smart picks. Every Thursday, smarter numbers." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://thursdaynumbers.com/" />
+
+  <!-- Security -->
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+  <!-- Open Graph (Facebook, LinkedIn, WhatsApp, Slack) -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:title"       content="Thursday Numbers — Australian Powerball Analyser" />
+  <meta property="og:description" content="Statistical analysis of Australian Powerball draws. Hot numbers, frequency charts, and smart picks." />
+  <meta property="og:url"         content="https://thursdaynumbers.com/" />
+  <meta property="og:site_name"   content="Thursday Numbers" />
+  <meta property="og:locale"      content="en_AU" />
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card"        content="summary" />
+  <meta name="twitter:title"       content="Thursday Numbers — Australian Powerball Analyser" />
+  <meta name="twitter:description" content="Statistical analysis of Australian Powerball draws. Hot numbers, frequency charts, and smart picks." />
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Thursday Numbers",
+    "url": "https://thursdaynumbers.com",
+    "description": "Statistical analysis of Australian Powerball historical draw data. Generates hot-number picks based on draw frequency analysis.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "AUD" }
+  }
+  </script>
+
+  <!-- Favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎱</text></svg>" />
+
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+          integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g"
+          crossorigin="anonymous"></script>
 </head>
 <body>
   <header>
     <div class="header-inner">
       <div class="header-eyebrow">Australia</div>
-      <div class="header-logo">🎱 Thursday Numbers</div>
+      <h1 class="header-logo">🎱 Thursday Numbers</h1>
       <p class="header-tagline">Every Thursday, smarter numbers.</p>
     </div>
   </header>
@@ -163,7 +202,7 @@
       <!-- Disclaimer -->
       <div class="panel disclaimer-panel">
         <p>⚠️ <strong>Important:</strong> Powerball is a game of pure chance. Each draw is independent and random. Past results have <em>zero</em> statistical influence on future draws. This tool is for entertainment only.</p>
-        <p>For help with gambling: <a href="https://www.gamblinghelponline.org.au" target="_blank" rel="noopener">gamblinghelponline.org.au</a> or call <strong>1800 858 858</strong>.</p>
+        <p>For help with gambling: <a href="https://www.gamblinghelponline.org.au" target="_blank" rel="noopener noreferrer">gamblinghelponline.org.au</a> or call <strong>1800 858 858</strong>.</p>
       </div>
     </section>
 
@@ -201,7 +240,7 @@
   <footer>
     <div class="footer-inner">
       <p>🎱 Thursday Numbers &mdash; Statistical analysis of Australian Powerball draws</p>
-      <p>Data: <a href="https://australia.national-lottery.com/powerball" target="_blank" rel="noopener">australia.national-lottery.com</a> &nbsp;|&nbsp; <a href="https://github.com/androidua/thursday-numbers" target="_blank" rel="noopener">GitHub</a></p>
+      <p>Data: <a href="https://australia.national-lottery.com/powerball" target="_blank" rel="noopener noreferrer">australia.national-lottery.com</a> &nbsp;|&nbsp; <a href="https://github.com/androidua/thursday-numbers" target="_blank" rel="noopener noreferrer">GitHub</a></p>
       <p class="footer-disclaimer">For entertainment only. Not financial or gambling advice. Gamble responsibly.</p>
       <p class="footer-version" id="footer-version">v1.0.0</p>
     </div>

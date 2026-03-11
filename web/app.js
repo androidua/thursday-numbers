@@ -147,10 +147,10 @@ function renderDashboard() {
         ${latest.main.map(b =>
           `<span class="draw-ball ${hotSet.has(b) ? "hot" : ""}">${b}</span>`
         ).join("")}
-        <span style="color:var(--border);margin:0 2px">│</span>
+        <span class="draw-separator">│</span>
         <span class="draw-ball pb-ball">${latest.powerball}</span>
       </div>
-      <div style="margin-top:8px;font-size:12px;color:var(--text-dim)">
+      <div class="draw-hot-note">
         🔥 Highlighted = hot numbers
       </div>
     </div>
