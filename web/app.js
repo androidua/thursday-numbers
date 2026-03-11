@@ -297,9 +297,6 @@ function setupPicker() {
   document.getElementById("btn-generate").addEventListener("click", () => {
     renderPickerResult(generateGamesLocal(pickerMode, pickerGameCount));
   });
-
-  // Show default 18 hot games on load
-  renderPickerResult(generateGamesLocal("hot", 18));
 }
 
 function generateGameWithStrategy(mode) {
