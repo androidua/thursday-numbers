@@ -18,7 +18,7 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-PICKS_FILE = Path(__file__).parent.parent / "picks" / "picks_history.json"
+PICKS_FILE = Path(__file__).parent.parent / "web" / "picks" / "picks_history.json"
 WEEKS_BETWEEN_RUNS = 3
 
 

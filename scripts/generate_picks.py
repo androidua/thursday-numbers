@@ -14,8 +14,8 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
-DATA_FILE = Path(__file__).parent.parent / "data" / "powerball_draws.json"
-PICKS_FILE = Path(__file__).parent.parent / "picks" / "picks_history.json"
+DATA_FILE = Path(__file__).parent.parent / "web" / "data" / "powerball_draws.json"
+PICKS_FILE = Path(__file__).parent.parent / "web" / "picks" / "picks_history.json"
 
 NUM_GAMES = 18
 HOT_MAIN_COUNT = 10

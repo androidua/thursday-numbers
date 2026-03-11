@@ -18,7 +18,7 @@ import os
 import sys
 from pathlib import Path
 
-PICKS_FILE = Path(__file__).parent.parent / "picks" / "picks_history.json"
+PICKS_FILE = Path(__file__).parent.parent / "web" / "picks" / "picks_history.json"
 
 BALL_COLOURS = ["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#3498db", "#9b59b6", "#1abc9c"]
 PB_COLOUR = "#8e44ad"

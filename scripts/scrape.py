@@ -16,7 +16,7 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 
-DATA_FILE = Path(__file__).parent.parent / "data" / "powerball_draws.json"
+DATA_FILE = Path(__file__).parent.parent / "web" / "data" / "powerball_draws.json"
 BASE_URL = "https://australia.national-lottery.com/powerball/results/{}"
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 

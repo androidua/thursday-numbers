@@ -5,9 +5,9 @@
 "use strict";
 
 // ─── Data paths (relative to web/ folder) ───────────────────────────────────
-const DATA_URL    = "../data/powerball_draws.json";
-const PICKS_URL   = "../picks/picks_history.json";
-const VERSION_URL = "../VERSION";
+const DATA_URL    = "data/powerball_draws.json";
+const PICKS_URL   = "picks/picks_history.json";
+const VERSION_URL = "VERSION";
 
 // ─── State ──────────────────────────────────────────────────────────────────
 let draws = [];
