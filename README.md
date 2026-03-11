@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.1.0**
+**Current version: v1.2.0**
 
 ---
 
@@ -36,20 +36,24 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 ```
 thursday-numbers/
-├── VERSION                           ← current version number
 ├── data/
-│   └── powerball_draws.json          ← Draw history (grows automatically)
+│   └── powerball_draws.json          ← Draw history used by Python scripts
 ├── picks/
-│   └── picks_history.json            ← Log of every generated pick set
+│   └── picks_history.json            ← Pick log written by Python scripts
 ├── scripts/
 │   ├── scrape.py                     ← Fetch new draws from the web
 │   ├── generate_picks.py             ← Generate 18 hot-number games
 │   ├── email_picks.py                ← Send picks via SendGrid
 │   └── run_all.py                    ← Full pipeline entry point
-├── web/
-│   ├── index.html                    ← Cloudflare Pages static site
+├── web/                              ← Served by Cloudflare Pages
+│   ├── VERSION                       ← Current version number
+│   ├── index.html                    ← Static site
 │   ├── app.js                        ← Vanilla JS analyser
-│   └── style.css                     ← Dark-themed styles
+│   ├── style.css                     ← Dark-themed styles
+│   ├── data/
+│   │   └── powerball_draws.json      ← Draw data served to the web app
+│   └── picks/
+│       └── picks_history.json        ← Pick history served to the web app
 ├── .github/workflows/
 │   └── powerball-update.yml          ← GitHub Actions (Friday midnight UTC)
 └── requirements.txt
@@ -161,6 +165,13 @@ Draw data scraped from [australia.national-lottery.com](https://australia.nation
 ---
 
 ## Changelog
+
+### v1.2.0 — 2026-03-11
+- Number Picker redesigned to match JSX reference: dark strategy cards with explicit hex colors, full-width purple→pink gradient generate button
+- Fixed strategy card white/unstyled rendering on iOS Safari (replaced `appearance: none` with `all: unset` + explicit hex values)
+- Removed 1-game/18-game quantity toggle — picker always generates 18 games
+- Updated strategy card descriptions to shorter, text-left layout
+- Updated explainer section to paragraph format with colored labels
 
 ### v1.1.0 — 2026-03-11
 - Number Picker redesign: strategy selector (Hot/Cold/Mix/Random), 1 or 18 game toggle

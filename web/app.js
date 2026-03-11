@@ -271,8 +271,7 @@ function renderTrends() {
 }
 
 // ─── Picker tab ──────────────────────────────────────────────────────────────
-let pickerMode  = "hot";  // hot | cold | mixed | random
-let pickerCount = 1;      // 1 | 18
+let pickerMode = "hot";  // hot | cold | mixed | random
 
 function setupPicker() {
   // Strategy card selection
@@ -284,23 +283,13 @@ function setupPicker() {
     });
   });
 
-  // Quantity toggle
-  document.querySelectorAll(".qty-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".qty-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      pickerCount = +btn.dataset.count;
-    });
-  });
-
-  // Generate button
+  // Generate button — always produces 18 games
   document.getElementById("btn-generate").addEventListener("click", () => {
-    const result = generateGamesLocal(pickerMode, pickerCount);
-    renderPickerResult(result, pickerCount === 1);
+    renderPickerResult(generateGamesLocal(pickerMode, 18));
   });
 
-  // Show a default single hot game on load
-  renderPickerResult(generateGamesLocal("hot", 1), true);
+  // Show default 18 hot games on load
+  renderPickerResult(generateGamesLocal("hot", 18));
 }
 
 function generateGameWithStrategy(mode) {
@@ -340,14 +329,10 @@ function generateGamesLocal(mode = "hot", count = 1) {
   };
 }
 
-function renderPickerResult(result, singleMode) {
+function renderPickerResult(result) {
   const container = document.getElementById("picker-result");
   container.innerHTML = "";
-  if (singleMode && result.games.length === 1) {
-    renderSingleGame(container, result);
-  } else {
-    renderGamesGrid(container, result);
-  }
+  renderGamesGrid(container, result);
 }
 
 const STRATEGY_LABELS = {

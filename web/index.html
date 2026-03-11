@@ -114,44 +114,31 @@
     <!-- PICKER -->
     <section id="tab-picker" class="tab-content">
 
-      <!-- Strategy selector -->
+      <!-- Strategy selector + Generate (single panel, like JSX) -->
       <div class="panel">
-        <h2>🎯 Choose Your Strategy</h2>
-        <p class="panel-sub">Select how your numbers are picked from the historical data</p>
+        <h2>🎯 Smart Number Picker</h2>
+        <p class="panel-sub" id="picker-sub">Generates 18 games based on statistical patterns from historical draws. Remember — this is just for fun!</p>
+
         <div class="strategy-grid" id="strategy-grid">
           <button class="strategy-card active" data-mode="hot">
-            <div class="strategy-icon">🔥</div>
-            <div class="strategy-name">Hot Numbers</div>
-            <div class="strategy-desc">Top 10 most frequently drawn balls</div>
+            <div class="strategy-name">🔥 Hot Numbers</div>
+            <div class="strategy-desc">Most drawn overall</div>
           </button>
           <button class="strategy-card" data-mode="cold">
-            <div class="strategy-icon">❄️</div>
-            <div class="strategy-name">Cold Numbers</div>
-            <div class="strategy-desc">Bottom 10 least frequently drawn balls</div>
+            <div class="strategy-name">❄️ Cold Numbers</div>
+            <div class="strategy-desc">Least drawn — overdue?</div>
           </button>
           <button class="strategy-card" data-mode="mixed">
-            <div class="strategy-icon">🌀</div>
-            <div class="strategy-name">Mix Strategy</div>
-            <div class="strategy-desc">5 hot + 5 cold for balanced coverage</div>
+            <div class="strategy-name">🌀 Mix Strategy</div>
+            <div class="strategy-desc">Top 5 hot + top 5 cold</div>
           </button>
           <button class="strategy-card" data-mode="random">
-            <div class="strategy-icon">🎲</div>
-            <div class="strategy-name">True Random</div>
-            <div class="strategy-desc">Pure random from all 35 balls</div>
+            <div class="strategy-name">🎲 True Random</div>
+            <div class="strategy-desc">Equal chance, like the draw</div>
           </button>
         </div>
-      </div>
 
-      <!-- Quantity + Generate -->
-      <div class="panel picker-controls-panel">
-        <div class="qty-section">
-          <span class="qty-label">Number of games:</span>
-          <div class="qty-toggle" id="qty-toggle">
-            <button class="qty-btn active" data-count="1">1 Game</button>
-            <button class="qty-btn" data-count="18">18 Games</button>
-          </div>
-        </div>
-        <button class="btn-generate-big" id="btn-generate">🎱 Generate My Numbers</button>
+        <button class="btn-generate-big" id="btn-generate">✨ GENERATE MY NUMBERS</button>
       </div>
 
       <!-- Result -->
@@ -159,24 +146,12 @@
 
       <!-- How each strategy works -->
       <div class="panel">
-        <h2>How Each Strategy Works</h2>
+        <h3 class="explainer-title">📊 How Each Strategy Works</h3>
         <div class="strategy-explainer">
-          <div class="explainer-row">
-            <span class="explainer-icon">🔥</span>
-            <div><strong>Hot Numbers</strong> — Picks 7 balls from the top 10 most frequently drawn main balls, plus a Powerball from the top 5 hot Powerballs.</div>
-          </div>
-          <div class="explainer-row">
-            <span class="explainer-icon">❄️</span>
-            <div><strong>Cold Numbers</strong> — Picks from the 10 least-drawn balls. The theory: these numbers are "overdue" for a draw.</div>
-          </div>
-          <div class="explainer-row">
-            <span class="explainer-icon">🌀</span>
-            <div><strong>Mix Strategy</strong> — Combines the top 5 hot and top 5 cold balls, aiming for balanced coverage of the number range.</div>
-          </div>
-          <div class="explainer-row">
-            <span class="explainer-icon">🎲</span>
-            <div><strong>True Random</strong> — Selects randomly from all 35 main balls and all 20 Powerballs, with no statistical bias.</div>
-          </div>
+          <p><strong class="hot-label">Hot Numbers:</strong> Picks from the 10 most-drawn main balls historically (9, 7, 17, 11, 19…). Based on the idea that some numbers appear more often.</p>
+          <p><strong class="cold-label">Cold Numbers:</strong> Picks from the 10 least-drawn balls (31, 13, 26, 29…). Based on the idea that they're "overdue" — though randomness means this isn't actually true.</p>
+          <p><strong class="mixed-label">Mix Strategy:</strong> Combines 5 hot + 5 cold, giving a balanced statistical spread.</p>
+          <p><strong class="random-label">True Random:</strong> Every number has equal probability — exactly how the actual draw works. Statistically the same as any other strategy.</p>
         </div>
       </div>
 

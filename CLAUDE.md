@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.1.0** — see `VERSION` file at repo root.
+**v1.2.0** — see `web/VERSION` file.
 
 ---
 
@@ -31,8 +31,8 @@ Use semantic versioning: `MAJOR.MINOR.PATCH`
 | PATCH (3rd) | Small fixes, typos, config tweaks | Bug fix, copy update, cron change |
 
 **Rules:**
-- Update `VERSION` file whenever you make changes
-- Display the version in the web app footer (loaded at runtime from `../VERSION`)
+- Update `web/VERSION`, `README.md`, and `CLAUDE.md` whenever you make changes
+- Display the version in the web app footer (loaded at runtime from `web/VERSION`)
 - Mention the version in every commit message and README changelog
 - Always push directly to `main` — this is a solo project, no branches needed
 
@@ -79,7 +79,6 @@ The workflow:
 
 ```
 thursday-numbers/
-├── VERSION                                ← current version (e.g. 1.0.0)
 ├── CLAUDE.md                              ← this file
 ├── README.md                              ← public-facing project description
 ├── requirements.txt                       ← Python dependencies
@@ -87,23 +86,33 @@ thursday-numbers/
 │   └── workflows/
 │       └── powerball-update.yml           ← GitHub Actions (Friday midnight UTC)
 ├── data/
-│   └── powerball_draws.json               ← scraped draw history (grows over time)
+│   └── powerball_draws.json               ← scraped draw history (source of truth for scripts)
 ├── scripts/
 │   ├── scrape.py                          ← fetches new draws since last known draw
 │   ├── generate_picks.py                  ← generates 18 hot-number games
 │   ├── email_picks.py                     ← sends picks via SendGrid
 │   └── run_all.py                         ← entry point: scrape → generate → email
 ├── picks/
-│   └── picks_history.json                 ← running log of all generated picks
-└── web/
-    ├── index.html                         ← static site (served by Cloudflare Pages)
+│   └── picks_history.json                 ← running log of all generated picks (scripts write here)
+└── web/                                   ← served by Cloudflare Pages
+    ├── VERSION                            ← current version number (read by app.js)
+    ├── index.html                         ← static site
     ├── app.js                             ← vanilla JS analyser (loads data via fetch)
-    └── style.css                          ← dark-themed styles
+    ├── style.css                          ← dark-themed styles
+    ├── data/
+    │   └── powerball_draws.json           ← copy of draw data served to the web app
+    └── picks/
+        └── picks_history.json             ← copy of picks served to the web app
 ```
+
+**Dual data directories explained:**
+- `data/` and `picks/` at the repo root are used by the Python scripts
+- `web/data/` and `web/picks/` are what the browser fetches via `fetch()`
+- The GitHub Actions workflow commits the `web/` copies after each run
 
 ---
 
-## What Has Been Built (v1.0.0)
+## What Has Been Built (v1.2.0)
 
 ### Data
 - **412 draws** scraped from `australia.national-lottery.com`
@@ -121,8 +130,8 @@ thursday-numbers/
 ### Web App
 - Dark-themed single-page app: Dashboard, Frequency, Recent Trends, Number Picker, History
 - Chart.js from CDN — no build step
-- Loads `data/powerball_draws.json` and `picks/picks_history.json` via `fetch()`
-- Version displayed in footer (read from `../VERSION`)
+- Loads `data/powerball_draws.json` and `picks/picks_history.json` via `fetch()` (paths relative to `web/`)
+- Version displayed in footer (read at runtime from `web/VERSION`)
 
 ---
 
