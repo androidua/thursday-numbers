@@ -4,7 +4,9 @@
 
 Statistical analysis of Australian Powerball historical draw data. Generates 18 hot-number game picks and emails them automatically every 3 weeks via SendGrid — all driven by a free GitHub Actions workflow.
 
-🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com)
+🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
+
+**Current version: v1.0.0**
 
 ---
 
@@ -14,7 +16,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 |---|---|
 | 📊 Web dashboard | Frequency charts, hot/cold numbers, recent trends, full draw history |
 | 🎯 Number picker | 18 hot-number games per run (7 main + 1 Powerball each) |
-| 🤖 Auto-update | GitHub Actions runs every Thursday; script checks if 3+ weeks have passed |
+| 🤖 Auto-update | GitHub Actions runs every Friday morning; script checks if 3+ weeks have passed |
 | 📧 Email delivery | HTML email via SendGrid with all 18 games beautifully formatted |
 | 📂 Data | 412+ draws from April 2018 onward, stored as a JSON file in the repo |
 
@@ -34,21 +36,22 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 ```
 thursday-numbers/
+├── VERSION                           ← current version number
 ├── data/
-│   └── powerball_draws.json      ← Draw history (grows automatically)
+│   └── powerball_draws.json          ← Draw history (grows automatically)
 ├── picks/
-│   └── picks_history.json        ← Log of every generated pick set
+│   └── picks_history.json            ← Log of every generated pick set
 ├── scripts/
-│   ├── scrape.py                 ← Fetch new draws from the web
-│   ├── generate_picks.py         ← Generate 18 hot-number games
-│   ├── email_picks.py            ← Send picks via SendGrid
-│   └── run_all.py                ← Full pipeline entry point
+│   ├── scrape.py                     ← Fetch new draws from the web
+│   ├── generate_picks.py             ← Generate 18 hot-number games
+│   ├── email_picks.py                ← Send picks via SendGrid
+│   └── run_all.py                    ← Full pipeline entry point
 ├── web/
-│   ├── index.html                ← GitHub Pages static site
-│   ├── app.js                    ← Vanilla JS analyser
-│   └── style.css                 ← Dark-themed styles
+│   ├── index.html                    ← Cloudflare Pages static site
+│   ├── app.js                        ← Vanilla JS analyser
+│   └── style.css                     ← Dark-themed styles
 ├── .github/workflows/
-│   └── powerball-update.yml      ← Scheduled GitHub Actions workflow
+│   └── powerball-update.yml          ← GitHub Actions (Friday midnight UTC)
 └── requirements.txt
 ```
 
@@ -68,11 +71,11 @@ python scripts/scrape.py
 # Generate picks (prints to console without saving)
 python scripts/generate_picks.py --dry-run
 
-# Full pipeline dry-run (no email sent)
+# Full pipeline dry-run (no email sent, no files written)
 python scripts/run_all.py --dry-run
 ```
 
-The web app (`web/index.html`) loads data via `fetch()`, so it needs to be served over HTTP — it won't work if you just open the file directly. Use any simple server:
+The web app loads data via `fetch()`, so it needs HTTP — it won't work from `file://`. Use any simple server:
 
 ```bash
 cd web
@@ -93,15 +96,14 @@ cd thursday-numbers
 
 ### 2. Get a SendGrid API key (free)
 
-1. Sign up at [sendgrid.com](https://sendgrid.com) (free tier = 100 emails/day)
-2. **Settings → API Keys → Create API Key**
-3. Choose **Restricted Access → Mail Send only**
-4. Copy the key (shown once)
-5. **Settings → Sender Authentication** — verify your sender email address
+1. Sign up at [sendgrid.com](https://sendgrid.com) — free tier = 100 emails/day
+2. **Settings → API Keys → Create API Key → Restricted Access → Mail Send only**
+3. Copy the key (shown once)
+4. **Settings → Sender Authentication** — verify your sender email
 
 ### 3. Add GitHub Secrets
 
-In your forked repo: **Settings → Secrets and variables → Actions → New repository secret**
+**Repo → Settings → Secrets and variables → Actions → New repository secret**
 
 | Secret name | Value |
 |---|---|
@@ -109,32 +111,39 @@ In your forked repo: **Settings → Secrets and variables → Actions → New re
 | `EMAIL_RECIPIENT` | Email address to receive picks |
 | `EMAIL_SENDER` | Verified SendGrid sender email |
 
-### 4. Enable GitHub Pages
+### 4. Deploy with Cloudflare Pages
 
-1. **Repo → Settings → Pages**
-2. Source: **Deploy from branch → `main` → `/web` folder**
-3. Custom domain: enter your domain (or use `<your-username>.github.io/thursday-numbers`)
-4. Tick **Enforce HTTPS** after the SSL cert provisions (~5 min)
+This project is designed for **Cloudflare Pages** (not GitHub Pages — no A records needed).
 
-### 5. (Optional) Custom domain via Cloudflare
+1. **Cloudflare Dashboard → Workers & Pages → Create → Pages → Connect to Git**
+2. Select your forked `thursday-numbers` repo
+3. Configure the build:
+   - Framework preset: **None**
+   - Build command: *(leave empty)*
+   - Build output directory: `web`
+4. Click **Save and Deploy**
+5. Once deployed, go to **Custom domains → Add a domain** → enter your domain
+6. Cloudflare automatically creates the DNS record — no manual A records required
 
-Add these DNS records in Cloudflare, with proxy set to **DNS only** (grey cloud):
+Every push to `main` triggers an automatic Cloudflare Pages redeploy.
 
-| Type | Name | Content |
-|---|---|---|
-| A | @ | 185.199.108.153 |
-| A | @ | 185.199.109.153 |
-| A | @ | 185.199.110.153 |
-| A | @ | 185.199.111.153 |
-| CNAME | www | `<your-github-username>.github.io` |
+---
 
-Update `web/CNAME` with your domain name.
+## Automation schedule
+
+GitHub Actions runs **every Friday at midnight UTC** (= 10am AEST / 11am AEDT), after Thursday evening's Australian Powerball draw has been published.
+
+The workflow:
+- Scrapes any new draws
+- Checks if 3+ weeks have passed since the last email
+- If yes: generates 18 games → sends email → commits updated JSON files
+- Cloudflare Pages auto-deploys on the next push
 
 ---
 
 ## Data source
 
-Draw data scraped from [australia.national-lottery.com](https://australia.national-lottery.com/powerball) — the only public source with a per-draw URL pattern. Data available from approximately April 2018 onward.
+Draw data scraped from [australia.national-lottery.com](https://australia.national-lottery.com/powerball). Data available from approximately April 2018 onward.
 
 ---
 
@@ -142,11 +151,24 @@ Draw data scraped from [australia.national-lottery.com](https://australia.nation
 
 | Layer | Choice | Reason |
 |---|---|---|
-| Web frontend | Vanilla HTML/CSS/JS + Chart.js (CDN) | No build step — GitHub Pages serves static files directly |
+| Hosting | Cloudflare Pages | Domain on Cloudflare; auto-deploys on push; no extra DNS setup |
+| Frontend | Vanilla HTML/CSS/JS + Chart.js (CDN) | No build step — static files only |
 | Scraping | Python + requests + BeautifulSoup | Simple, reliable |
 | Email | SendGrid Python SDK | API key is send-only; safe for public repos |
-| Automation | GitHub Actions cron | Free, serverless, no infrastructure needed |
-| Data | JSON files in repo | Simple, version-controlled, human-readable diffs |
+| Automation | GitHub Actions cron | Free, serverless |
+| Data | JSON files in repo | Simple, version-controlled |
+
+---
+
+## Changelog
+
+### v1.0.0 — 2026-03-11
+- Initial release
+- 412 draws (Apr 2018 – Mar 2026)
+- Static web app: Dashboard, Frequency, Trends, Picker, History tabs
+- Python pipeline: scrape → generate → email via SendGrid
+- GitHub Actions: Friday midnight UTC cron, 3-week gap check
+- Deployed on Cloudflare Pages
 
 ---
 

@@ -2,10 +2,11 @@ name: Powerball Auto-Update
 
 on:
   schedule:
-    # Every Thursday at 10am UTC (8pm AEST / 9pm AEDT)
+    # Friday at midnight UTC = Friday 10am AEST / 11am AEDT
+    # This runs after Thursday evening Australian Powerball draws are published.
     # GitHub Actions doesn't support "every N weeks", so the script
     # itself checks whether 3+ weeks have passed since the last run.
-    - cron: '0 10 * * 4'
+    - cron: '0 0 * * 5'
   workflow_dispatch:   # Allow manual trigger from the GitHub Actions UI
 
 jobs:
@@ -41,3 +42,5 @@ jobs:
           git add data/powerball_draws.json picks/picks_history.json
           git diff --staged --quiet || git commit -m "auto: update draws and picks [skip ci]"
           git push
+      # Deployment is handled automatically by Cloudflare Pages,
+      # which watches the main branch and deploys on every push.

@@ -5,8 +5,9 @@
 "use strict";
 
 // ─── Data paths (relative to web/ folder) ───────────────────────────────────
-const DATA_URL  = "../data/powerball_draws.json";
-const PICKS_URL = "../picks/picks_history.json";
+const DATA_URL    = "../data/powerball_draws.json";
+const PICKS_URL   = "../picks/picks_history.json";
+const VERSION_URL = "../VERSION";
 
 // ─── State ──────────────────────────────────────────────────────────────────
 let draws = [];
@@ -24,8 +25,20 @@ let histFiltered = [];
 // ─── Bootstrap ──────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   setupTabs();
+  loadVersion();
   loadData();
 });
+
+// ─── Version ────────────────────────────────────────────────────────────────
+async function loadVersion() {
+  try {
+    const resp = await fetch(VERSION_URL);
+    if (!resp.ok) return;
+    const ver = (await resp.text()).trim();
+    const el = document.getElementById("footer-version");
+    if (el) el.textContent = `v${ver}`;
+  } catch (_) { /* version display is non-critical */ }
+}
 
 // ─── Tab navigation ─────────────────────────────────────────────────────────
 function setupTabs() {

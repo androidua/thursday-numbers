@@ -354,6 +354,7 @@ footer {
 .footer-inner { max-width: 1100px; margin: 0 auto; }
 .footer-inner p { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
 .footer-disclaimer { font-size: 11px; color: #555; margin-top: 8px; }
+.footer-version { font-size: 11px; color: #3a3f55; margin-top: 4px; letter-spacing: 0.5px; }
 
 /* ── Loading state ── */
 .loading {
