@@ -117,7 +117,7 @@
       <!-- Strategy selector + Generate (single panel, like JSX) -->
       <div class="panel">
         <h2>🎯 Smart Number Picker</h2>
-        <p class="panel-sub" id="picker-sub">Generates 18 games based on statistical patterns from historical draws. Remember — this is just for fun!</p>
+        <p class="panel-sub" id="picker-sub">Generates numbers based on statistical patterns from historical draws. Remember — this is just for fun!</p>
 
         <div class="strategy-grid" id="strategy-grid">
           <button class="strategy-card active" data-mode="hot">
@@ -136,6 +136,11 @@
             <div class="strategy-name">🎲 True Random</div>
             <div class="strategy-desc">Equal chance, like the draw</div>
           </button>
+        </div>
+
+        <div class="count-toggle" id="count-toggle">
+          <button class="count-btn" data-count="1">1 game</button>
+          <button class="count-btn active" data-count="18">18 games</button>
         </div>
 
         <button class="btn-generate-big" id="btn-generate">✨ GENERATE MY NUMBERS</button>

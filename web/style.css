@@ -237,6 +237,34 @@ main {
 .strategy-name { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
 .strategy-desc { font-size: 11px; color: #64748b; line-height: 1.4; }
 
+/* ── Picker — Game count toggle ── */
+.count-toggle {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.count-btn {
+  all: unset;
+  box-sizing: border-box;
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 2px solid #334155;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
+  background: #1e293b;
+  color: #94a3b8;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.count-btn:hover { border-color: #7c3aed; color: #f8fafc; }
+.count-btn.active {
+  border-color: #7c3aed;
+  background: #1e1b4b;
+  color: #f8fafc;
+}
+
 /* ── Picker — Generate button ── */
 .btn-generate-big {
   all: unset;

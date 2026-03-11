@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.2.0**
+**Current version: v1.2.1**
 
 ---
 
@@ -165,6 +165,9 @@ Draw data scraped from [australia.national-lottery.com](https://australia.nation
 ---
 
 ## Changelog
+
+### v1.2.1 — 2026-03-11
+- Number Picker: added 1-game / 18-games toggle below strategy selector
 
 ### v1.2.0 — 2026-03-11
 - Number Picker redesigned to match JSX reference: dark strategy cards with explicit hex colors, full-width purple→pink gradient generate button

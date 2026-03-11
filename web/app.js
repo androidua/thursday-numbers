@@ -271,7 +271,8 @@ function renderTrends() {
 }
 
 // ─── Picker tab ──────────────────────────────────────────────────────────────
-let pickerMode = "hot";  // hot | cold | mixed | random
+let pickerMode      = "hot";  // hot | cold | mixed | random
+let pickerGameCount = 18;     // 1 | 18
 
 function setupPicker() {
   // Strategy card selection
@@ -283,9 +284,18 @@ function setupPicker() {
     });
   });
 
-  // Generate button — always produces 18 games
+  // Game count toggle
+  document.querySelectorAll(".count-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".count-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      pickerGameCount = parseInt(btn.dataset.count, 10);
+    });
+  });
+
+  // Generate button
   document.getElementById("btn-generate").addEventListener("click", () => {
-    renderPickerResult(generateGamesLocal(pickerMode, 18));
+    renderPickerResult(generateGamesLocal(pickerMode, pickerGameCount));
   });
 
   // Show default 18 hot games on load
