@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thursday Numbers — Australian Powerball Analyser</title>
+  <meta name="description" content="Statistical analysis of Australian Powerball draws. Hot numbers, frequency charts, and smart picks. Every Thursday, smarter numbers." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎱</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="header-logo">🎱 <span>Thursday Numbers</span></div>
+      <p class="header-tagline">Every Thursday, smarter numbers.</p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-inner">
+      <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+      <button class="tab-btn" data-tab="frequency">📈 Frequency</button>
+      <button class="tab-btn" data-tab="trends">🔥 Recent Trends</button>
+      <button class="tab-btn" data-tab="picker">🎯 Number Picker</button>
+      <button class="tab-btn" data-tab="history">📋 History</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section id="tab-dashboard" class="tab-content active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-draws">—</div>
+          <div class="stat-label">Total Draws Analysed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-range">—</div>
+          <div class="stat-label">Date Range</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-hottest">—</div>
+          <div class="stat-label">Hottest Main Ball</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-hot-pb">—</div>
+          <div class="stat-label">Hottest Powerball</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>🔥 Hot Numbers</h2>
+        <p class="panel-sub">Top 10 most frequently drawn main balls across all <span id="dash-draws">—</span> draws</p>
+        <div class="ball-row" id="hot-main-balls"></div>
+      </div>
+
+      <div class="panel">
+        <h2>❄️ Cold Numbers</h2>
+        <p class="panel-sub">Bottom 10 least frequently drawn main balls</p>
+        <div class="ball-row" id="cold-main-balls"></div>
+      </div>
+
+      <div class="panels-row">
+        <div class="panel">
+          <h2>🔮 Hot Powerballs</h2>
+          <p class="panel-sub">Top 5 most frequent Powerballs</p>
+          <div class="ball-row" id="hot-pb-balls"></div>
+        </div>
+        <div class="panel">
+          <h2>📅 Latest Draw</h2>
+          <div id="latest-draw-info"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FREQUENCY -->
+    <section id="tab-frequency" class="tab-content">
+      <div class="panel">
+        <h2>Main Ball Frequency</h2>
+        <p class="panel-sub">How many times each number (1–35) has been drawn</p>
+        <div class="chart-wrap">
+          <canvas id="chart-main-freq"></canvas>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Powerball Frequency</h2>
+        <p class="panel-sub">How many times each Powerball number (1–20) has been drawn</p>
+        <div class="chart-wrap chart-wrap-sm">
+          <canvas id="chart-pb-freq"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRENDS -->
+    <section id="tab-trends" class="tab-content">
+      <div class="panel">
+        <h2>Recent 20 Draws — Main Ball Appearances</h2>
+        <p class="panel-sub">How often each number appeared in the last 20 draws</p>
+        <div class="chart-wrap">
+          <canvas id="chart-recent-main"></canvas>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Draws Since Last Appearance</h2>
+        <p class="panel-sub">How many draws have passed since each number was last seen (lower = more recent)</p>
+        <div class="chart-wrap">
+          <canvas id="chart-since-last"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- PICKER -->
+    <section id="tab-picker" class="tab-content">
+      <div class="panel">
+        <h2>🎯 Your 18 Hot-Number Games</h2>
+        <p class="panel-sub" id="picker-meta">Picks generated from statistical analysis of all draws</p>
+        <div id="picker-games"></div>
+        <button class="btn-generate" id="btn-generate">🔄 Generate New Picks</button>
+      </div>
+      <div class="panel disclaimer-panel">
+        <p>⚠️ <strong>Important:</strong> Powerball is a game of pure chance. Each draw is independent and random. Past results have <em>zero</em> statistical influence on future draws. This tool is for entertainment only.</p>
+        <p>For help with gambling: <a href="https://www.gamblinghelponline.org.au" target="_blank" rel="noopener">gamblinghelponline.org.au</a> or call <strong>1800 858 858</strong>.</p>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="tab-history" class="tab-content">
+      <div class="panel">
+        <h2>📋 Draw History</h2>
+        <p class="panel-sub">All <span id="hist-total">—</span> recorded draws</p>
+        <div class="history-controls">
+          <input type="search" id="hist-search" placeholder="Search draw number or date..." />
+          <select id="hist-per-page">
+            <option value="20">20 per page</option>
+            <option value="50">50 per page</option>
+            <option value="100">100 per page</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table id="history-table">
+            <thead>
+              <tr>
+                <th>Draw #</th>
+                <th>Date</th>
+                <th>Main Numbers</th>
+                <th>Powerball</th>
+              </tr>
+            </thead>
+            <tbody id="history-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="hist-pagination"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <p>🎱 Thursday Numbers &mdash; Statistical analysis of Australian Powerball draws</p>
+      <p>Data: <a href="https://australia.national-lottery.com/powerball" target="_blank" rel="noopener">australia.national-lottery.com</a> &nbsp;|&nbsp; <a href="https://github.com/androidua/thursday-numbers" target="_blank" rel="noopener">GitHub</a></p>
+      <p class="footer-disclaimer">For entertainment only. Not financial or gambling advice. Gamble responsibly.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
