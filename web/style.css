@@ -347,7 +347,7 @@ main {
 /* ── Picker — 18-game grid ── */
 .games-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
   gap: 12px;
   margin-top: 4px;
 }
@@ -360,7 +360,6 @@ main {
   align-items: center;
   gap: 8px;
   flex-wrap: nowrap;
-  overflow: hidden;
 }
 .game-num {
   font-size: 11px;
