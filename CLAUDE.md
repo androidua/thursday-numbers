@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.0.0** — see `VERSION` file at repo root.
+**v1.1.0** — see `VERSION` file at repo root.
 
 ---
 
