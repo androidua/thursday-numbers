@@ -35,26 +35,35 @@ a:hover { text-decoration: underline; }
 
 /* ── Header ── */
 header {
-  background: linear-gradient(135deg, #12152a 0%, #1e2140 100%);
-  border-bottom: 1px solid var(--border);
-  padding: 24px 16px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+  border-bottom: 1px solid rgba(167,139,250,0.2);
+  padding: 28px 16px;
 }
 .header-inner {
   max-width: 1100px;
   margin: 0 auto;
   text-align: center;
 }
-.header-logo {
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  color: #fff;
+.header-eyebrow {
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: #a78bfa;
+  text-transform: uppercase;
+  margin-bottom: 6px;
 }
-.header-logo span { color: var(--accent2); }
+.header-logo {
+  font-size: clamp(22px, 5vw, 34px);
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  background: linear-gradient(90deg, #fbbf24, #f97316, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 .header-tagline {
-  color: var(--text-dim);
+  color: #94a3b8;
   font-size: 14px;
-  margin-top: 4px;
+  margin-top: 8px;
 }
 
 /* ── Nav ── */
@@ -211,6 +220,9 @@ main {
   .strategy-grid { grid-template-columns: repeat(2, 1fr); }
 }
 .strategy-card {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
   background: var(--bg3);
   border: 2px solid var(--border);
   border-radius: var(--radius);
@@ -246,6 +258,9 @@ main {
 .qty-label { font-size: 14px; color: var(--text-dim); }
 .qty-toggle { display: flex; gap: 6px; }
 .qty-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
   background: var(--bg3);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -259,6 +274,9 @@ main {
 .qty-btn:hover { color: var(--text); border-color: var(--accent2); }
 .qty-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 .btn-generate-big {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
   background: linear-gradient(135deg, #6366f1, #a855f7);
   color: #fff;
   border: none;
@@ -373,9 +391,9 @@ main {
 
 /* ── Picker — Strategy explainer ── */
 .strategy-explainer { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
-.explainer-row { display: flex; gap: 14px; align-items: flex-start; }
-.explainer-icon { font-size: 22px; flex-shrink: 0; line-height: 1.4; }
-.explainer-row div { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+.explainer-row { display: flex !important; flex-direction: row !important; gap: 14px; align-items: flex-start; }
+.explainer-icon { font-size: 22px; flex-shrink: 0; line-height: 1.4; width: 28px; text-align: center; }
+.explainer-row div { font-size: 13px; color: var(--text-dim); line-height: 1.5; flex: 1; }
 .explainer-row strong { color: var(--text); }
 
 /* ── Latest draw ── */
