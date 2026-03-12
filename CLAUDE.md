@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.3.1** — see `web/VERSION` file.
+**v1.4.0** — see `web/VERSION` file.
 
 ---
 
@@ -89,6 +89,7 @@ thursday-numbers/
 │   └── powerball_draws.json               ← scraped draw history (source of truth for scripts)
 ├── scripts/
 │   ├── scrape.py                          ← fetches new draws since last known draw
+│   ├── scrape_historical.py               ← one-time backfill: year-archive pages 1996–2018
 │   ├── generate_picks.py                  ← generates 18 hot-number games
 │   ├── email_picks.py                     ← sends picks via SendGrid
 │   └── run_all.py                         ← entry point: scrape → generate → email
@@ -118,14 +119,16 @@ thursday-numbers/
 ## What Has Been Built (v1.3.1)
 
 ### Data
-- **412 draws** scraped from `australia.national-lottery.com`
-- Draw range: **#1144 (2018-04-19) → #1555 (2026-03-05)**
-- Stored in `data/powerball_draws.json`
+- **1,555 draws** scraped from `australia.national-lottery.com` (complete history)
+- Full range: **#1 (1996-05-23) → #1555 (2026-03-05)**
+- Current-format draws used for analysis: **412** (#1144 2018-04-19 → #1555 2026-03-05)
+- Stored in `data/powerball_draws.json` and `web/data/powerball_draws.json`
 - Format: `{"draw": 1144, "date": "2018-04-19", "main": [4,5,9,13,25,32,33], "powerball": 7}`
-- The source site only holds draws from ~2018 onward
+- Pre-2018 draws have fewer main balls (5 or 6); `app.js` filters to `main.length === 7` for all analysis
 
 ### Python Scripts
 - `scrape.py` — finds missing Thursdays, fetches each from australia.national-lottery.com
+- `scrape_historical.py` — one-time backfill via year-archive pages; supports `--dry-run` and `--start-year`
 - `generate_picks.py` — frequency analysis, top-10 hot main + top-5 hot PBs, 18 unique games
 - `email_picks.py` — HTML email via SendGrid with coloured ball layout
 - `run_all.py` — full pipeline with `--dry-run` and `--force` flags, 3-week gap check
@@ -189,11 +192,13 @@ Repo → Settings → Secrets and variables → Actions → New repository secre
 
 ## Current Data Stats
 
-- **Total draws:** 412
-- **Range:** Draw #1144 (2018-04-19) → Draw #1555 (2026-03-05)
-- **Hot main balls:** 9, 7, 17, 11, 19, 18, 23, 14, 12, 30
-- **Cold main balls:** 31, 13, 26, 29, 8, 33, 35, 15, 34, 5
-- **Hot Powerballs:** 2, 4, 6, 10, 3
+- **Total draws (all eras):** 1,555
+- **Full range:** Draw #1 (1996-05-23) → Draw #1555 (2026-03-05)
+- **Current-format draws (used for analysis):** 412 (Draw #1144, 2018-04-19 → Draw #1555, 2026-03-05)
+- **Format eras:** 5-ball 1–45 (1996–2013, ~876 draws), 6-ball 1–40 (2013–2018, ~267 draws), 7-ball 1–35 + PB 1–20 (2018–present, 412 draws)
+- **Hot main balls (current format):** 9, 7, 17, 11, 19, 18, 23, 14, 12, 30
+- **Cold main balls (current format):** 31, 13, 26, 29, 8, 33, 35, 15, 34, 5
+- **Hot Powerballs (current format):** 2, 4, 6, 10, 3
 
 ---
 

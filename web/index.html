@@ -73,7 +73,7 @@
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-value" id="stat-draws">—</div>
-          <div class="stat-label">Total Draws Analysed</div>
+          <div class="stat-label">Historical Draws</div>
         </div>
         <div class="stat-card">
           <div class="stat-value" id="stat-range">—</div>
@@ -91,20 +91,20 @@
 
       <div class="panel">
         <h2>🔥 Hot Numbers</h2>
-        <p class="panel-sub">Top 10 most frequently drawn main balls across all <span id="dash-draws">—</span> draws</p>
+        <p class="panel-sub">Top 10 most frequently drawn main balls across <span id="dash-draws">—</span> current-format draws (2018–present)</p>
         <div class="ball-row" id="hot-main-balls"></div>
       </div>
 
       <div class="panel">
         <h2>❄️ Cold Numbers</h2>
-        <p class="panel-sub">Bottom 10 least frequently drawn main balls</p>
+        <p class="panel-sub">Bottom 10 least frequently drawn main balls (current format, 2018–present)</p>
         <div class="ball-row" id="cold-main-balls"></div>
       </div>
 
       <div class="panels-row">
         <div class="panel">
           <h2>🔮 Hot Powerballs</h2>
-          <p class="panel-sub">Top 5 most frequent Powerballs</p>
+          <p class="panel-sub">Top 5 most frequent Powerballs (current format, 2018–present)</p>
           <div class="ball-row" id="hot-pb-balls"></div>
         </div>
         <div class="panel">
@@ -118,14 +118,14 @@
     <section id="tab-frequency" class="tab-content">
       <div class="panel">
         <h2>Main Ball Frequency</h2>
-        <p class="panel-sub">How many times each number (1–35) has been drawn</p>
+        <p class="panel-sub">How many times each number (1–35) has been drawn — current format only (Apr 2018–present)</p>
         <div class="chart-wrap">
           <canvas id="chart-main-freq"></canvas>
         </div>
       </div>
       <div class="panel">
         <h2>Powerball Frequency</h2>
-        <p class="panel-sub">How many times each Powerball number (1–20) has been drawn</p>
+        <p class="panel-sub">How many times each Powerball number (1–20) has been drawn — current format only (Apr 2018–present)</p>
         <div class="chart-wrap chart-wrap-sm">
           <canvas id="chart-pb-freq"></canvas>
         </div>
@@ -136,14 +136,14 @@
     <section id="tab-trends" class="tab-content">
       <div class="panel">
         <h2>Recent 20 Draws — Main Ball Appearances</h2>
-        <p class="panel-sub">How often each number appeared in the last 20 draws</p>
+        <p class="panel-sub">How often each number appeared in the last 20 current-format draws</p>
         <div class="chart-wrap">
           <canvas id="chart-recent-main"></canvas>
         </div>
       </div>
       <div class="panel">
         <h2>Draws Since Last Appearance</h2>
-        <p class="panel-sub">How many draws have passed since each number was last seen (lower = more recent)</p>
+        <p class="panel-sub">How many current-format draws have passed since each number was last seen (lower = more recent)</p>
         <div class="chart-wrap">
           <canvas id="chart-since-last"></canvas>
         </div>

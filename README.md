@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.3.1**
+**Current version: v1.4.0**
 
 ---
 
@@ -18,7 +18,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 | 🎯 Number picker | 18 hot-number games per run (7 main + 1 Powerball each) |
 | 🤖 Auto-update | GitHub Actions runs every Friday morning; script checks if 3+ weeks have passed |
 | 📧 Email delivery | HTML email via SendGrid with all 18 games beautifully formatted |
-| 📂 Data | 412+ draws from April 2018 onward, stored as a JSON file in the repo |
+| 📂 Data | 1,555 draws from May 1996 onward (complete history); analysis uses current-format draws (2018–present) |
 
 ---
 
@@ -150,7 +150,14 @@ The workflow:
 
 ## Data source
 
-Draw data scraped from [australia.national-lottery.com](https://australia.national-lottery.com/powerball). Data available from approximately April 2018 onward.
+Draw data scraped from [australia.national-lottery.com](https://australia.national-lottery.com/powerball). Complete history from draw #1 (May 1996) through present.
+
+Three format eras are stored in the data:
+- **1996–2013** — 5 main balls from 1–45
+- **2013–2018** — 6 main balls from 1–40
+- **2018–present** — 7 main balls from 1–35, Powerball from 1–20 (current format)
+
+All frequency analysis, charts, hot/cold picks, and trends use **current-format draws only** to avoid cross-era statistical pollution.
 
 ---
 
@@ -205,6 +212,13 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.4.0 — 2026-03-12
+- Scraped complete historical dataset: draw #1 (1996-05-23) through #1555 (2026-03-05) — 1,555 draws total
+- Added `scripts/scrape_historical.py` — one-time year-archive backfill script (23 HTTP requests for 28 years)
+- Multi-era awareness: frequency analysis, trends, hot/cold picks, and number picker all filter to current-format draws only (7-ball, 1–35, 2018–present)
+- Dashboard "Historical Draws" stat shows full 1,555-draw count; all analysis panels clarify they use 412 current-format draws
+- Updated History tab to display all 1,555 draws
 
 ### v1.3.1 — 2026-03-12
 - SEO: Open Graph, Twitter Card, canonical URL, robots meta, Schema.org JSON-LD structured data

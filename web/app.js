@@ -10,7 +10,8 @@ const PICKS_URL   = "picks/picks_history.json";
 const VERSION_URL = "VERSION";
 
 // ─── State ──────────────────────────────────────────────────────────────────
-let draws = [];
+let draws = [];         // ALL draws (1996–present, all formats)
+let currentDraws = [];  // Current-format only: 7 main from 1–35, PB from 1–20 (Apr 2018+)
 let mainFreq = {};   // { ball: count }
 let pbFreq   = {};
 let hotMain  = [];   // sorted list of top-10 most frequent
@@ -63,6 +64,11 @@ async function loadData() {
     return;
   }
 
+  // Filter to draws using the current game format (7 main balls 1–35, PB 1–20)
+  // Pre-2018 used different formats (5 or 6 balls from wider pools) and must not
+  // be mixed into frequency analysis for the current game.
+  currentDraws = draws.filter(d => d.main.length === 7);
+
   computeFrequencies();
   renderDashboard();
   renderFrequency();
@@ -79,7 +85,8 @@ function computeFrequencies() {
   for (let n = 1; n <= 35; n++) mainFreq[n] = 0;
   for (let n = 1; n <= 20; n++) pbFreq[n]   = 0;
 
-  for (const d of draws) {
+  // Use currentDraws only — pre-2018 formats used different ball pools
+  for (const d of currentDraws) {
     for (const b of d.main) mainFreq[b]++;
     pbFreq[d.powerball]++;
   }
@@ -101,20 +108,24 @@ function computeFrequencies() {
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 function renderDashboard() {
-  const latest = draws[draws.length - 1];
-  const first  = draws[0];
+  const latest      = draws[draws.length - 1];
+  const first       = draws[0];
+  const firstCurrent = currentDraws[0];
 
-  // Stats
+  // Stats — total historical draws and date range of full archive
   document.getElementById("stat-draws").textContent = draws.length;
   document.getElementById("stat-range").textContent =
     first.date.slice(0, 4) + "–" + latest.date.slice(0, 4);
 
+  // Hottest ball stats are based on current-format draws only
   const hottestBall = hotMain[0];
   document.getElementById("stat-hottest").textContent =
     `${hottestBall} (${mainFreq[hottestBall]}x)`;
   document.getElementById("stat-hot-pb").textContent =
     `${hotPb[0]} (${pbFreq[hotPb[0]]}x)`;
-  document.getElementById("dash-draws").textContent = draws.length;
+
+  // Panel sub-heading: clarify that frequency counts use current-format draws only
+  document.getElementById("dash-draws").textContent = currentDraws.length;
 
   // Hot main
   const hotEl = document.getElementById("hot-main-balls");
@@ -206,9 +217,10 @@ function renderFrequency() {
 
 // ─── Trends tab ──────────────────────────────────────────────────────────────
 function renderTrends() {
-  const recent = draws.slice(-20);
+  // Use currentDraws so we're always looking at current-format draws (7/35)
+  const recent = currentDraws.slice(-20);
 
-  // Count appearances in last 20
+  // Count appearances in last 20 current-format draws
   const recentCount = {};
   for (let n = 1; n <= 35; n++) recentCount[n] = 0;
   for (const d of recent) for (const b of d.main) recentCount[b]++;
@@ -234,20 +246,16 @@ function renderTrends() {
     options: chartOptions("Appearances in last 20 draws", "Ball", "Count"),
   });
 
-  // Draws since last appearance
+  // Draws since last appearance (within current-format draws only)
   const sinceMap = {};
-  for (let n = 1; n <= 35; n++) sinceMap[n] = draws.length; // default: never seen
+  for (let n = 1; n <= 35; n++) sinceMap[n] = currentDraws.length; // default: never seen
 
-  draws.forEach((d, idx) => {
-    for (const b of d.main) sinceMap[b] = draws.length - 1 - idx;
-  });
-  // Recalculate: we want draws SINCE last appearance
   for (let n = 1; n <= 35; n++) {
     let found = false;
-    for (let i = draws.length - 1; i >= 0; i--) {
-      if (draws[i].main.includes(n)) { sinceMap[n] = draws.length - 1 - i; found = true; break; }
+    for (let i = currentDraws.length - 1; i >= 0; i--) {
+      if (currentDraws[i].main.includes(n)) { sinceMap[n] = currentDraws.length - 1 - i; found = true; break; }
     }
-    if (!found) sinceMap[n] = draws.length;
+    if (!found) sinceMap[n] = currentDraws.length;
   }
 
   const sl = Object.entries(sinceMap).sort(([, a], [, b]) => a - b);
@@ -327,8 +335,8 @@ function generateGamesLocal(mode = "hot", count = 1) {
 
   return {
     generated_at:   new Date().toISOString().slice(0, 19),
-    draws_analysed: draws.length,
-    data_range:     `${draws[0].date} to ${draws[draws.length - 1].date}`,
+    draws_analysed: currentDraws.length,
+    data_range:     `${currentDraws[0].date} to ${currentDraws[currentDraws.length - 1].date}`,
     strategy:       mode,
     hot_main_balls: hotMain,
     hot_powerballs: hotPb,
