@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.4.0**
+**Current version: v1.4.1**
 
 ---
 
@@ -212,6 +212,12 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.4.1 — 2026-03-12
+- Number Picker: Hot strategy replaced with recency-weighted sampling across all 35 balls (linear weight: newest draw = 2×, oldest = 1×, all balls eligible)
+- Number Picker: Mix Strategy replaced with Balanced Draw — rejection sampling against hypergeometric distribution constraints (sum in [87,165], 2–5 odd, 2–5 low)
+- Number Picker: Cold strategy now uses cold Powerballs pool for PB selection
+- Strategy card and explainer text updated to reflect new algorithms
 
 ### v1.4.0 — 2026-03-12
 - Scraped complete historical dataset: draw #1 (1996-05-23) through #1555 (2026-03-05) — 1,555 draws total

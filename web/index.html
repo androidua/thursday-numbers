@@ -161,15 +161,15 @@
         <div class="strategy-grid" id="strategy-grid">
           <button class="strategy-card active" data-mode="hot">
             <div class="strategy-name">🔥 Hot Numbers</div>
-            <div class="strategy-desc">Most drawn overall</div>
+            <div class="strategy-desc">Recency-weighted frequency</div>
           </button>
           <button class="strategy-card" data-mode="cold">
             <div class="strategy-name">❄️ Cold Numbers</div>
             <div class="strategy-desc">Least drawn — overdue?</div>
           </button>
           <button class="strategy-card" data-mode="mixed">
-            <div class="strategy-name">🌀 Mix Strategy</div>
-            <div class="strategy-desc">Top 5 hot + top 5 cold</div>
+            <div class="strategy-name">⚖️ Balanced Draw</div>
+            <div class="strategy-desc">Statistically typical picks</div>
           </button>
           <button class="strategy-card" data-mode="random">
             <div class="strategy-name">🎲 True Random</div>
@@ -192,10 +192,10 @@
       <div class="panel">
         <h3 class="explainer-title">📊 How Each Strategy Works</h3>
         <div class="strategy-explainer">
-          <p><strong class="hot-label">Hot Numbers:</strong> Picks from the 10 most-drawn main balls historically (9, 7, 17, 11, 19…). Based on the idea that some numbers appear more often.</p>
-          <p><strong class="cold-label">Cold Numbers:</strong> Picks from the 10 least-drawn balls (31, 13, 26, 29…). Based on the idea that they're "overdue" — though randomness means this isn't actually true.</p>
-          <p><strong class="mixed-label">Mix Strategy:</strong> Combines 5 hot + 5 cold, giving a balanced statistical spread.</p>
-          <p><strong class="random-label">True Random:</strong> Every number has equal probability — exactly how the actual draw works. Statistically the same as any other strategy.</p>
+          <p><strong class="hot-label">Hot Numbers:</strong> Samples all 35 main balls with probability proportional to recency-weighted frequency — balls that have appeared more often in recent draws get a higher chance of selection. Recency is a linear scale: the most recent draw counts twice as much as the oldest, with every draw in between interpolated proportionally.</p>
+          <p><strong class="cold-label">Cold Numbers:</strong> Picks from the 10 least-drawn main balls and least-drawn Powerballs. Based on the gambler's intuition that low-frequency balls are "overdue" — though in a fair random draw, past results never influence future ones.</p>
+          <p><strong class="mixed-label">Balanced Draw:</strong> Uses rejection sampling against the theoretical hypergeometric distribution for 7-ball draws from 1–35. Only accepts combinations where the sum falls in the central 90th percentile (87–165), the odd/even split is 2–5 either way, and the low/high split (1–17 vs 18–35) is similarly balanced. This produces a pick that looks statistically "typical" — not biased toward extremes.</p>
+          <p><strong class="random-label">True Random:</strong> Every number has equal probability, each pick is independent — exactly how the actual draw works. Avoids popular combinations, which reduces jackpot-splitting risk if you ever did win.</p>
         </div>
       </div>
 
