@@ -2,11 +2,11 @@
 
 > **Every Thursday, smarter numbers.**
 
-Statistical analysis of Australian Powerball historical draw data. Generates 18 hot-number game picks and emails them automatically every 3 weeks via SendGrid — all driven by a free GitHub Actions workflow.
+Statistical analysis of Australian Powerball historical draw data. Generates 18 hot-number game picks and emails them weekly via SendGrid — all driven by a free GitHub Actions workflow.
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.4.1**
+**Current version: v1.4.2**
 
 ---
 
@@ -16,7 +16,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 |---|---|
 | 📊 Web dashboard | Frequency charts, hot/cold numbers, recent trends, full draw history |
 | 🎯 Number picker | 18 hot-number games per run (7 main + 1 Powerball each) |
-| 🤖 Auto-update | GitHub Actions runs every Friday morning; script checks if 3+ weeks have passed |
+| 🤖 Auto-update | GitHub Actions runs every Friday at 4am AEST; full pipeline runs every week |
 | 📧 Email delivery | HTML email via SendGrid with all 18 games beautifully formatted |
 | 📂 Data | 1,555 draws from May 1996 onward (complete history); analysis uses current-format draws (2018–present) |
 
@@ -58,7 +58,7 @@ thursday-numbers/
 │   └── picks/
 │       └── picks_history.json        ← Pick history served to the web app
 ├── .github/workflows/
-│   └── powerball-update.yml          ← GitHub Actions (Friday midnight UTC)
+│   └── powerball-update.yml          ← GitHub Actions (Friday 4am AEST)
 └── requirements.txt
 ```
 
@@ -138,12 +138,11 @@ Every push to `main` triggers an automatic Cloudflare Pages redeploy.
 
 ## Automation schedule
 
-GitHub Actions runs **every Friday at midnight UTC** (= 10am AEST / 11am AEDT), after Thursday evening's Australian Powerball draw has been published.
+GitHub Actions runs **every Friday at 4am AEST** (Thursday 18:00 UTC), after Thursday evening's Australian Powerball draw has been published.
 
 The workflow:
 - Scrapes any new draws
-- Checks if 3+ weeks have passed since the last email
-- If yes: generates 18 games → sends email → commits updated JSON files
+- Generates 18 games → sends email → commits updated JSON files
 - Cloudflare Pages auto-deploys on the next push
 
 ---
@@ -212,6 +211,10 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.4.2 — 2026-03-14
+- Schedule changed from Friday midnight UTC to Friday 4am AEST (Thursday 18:00 UTC)
+- Removed 3-week email gap check — pipeline now runs and sends email every week
 
 ### v1.4.1 — 2026-03-12
 - Number Picker: Hot strategy replaced with recency-weighted sampling across all 35 balls (linear weight: newest draw = 2×, oldest = 1×, all balls eligible)

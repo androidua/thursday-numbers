@@ -2,11 +2,10 @@ name: Powerball Auto-Update
 
 on:
   schedule:
-    # Friday at midnight UTC = Friday 10am AEST / 11am AEDT
-    # This runs after Thursday evening Australian Powerball draws are published.
-    # GitHub Actions doesn't support "every N weeks", so the script
-    # itself checks whether 3+ weeks have passed since the last run.
-    - cron: '0 0 * * 5'
+    # Friday at 4am AEST (UTC+10) = Thursday 18:00 UTC
+    # Runs after Thursday evening Australian Powerball draws are published.
+    # Note: during AEDT (daylight saving, Oct–Apr) this fires at 5am AEDT instead.
+    - cron: '0 18 * * 4'
   workflow_dispatch:   # Allow manual trigger from the GitHub Actions UI
 
 jobs:
