@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.5**
+**Current version: v1.5.6**
 
 ---
 
@@ -214,6 +214,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.6 — 2026-03-15
+- Legal: added gambling helpline link (gamblinghelponline.org.au + 1800 858 858) to the site footer — now visible on every tab, not just the Picker tab
 
 ### v1.5.5 — 2026-03-15
 - Fix: `email-picks.yml` now commits `web/picks/picks_history.json` after each run — picks history was being generated but discarded; the History tab now updates weekly
