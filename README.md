@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.2**
+**Current version: v1.5.3**
 
 ---
 
@@ -217,6 +217,10 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.3 — 2026-03-14
+- Added `og:image` (1200×630 branded preview) and `twitter:image` tags for iMessage / social link previews
+- Upgraded Twitter card type to `summary_large_image`
 
 ### v1.5.2 — 2026-03-14
 - Reverted email layout to previous light theme (white body, dark header)
