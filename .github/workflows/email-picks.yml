@@ -11,6 +11,9 @@ jobs:
   email:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write   # Needed so the bot can commit the updated picks history
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -32,3 +35,11 @@ jobs:
           EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
           EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
         run: python scripts/email_picks.py
+
+      - name: Commit updated picks history
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add web/picks/picks_history.json
+          git diff --staged --quiet || git commit -m "auto: update picks history [skip ci]"
+          git push

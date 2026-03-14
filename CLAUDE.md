@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.5.4** — see `web/VERSION` file.
+**v1.5.5** — see `web/VERSION` file.
 
 ---
 
@@ -66,7 +66,7 @@ Two separate GitHub Actions workflows run on schedule:
 **`email-picks.yml`** — Thursday 00:00 UTC (= 10am AEST / 11am AEDT):
 1. Runs `scripts/generate_picks.py` — generates 18 fresh hot-number games
 2. Runs `scripts/email_picks.py` — sends HTML email via Brevo
-3. No commit — picks are generated in the runner's workspace and emailed only
+3. Commits `web/picks/picks_history.json` if updated — powers the web app's History tab
 
 **`powerball-update.yml`** — Thursday 18:00 UTC (= Friday 4am AEST / 5am AEDT):
 1. Runs `scripts/scrape.py` — fetches any new draws since last recorded
@@ -90,16 +90,12 @@ thursday-numbers/
 │   └── workflows/
 │       ├── powerball-update.yml           ← GitHub Actions scrape (Thursday 18:00 UTC = Friday 4am AEST)
 │       └── email-picks.yml               ← GitHub Actions email (Thursday 00:00 UTC = 10am AEST)
-├── data/
-│   └── powerball_draws.json               ← scraped draw history (source of truth for scripts)
 ├── scripts/
 │   ├── scrape.py                          ← fetches new draws since last known draw
 │   ├── scrape_historical.py               ← one-time backfill: year-archive pages 1996–2018
 │   ├── generate_picks.py                  ← generates 18 hot-number games
 │   ├── email_picks.py                     ← sends picks via Brevo REST API
 │   └── run_all.py                         ← entry point: scrape → generate → email
-├── picks/
-│   └── picks_history.json                 ← running log of all generated picks (scripts write here)
 └── web/                                   ← served by Cloudflare Pages
     ├── VERSION                            ← current version number (read by app.js)
     ├── index.html                         ← static site
@@ -109,25 +105,22 @@ thursday-numbers/
     ├── robots.txt                         ← crawler policy + sitemap reference
     ├── sitemap.xml                        ← XML sitemap for search engine indexing
     ├── data/
-    │   └── powerball_draws.json           ← copy of draw data served to the web app
+    │   └── powerball_draws.json           ← draw history; read/written by scripts; served to web app
     └── picks/
-        └── picks_history.json             ← copy of picks served to the web app
+        └── picks_history.json             ← generated picks log; written by scripts; served to web app
 ```
 
-**Dual data directories explained:**
-- `data/` and `picks/` at the repo root are used by the Python scripts
-- `web/data/` and `web/picks/` are what the browser fetches via `fetch()`
-- The GitHub Actions workflow commits the `web/` copies after each run
+**Single source of truth:** all scripts read from and write to `web/data/` and `web/picks/` directly. There is no separate root-level `data/` or `picks/` directory.
 
 ---
 
-## What Has Been Built (v1.5.3)
+## What Has Been Built (v1.5.5)
 
 ### Data
-- **1,555 draws** scraped from `australia.national-lottery.com` (complete history)
-- Full range: **#1 (1996-05-23) → #1555 (2026-03-05)**
-- Current-format draws used for analysis: **412** (#1144 2018-04-19 → #1555 2026-03-05)
-- Stored in `data/powerball_draws.json` and `web/data/powerball_draws.json`
+- **1,556 draws** scraped from `australia.national-lottery.com` (complete history)
+- Full range: **#1 (1996-05-23) → #1556 (2026-03-12)**
+- Current-format draws used for analysis: **413** (#1144 2018-04-19 → #1556 2026-03-12)
+- Stored in `web/data/powerball_draws.json` (single location — no root-level copy)
 - Format: `{"draw": 1144, "date": "2018-04-19", "main": [4,5,9,13,25,32,33], "powerball": 7}`
 - Pre-2018 draws have fewer main balls (5 or 6); `app.js` filters to `main.length === 7` for all analysis
 

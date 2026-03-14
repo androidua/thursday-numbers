@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.4**
+**Current version: v1.5.5**
 
 ---
 
@@ -36,10 +36,6 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 ```
 thursday-numbers/
-├── data/
-│   └── powerball_draws.json          ← Draw history used by Python scripts
-├── picks/
-│   └── picks_history.json            ← Pick log written by Python scripts
 ├── scripts/
 │   ├── scrape.py                     ← Fetch new draws from the web
 │   ├── generate_picks.py             ← Generate 18 hot-number games
@@ -145,6 +141,7 @@ Two separate GitHub Actions workflows run on a schedule:
 **`email-picks.yml`** — Thursday 10am AEST (Thursday 00:00 UTC)
 - Generates 18 fresh hot-number picks from current draw data
 - Sends a formatted HTML email via Brevo
+- Commits updated `web/picks/picks_history.json` (powers the History tab)
 
 **`powerball-update.yml`** — Friday 4am AEST (Thursday 18:00 UTC)
 - Scrapes any new draws published after Thursday evening's draw
@@ -217,6 +214,11 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.5 — 2026-03-15
+- Fix: `email-picks.yml` now commits `web/picks/picks_history.json` after each run — picks history was being generated but discarded; the History tab now updates weekly
+- Fix: removed stale root `data/` directory (was one draw behind and unused by any script; scripts already read/write `web/data/powerball_draws.json` directly)
+- Docs: corrected CLAUDE.md and README project structure to remove misleading dual-directory references
 
 ### v1.5.4 — 2026-03-15
 - SEO: added `<lastmod>` to sitemap.xml; added `og:image:alt` and `og:image:type` meta tags; expanded meta description to ~160 chars; added `<link rel="preload">` for draw data JSON
