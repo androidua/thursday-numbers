@@ -2,11 +2,11 @@
 
 > **Every Thursday, smarter numbers.**
 
-Statistical analysis of Australian Powerball historical draw data. Generates 18 hot-number game picks and emails them weekly via SendGrid — all driven by a free GitHub Actions workflow.
+Statistical analysis of Australian Powerball historical draw data. Generates 18 hot-number game picks and emails them weekly via Brevo — all driven by a free GitHub Actions workflow.
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.4.2**
+**Current version: v1.5.0**
 
 ---
 
@@ -17,7 +17,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 | 📊 Web dashboard | Frequency charts, hot/cold numbers, recent trends, full draw history |
 | 🎯 Number picker | 18 hot-number games per run (7 main + 1 Powerball each) |
 | 🤖 Auto-update | GitHub Actions runs every Friday at 4am AEST; full pipeline runs every week |
-| 📧 Email delivery | HTML email via SendGrid with all 18 games beautifully formatted |
+| 📧 Email delivery | HTML email via Brevo with all 18 games beautifully formatted |
 | 📂 Data | 1,555 draws from May 1996 onward (complete history); analysis uses current-format draws (2018–present) |
 
 ---
@@ -58,7 +58,8 @@ thursday-numbers/
 │   └── picks/
 │       └── picks_history.json        ← Pick history served to the web app
 ├── .github/workflows/
-│   └── powerball-update.yml          ← GitHub Actions (Friday 4am AEST)
+│   ├── powerball-update.yml          ← GitHub Actions scrape (Friday 4am AEST)
+│   └── email-picks.yml               ← GitHub Actions email (Thursday 10am AEST)
 └── requirements.txt
 ```
 
@@ -101,12 +102,13 @@ gh repo fork androidua/thursday-numbers --clone
 cd thursday-numbers
 ```
 
-### 2. Get a SendGrid API key (free)
+### 2. Get a Brevo API key (free forever)
 
-1. Sign up at [sendgrid.com](https://sendgrid.com) — free tier = 100 emails/day
-2. **Settings → API Keys → Create API Key → Restricted Access → Mail Send only**
-3. Copy the key (shown once)
-4. **Settings → Sender Authentication** — verify your sender email
+1. Sign up at [brevo.com](https://brevo.com) — free tier = 300 emails/day, no expiry
+2. Top-right menu → your name → **SMTP & API → API Keys tab**
+3. Click **"Generate a new API key"** → name it → Generate
+4. Copy the key (shown once)
+5. **Settings → Senders & IP Addresses → Senders → Add a new sender** — verify your sender email
 
 ### 3. Add GitHub Secrets
 
@@ -114,9 +116,9 @@ cd thursday-numbers
 
 | Secret name | Value |
 |---|---|
-| `SENDGRID_API_KEY` | Your SendGrid API key |
+| `BREVO_API_KEY` | Your Brevo API key |
 | `EMAIL_RECIPIENT` | Email address to receive picks |
-| `EMAIL_SENDER` | Verified SendGrid sender email |
+| `EMAIL_SENDER` | Verified Brevo sender email |
 
 ### 4. Deploy with Cloudflare Pages
 
@@ -138,10 +140,14 @@ Every push to `main` triggers an automatic Cloudflare Pages redeploy.
 
 ## Automation schedule
 
-GitHub Actions runs **every Friday at 4am AEST** (Thursday 18:00 UTC), after Thursday evening's Australian Powerball draw has been published.
+Two separate GitHub Actions workflows run on a schedule:
 
-The workflow:
-- Scrapes any new draws since the last recorded draw
+**`email-picks.yml`** — Thursday 10am AEST (Thursday 00:00 UTC)
+- Generates 18 fresh hot-number picks from current draw data
+- Sends a formatted HTML email via Brevo
+
+**`powerball-update.yml`** — Friday 4am AEST (Thursday 18:00 UTC)
+- Scrapes any new draws published after Thursday evening's draw
 - Commits updated `web/data/powerball_draws.json`
 - Cloudflare Pages auto-deploys on every push
 
@@ -193,7 +199,7 @@ Additional hardening:
 - **Subresource Integrity (SRI)** — Chart.js CDN locked to a SHA-384 hash; tampered files are rejected by the browser
 - **`rel="noopener noreferrer"`** on all external links — prevents `window.opener` access and referrer leakage
 - **No inline styles in JS** — all dynamic styles use CSS classes, enabling a strict `style-src 'self'` CSP with no `unsafe-inline`
-- **No secrets in repo** — SendGrid API key and email addresses are GitHub Secrets only; `web/` contains zero credentials
+- **No secrets in repo** — Brevo API key and email addresses are GitHub Secrets only; `web/` contains zero credentials
 
 ---
 
@@ -204,13 +210,20 @@ Additional hardening:
 | Hosting | Cloudflare Pages | Domain on Cloudflare; auto-deploys on push; no extra DNS setup |
 | Frontend | Vanilla HTML/CSS/JS + Chart.js (CDN) | No build step — static files only |
 | Scraping | Python + requests + BeautifulSoup | Simple, reliable |
-| Email | SendGrid Python SDK | API key is send-only; safe for public repos |
+| Email | Brevo REST API (via requests) | Free forever tier; no extra SDK needed |
 | Automation | GitHub Actions cron | Free, serverless |
 | Data | JSON files in repo | Simple, version-controlled |
 
 ---
 
 ## Changelog
+
+### v1.5.0 — 2026-03-14
+- Switched email provider from SendGrid (60-day trial) to Brevo (free forever, 300/day)
+- Rewrote `email_picks.py` to use Brevo REST API via `requests` — no new SDK dependency
+- Removed `sendgrid` from `requirements.txt`
+- Added new `email-picks.yml` GitHub Actions workflow — runs Thursday 00:00 UTC (10am AEST), generates fresh picks and sends email
+- Updated README setup instructions to reflect Brevo secrets (`BREVO_API_KEY`)
 
 ### v1.4.2 — 2026-03-14
 - Schedule changed from Friday midnight UTC to Friday 4am AEST (Thursday 18:00 UTC)

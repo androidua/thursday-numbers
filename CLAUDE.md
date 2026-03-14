@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.4.2** — see `web/VERSION` file.
+**v1.5.0** — see `web/VERSION` file.
 
 ---
 
@@ -61,16 +61,19 @@ The site is deployed via **Cloudflare Pages** (not GitHub Pages).
 
 ## Automation Schedule
 
-GitHub Actions (`powerball-update.yml`) runs **every Thursday at 18:00 UTC**
-= Friday 4am AEST / 5am AEDT.
+Two separate GitHub Actions workflows run on schedule:
 
-**Why Thursday 18:00 UTC?** Australian Powerball draws happen Thursday evening AEST.
-By 18:00 UTC (= Friday 4am AEST), results are reliably published.
+**`email-picks.yml`** — Thursday 00:00 UTC (= 10am AEST / 11am AEDT):
+1. Runs `scripts/generate_picks.py` — generates 18 fresh hot-number games
+2. Runs `scripts/email_picks.py` — sends HTML email via Brevo
+3. No commit — picks are generated in the runner's workspace and emailed only
 
-The workflow **only scrapes** — email is a separate, not-yet-configured workflow:
+**`powerball-update.yml`** — Thursday 18:00 UTC (= Friday 4am AEST / 5am AEDT):
 1. Runs `scripts/scrape.py` — fetches any new draws since last recorded
 2. Commits `web/data/powerball_draws.json` if new draws were found
 3. Cloudflare Pages auto-deploys on every push to `main`
+
+**Why the two-workflow split?** Email sends *before* the draw (10am) using prior data. Scrape runs *after* the draw (4am next day) to capture results. These are deliberately separate cron jobs.
 
 **Actions versions (Node.js 24):** `actions/checkout@v5`, `actions/setup-python@v6`
 
@@ -85,14 +88,15 @@ thursday-numbers/
 ├── requirements.txt                       ← Python dependencies
 ├── .github/
 │   └── workflows/
-│       └── powerball-update.yml           ← GitHub Actions (Thursday 18:00 UTC = Friday 4am AEST)
+│       ├── powerball-update.yml           ← GitHub Actions scrape (Thursday 18:00 UTC = Friday 4am AEST)
+│       └── email-picks.yml               ← GitHub Actions email (Thursday 00:00 UTC = 10am AEST)
 ├── data/
 │   └── powerball_draws.json               ← scraped draw history (source of truth for scripts)
 ├── scripts/
 │   ├── scrape.py                          ← fetches new draws since last known draw
 │   ├── scrape_historical.py               ← one-time backfill: year-archive pages 1996–2018
 │   ├── generate_picks.py                  ← generates 18 hot-number games
-│   ├── email_picks.py                     ← sends picks via SendGrid
+│   ├── email_picks.py                     ← sends picks via Brevo REST API
 │   └── run_all.py                         ← entry point: scrape → generate → email
 ├── picks/
 │   └── picks_history.json                 ← running log of all generated picks (scripts write here)
@@ -170,7 +174,7 @@ Output format per run:
 ### `scripts/email_picks.py`
 - Subject: `🎱 Your Powerball Picks — Draw Week of [date]`
 - HTML email with coloured ball table + plain text fallback
-- Env vars: `SENDGRID_API_KEY`, `EMAIL_RECIPIENT`, `EMAIL_SENDER`
+- Env vars: `BREVO_API_KEY`, `EMAIL_RECIPIENT`, `EMAIL_SENDER`
 
 ### `scripts/run_all.py`
 - `--dry-run`: skip email send and data file writes
@@ -183,9 +187,9 @@ Output format per run:
 
 | Secret Name | Description |
 |---|---|
-| `SENDGRID_API_KEY` | SendGrid API key with Mail Send permission |
+| `BREVO_API_KEY` | Brevo API key with transactional email permission |
 | `EMAIL_RECIPIENT` | Email address to receive picks |
-| `EMAIL_SENDER` | Verified sender email in SendGrid |
+| `EMAIL_SENDER` | Verified sender email in Brevo |
 
 Repo → Settings → Secrets and variables → Actions → New repository secret
 

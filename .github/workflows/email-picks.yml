@@ -1,0 +1,34 @@
+name: Email Powerball Picks
+
+on:
+  schedule:
+    # Thursday at 10am AEST (UTC+10) = Thursday 00:00 UTC
+    # Note: during AEDT (daylight saving, Oct–Apr) this fires at 11am AEDT instead.
+    - cron: '0 0 * * 4'
+  workflow_dispatch:   # Allow manual trigger from the GitHub Actions UI for testing
+
+jobs:
+  email:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate picks
+        run: python scripts/generate_picks.py
+
+      - name: Send email
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
+        run: python scripts/email_picks.py

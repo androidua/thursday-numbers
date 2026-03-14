@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-email_picks.py — Send the latest Powerball picks via SendGrid.
+email_picks.py — Send the latest Powerball picks via Brevo transactional email API.
 
 Usage:
     python scripts/email_picks.py
     python scripts/email_picks.py --dry-run   # Print email body, don't send
 
 Required environment variables:
-    SENDGRID_API_KEY   — SendGrid API key with Mail Send permission
-    EMAIL_RECIPIENT    — Destination email address
-    EMAIL_SENDER       — Verified sender email in SendGrid
+    BREVO_API_KEY    — Brevo API key with transactional email permission
+    EMAIL_RECIPIENT  — Destination email address
+    EMAIL_SENDER     — Verified sender email in Brevo
 """
 
 import argparse
@@ -17,6 +17,8 @@ import json
 import os
 import sys
 from pathlib import Path
+
+import requests
 
 PICKS_FILE = Path(__file__).parent.parent / "web" / "picks" / "picks_history.json"
 
@@ -161,14 +163,11 @@ def build_plaintext(picks):
 
 
 def send_email(picks, html_body, text_body):
-    from sendgrid import SendGridAPIClient
-    from sendgrid.helpers.mail import Mail, Content, MimeType
-
-    api_key = os.environ.get("SENDGRID_API_KEY")
+    api_key = os.environ.get("BREVO_API_KEY")
     recipient = os.environ.get("EMAIL_RECIPIENT")
     sender = os.environ.get("EMAIL_SENDER")
 
-    for var, val in [("SENDGRID_API_KEY", api_key), ("EMAIL_RECIPIENT", recipient), ("EMAIL_SENDER", sender)]:
+    for var, val in [("BREVO_API_KEY", api_key), ("EMAIL_RECIPIENT", recipient), ("EMAIL_SENDER", sender)]:
         if not val:
             print(f"ERROR: Environment variable {var} is not set.", file=sys.stderr)
             sys.exit(1)
@@ -176,21 +175,33 @@ def send_email(picks, html_body, text_body):
     draw_date = picks["generated_at"][:10]
     subject = f"🎱 Your Powerball Picks — Draw Week of {draw_date}"
 
-    message = Mail(from_email=sender, to_emails=recipient, subject=subject)
-    message.add_content(Content(MimeType.text, text_body))
-    message.add_content(Content(MimeType.html, html_body))
+    payload = {
+        "sender": {"name": "Thursday Numbers", "email": sender},
+        "to": [{"email": recipient}],
+        "subject": subject,
+        "htmlContent": html_body,
+        "textContent": text_body,
+    }
 
     try:
-        sg = SendGridAPIClient(api_key)
-        response = sg.send(message)
+        response = requests.post(
+            "https://api.brevo.com/v3/smtp/email",
+            headers={"api-key": api_key, "Content-Type": "application/json"},
+            json=payload,
+            timeout=30,
+        )
+        response.raise_for_status()
         print(f"  Email sent! Status code: {response.status_code}")
+    except requests.HTTPError:
+        print(f"ERROR: Brevo API error {response.status_code}: {response.text}", file=sys.stderr)
+        sys.exit(1)
     except Exception as e:
         print(f"ERROR: Failed to send email: {e}", file=sys.stderr)
         sys.exit(1)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Send Powerball picks via SendGrid")
+    parser = argparse.ArgumentParser(description="Send Powerball picks via Brevo")
     parser.add_argument("--dry-run", action="store_true", help="Print email, don't send")
     args = parser.parse_args()
 
