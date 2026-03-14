@@ -22,11 +22,9 @@ import requests
 
 PICKS_FILE = Path(__file__).parent.parent / "web" / "picks" / "picks_history.json"
 
-# Matches website CSS: .ball-sm.main and .ball-sm.pb gradients exactly
-MAIN_GRADIENT = "linear-gradient(135deg,#6366f1,#4f46e5)"
-MAIN_FALLBACK = "#6366f1"
-PB_GRADIENT   = "linear-gradient(135deg,#a855f7,#7e22ce)"
-PB_FALLBACK   = "#a855f7"
+# Matches website CSS: .ball-sm.main (#6366f1) and .ball-sm.pb (#a855f7)
+MAIN_COLOUR = "#6366f1"
+PB_COLOUR   = "#a855f7"
 
 
 def load_latest_picks():
@@ -41,13 +39,11 @@ def load_latest_picks():
     return history[-1]
 
 
-def ball_html(number, gradient, fallback, size=34):
-    # background-color is the Outlook fallback; background (gradient) overrides in all modern clients
+def ball_html(number, colour, size=38):
     style = (
         f"display:inline-block;width:{size}px;height:{size}px;"
-        f"line-height:{size}px;border-radius:50%;"
-        f"background-color:{fallback};background:{gradient};"
-        f"color:#fff;font-weight:700;font-size:13px;text-align:center;"
+        f"line-height:{size}px;border-radius:50%;background:{colour};"
+        f"color:#fff;font-weight:bold;font-size:14px;text-align:center;"
         f"margin:2px;font-family:Arial,sans-serif;"
     )
     return f'<span style="{style}">{number}</span>'
@@ -59,79 +55,77 @@ def build_html(picks):
     data_range  = picks["data_range"]
 
     rows = []
-    for i, g in enumerate(picks["games"]):
-        row_bg = "#22263a" if i % 2 == 0 else "#1a1d27"
-        main_balls = "".join(ball_html(b, MAIN_GRADIENT, MAIN_FALLBACK) for b in g["main"])
-        pb = ball_html(g["powerball"], PB_GRADIENT, PB_FALLBACK)
+    for g in picks["games"]:
+        main_balls = "".join(ball_html(b, MAIN_COLOUR) for b in g["main"])
+        pb = ball_html(g["powerball"], PB_COLOUR)
         rows.append(
-            f'<tr style="background:{row_bg};">'
-            f'<td style="padding:8px 14px;color:#8892a4;font-family:Arial,sans-serif;font-size:12px;'
-            f'font-weight:600;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;">'
-            f'Game {g["game"]}</td>'
-            f'<td style="padding:8px 6px;">{main_balls}</td>'
-            f'<td style="padding:8px 6px;">{pb}</td>'
+            f"<tr>"
+            f'<td style="padding:6px 12px;color:#666;font-family:Arial,sans-serif;font-size:14px;">Game {g["game"]}</td>'
+            f'<td style="padding:6px 8px;">{main_balls}</td>'
+            f'<td style="padding:6px 8px;">{pb}</td>'
             f"</tr>"
         )
 
     rows_html = "\n".join(rows)
-    hot_main  = ", ".join(str(b) for b in picks["hot_main_balls"])
-    hot_pb    = ", ".join(str(b) for b in picks["hot_powerballs"])
+    hot_main = ", ".join(str(b) for b in picks["hot_main_balls"])
+    hot_pb   = ", ".join(str(b) for b in picks["hot_powerballs"])
 
     return f"""<!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#0f1117;font-family:Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f1117;padding:24px 0;">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:24px 0;">
     <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0"
-             style="background:#1a1d27;border-radius:12px;overflow:hidden;border:1px solid #2d3148;max-width:600px;">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
 
         <!-- Header -->
-        <tr><td style="background:#22263a;padding:32px;text-align:center;border-bottom:1px solid #2d3148;">
+        <tr><td style="background:linear-gradient(135deg,#1a1a2e,#16213e);padding:32px;text-align:center;">
           <div style="font-size:36px;margin-bottom:8px;">🎱</div>
-          <h1 style="color:#e2e8f0;margin:0;font-size:24px;font-weight:700;letter-spacing:-0.5px;">Thursday Numbers</h1>
-          <p style="color:#8892a4;margin:8px 0 0;font-size:14px;">Your Powerball Picks — Draw week of {draw_date}</p>
+          <h1 style="color:#fff;margin:0;font-size:24px;font-weight:700;">Thursday Numbers</h1>
+          <p style="color:#a0aec0;margin:8px 0 0;font-size:14px;">Your Powerball Picks — Draw week of {draw_date}</p>
         </td></tr>
 
-        <!-- Stats bar -->
-        <tr><td style="padding:16px 28px;background:#1a1d27;border-bottom:1px solid #2d3148;">
-          <p style="margin:0;font-size:12px;color:#8892a4;line-height:1.9;">
-            📊 Analysis based on <strong style="color:#e2e8f0;">{draws_count} draws</strong>
-            &nbsp;·&nbsp; {data_range}<br>
-            🔥 Hot main: <strong style="color:#e2e8f0;">{hot_main}</strong><br>
-            🔮 Hot PBs: <strong style="color:#e2e8f0;">{hot_pb}</strong>
+        <!-- Stats -->
+        <tr><td style="padding:20px 32px;background:#f8f9ff;border-bottom:1px solid #eee;">
+          <p style="margin:0;font-size:13px;color:#555;">
+            📊 Analysis based on <strong>{draws_count} draws</strong> ({data_range})<br>
+            🔥 Hot main balls: <strong>{hot_main}</strong><br>
+            🔮 Hot Powerballs: <strong>{hot_pb}</strong>
           </p>
         </td></tr>
 
-        <!-- Column headers -->
-        <tr style="background:#22263a;">
-          <td style="padding:10px 14px;font-size:10px;color:#8892a4;font-weight:700;
-                     text-transform:uppercase;letter-spacing:1px;">Game</td>
-          <td style="padding:10px 6px;font-size:10px;color:#8892a4;font-weight:700;
-                     text-transform:uppercase;letter-spacing:1px;">Main Numbers</td>
-          <td style="padding:10px 6px;font-size:10px;color:#8892a4;font-weight:700;
-                     text-transform:uppercase;letter-spacing:1px;">Powerball</td>
-        </tr>
-
-        <!-- Game rows -->
+        <!-- Table header -->
+        <tr><td style="padding:16px 32px 0;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr style="background:#f0f0f0;">
+                <th style="padding:8px 12px;text-align:left;font-size:12px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Game</th>
+                <th style="padding:8px;text-align:left;font-size:12px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Main Numbers</th>
+                <th style="padding:8px;text-align:left;font-size:12px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Powerball</th>
+              </tr>
+            </thead>
+            <tbody>
 {rows_html}
+            </tbody>
+          </table>
+        </td></tr>
 
         <!-- Disclaimer -->
-        <tr><td colspan="3" style="padding:20px 28px;border-top:1px solid #2d3148;">
-          <p style="margin:0;font-size:11px;color:#4a5568;line-height:1.7;">
-            ⚠️ Generated from statistical analysis of {draws_count} draws. Does not predict outcomes.
-            Powerball is a game of pure chance — past results have zero influence on future draws.
-            For entertainment only. Please gamble responsibly.<br>
-            Help: <a href="https://www.gamblinghelponline.org.au" style="color:#4a5568;">gamblinghelponline.org.au</a>
-            or call <strong>1800 858 858</strong>.
+        <tr><td style="padding:24px 32px;border-top:1px solid #eee;margin-top:16px;">
+          <p style="margin:0;font-size:11px;color:#999;line-height:1.6;">
+            ⚠️ Generated from statistical analysis of {draws_count} draws. Does not predict outcomes.<br>
+            Powerball is a game of pure chance. Each draw is independent and random.
+            Past results have zero statistical influence on future draws.<br>
+            This tool is for entertainment only. Please gamble responsibly.<br>
+            Help: <a href="https://www.gamblinghelponline.org.au" style="color:#999;">gamblinghelponline.org.au</a> or call <strong>1800 858 858</strong>.
           </p>
         </td></tr>
 
         <!-- Footer -->
-        <tr><td colspan="3" style="background:#22263a;padding:14px 28px;text-align:center;border-top:1px solid #2d3148;">
-          <a href="https://thursdaynumbers.com" style="color:#6366f1;text-decoration:none;font-size:12px;">
-            thursdaynumbers.com
-          </a>
+        <tr><td style="background:#1a1a2e;padding:16px 32px;text-align:center;">
+          <p style="margin:0;font-size:12px;color:#666;">
+            <a href="https://thursdaynumbers.com" style="color:#7c8db5;text-decoration:none;">thursdaynumbers.com</a>
+          </p>
         </td></tr>
 
       </table>

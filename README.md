@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.1**
+**Current version: v1.5.2**
 
 ---
 
@@ -217,6 +217,11 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.2 — 2026-03-14
+- Reverted email layout to previous light theme (white body, dark header)
+- Replaced rainbow main ball colours with uniform indigo `#6366f1` (matches website `.ball-sm.main`)
+- Replaced old powerball colour with `#a855f7` (matches website `.ball-sm.pb`)
 
 ### v1.5.1 — 2026-03-14
 - Email redesigned to match website dark theme exactly: `#0f1117` background, `#1a1d27`/`#22263a` cards, `#2d3148` borders
