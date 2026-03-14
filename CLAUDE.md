@@ -121,7 +121,7 @@ thursday-numbers/
 
 ---
 
-## What Has Been Built (v1.3.1)
+## What Has Been Built (v1.5.2)
 
 ### Data
 - **1,555 draws** scraped from `australia.national-lottery.com` (complete history)
@@ -135,7 +135,7 @@ thursday-numbers/
 - `scrape.py` — finds missing Thursdays, fetches each from australia.national-lottery.com
 - `scrape_historical.py` — one-time backfill via year-archive pages; supports `--dry-run` and `--start-year`
 - `generate_picks.py` — frequency analysis, top-10 hot main + top-5 hot PBs, 18 unique games
-- `email_picks.py` — HTML email via SendGrid with coloured ball layout
+- `email_picks.py` — HTML email via Brevo REST API with coloured ball layout (indigo main, purple PB)
 - `run_all.py` — full pipeline with `--dry-run` and `--force` flags, 3-week gap check
 
 ### Web App
@@ -207,7 +207,7 @@ Repo → Settings → Secrets and variables → Actions → New repository secre
 
 ---
 
-## SEO & Security (v1.3.1+)
+## SEO & Security (v1.3.1+, current)
 
 This is a **public GitHub repo**. All web assets are intentionally public — no secrets live in `web/`.
 
@@ -254,8 +254,9 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 | Decision | Choice | Reason |
 |---|---|---|
 | Hosting | Cloudflare Pages | Domain is on Cloudflare; auto-deploys on push; no A record setup needed |
-| Email | SendGrid | API key is send-only; safe for public repos |
-| Scheduling | GitHub Actions cron (Friday midnight UTC) | Runs after Thursday evening draws; free, serverless |
+| Email | Brevo REST API (via `requests`) | Free forever (300/day); no SDK needed; API key safe for public repos |
+| Email schedule | Thursday 00:00 UTC (`email-picks.yml`) | 10am AEST — sends picks before that evening's draw |
+| Scrape schedule | Thursday 18:00 UTC (`powerball-update.yml`) | Friday 4am AEST — after draw results are published |
 | 3-week gap | Checked in `run_all.py` | cron can't do "every N weeks"; script skips if not enough time has passed |
 | Number strategy | Hot numbers for all 18 games | User preference |
 | Games per run | 18 | User buys 18 standard games per draw |
