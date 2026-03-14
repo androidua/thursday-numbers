@@ -519,6 +519,24 @@ footer {
 .footer-disclaimer { font-size: 11px; color: #555; margin-top: 8px; }
 .footer-version { font-size: 11px; color: #3a3f55; margin-top: 4px; letter-spacing: 0.5px; }
 
+/* ── Loading indicator ── */
+.loading-indicator {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-dim);
+  font-size: 14px;
+  margin-bottom: 16px;
+  border-radius: var(--radius);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
 /* ── Loading state ── */
 .loading {
   text-align: center;

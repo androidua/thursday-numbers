@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.3**
+**Current version: v1.5.4**
 
 ---
 
@@ -43,7 +43,7 @@ thursday-numbers/
 ├── scripts/
 │   ├── scrape.py                     ← Fetch new draws from the web
 │   ├── generate_picks.py             ← Generate 18 hot-number games
-│   ├── email_picks.py                ← Send picks via SendGrid
+│   ├── email_picks.py                ← Send picks via Brevo
 │   └── run_all.py                    ← Full pipeline entry point
 ├── web/                              ← Served by Cloudflare Pages
 │   ├── VERSION                       ← Current version number
@@ -217,6 +217,13 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.4 — 2026-03-15
+- SEO: added `<lastmod>` to sitemap.xml; added `og:image:alt` and `og:image:type` meta tags; expanded meta description to ~160 chars; added `<link rel="preload">` for draw data JSON
+- Security: removed deprecated `X-XSS-Protection` header; added `fullscreen=()` to `Permissions-Policy`
+- Reliability: loading indicator shown while draw data fetches; removed unused `PICKS_URL` constant and dead `renderSingleGame` function
+- Performance: Frequency and Trends charts now render lazily on first tab activation instead of at page load
+- Repo: fixed stale SendGrid reference in README project tree; expanded `.gitignore`; removed stray `au_powerball_analyzer.jsx` from repo root
 
 ### v1.5.3 — 2026-03-14
 - Added `og:image` (1200×630 branded preview) and `twitter:image` tags for iMessage / social link previews

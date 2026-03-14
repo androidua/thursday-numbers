@@ -6,7 +6,6 @@
 
 // ─── Data paths (relative to web/ folder) ───────────────────────────────────
 const DATA_URL    = "data/powerball_draws.json";
-const PICKS_URL   = "picks/picks_history.json";
 const VERSION_URL = "VERSION";
 
 // ─── State ──────────────────────────────────────────────────────────────────
@@ -23,6 +22,9 @@ let pbRecencyWeightsArr = []; // [{ball, w}] — recency-weighted PB probabiliti
 let coldPb = [];              // bottom-5 least-frequent powerballs
 
 let charts = {};     // cache Chart.js instances so we can destroy/rebuild
+let dataLoaded = false;                       // true once draws are ready
+const tabsRendered = new Set(["dashboard"]);  // tracks which tabs have been rendered
+
 let histPage = 1;
 let histPerPage = 20;
 let histFiltered = [];
@@ -52,13 +54,25 @@ function setupTabs() {
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
       document.querySelectorAll(".tab-content").forEach(s => s.classList.remove("active"));
       btn.classList.add("active");
-      document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+      const tab = btn.dataset.tab;
+      document.getElementById("tab-" + tab).classList.add("active");
+      if (dataLoaded) maybeRenderTab(tab);
     });
   });
 }
 
+// Render a tab's charts the first time it's activated (lazy loading).
+// Dashboard is rendered eagerly in loadData(); all others wait for first click.
+function maybeRenderTab(tab) {
+  if (tabsRendered.has(tab)) return;
+  tabsRendered.add(tab);
+  if (tab === "frequency") renderFrequency();
+  else if (tab === "trends") renderTrends();
+}
+
 // ─── Data loading ────────────────────────────────────────────────────────────
 async function loadData() {
+  showLoading();
   try {
     const resp = await fetch(DATA_URL);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -67,6 +81,7 @@ async function loadData() {
     showError(`Could not load draw data: ${e.message}. Are you running this from GitHub Pages or a local server?`);
     return;
   }
+  hideLoading();
 
   // Filter to draws using the current game format (7 main balls 1–35, PB 1–20)
   // Pre-2018 used different formats (5 or 6 balls from wider pools) and must not
@@ -75,10 +90,13 @@ async function loadData() {
 
   computeFrequencies();
   renderDashboard();
-  renderFrequency();
-  renderTrends();
   setupPicker();
   setupHistory();
+  dataLoaded = true;
+
+  // If user clicked a non-dashboard tab while data was loading, render it now.
+  const activeTab = document.querySelector(".tab-btn.active")?.dataset.tab;
+  if (activeTab) maybeRenderTab(activeTab);
 }
 
 // ─── Frequency analysis ──────────────────────────────────────────────────────
@@ -437,30 +455,6 @@ const STRATEGY_LABELS = {
   random: "🎲 True Random",
 };
 
-function renderSingleGame(container, result) {
-  const g     = result.games[0];
-  const label = STRATEGY_LABELS[result.strategy] || "Generated";
-  const panel = document.createElement("div");
-  panel.className = "panel single-result";
-  panel.innerHTML = `
-    <div class="single-result-header">
-      <span class="single-strategy-badge">${label}</span>
-      <span class="single-meta">${result.draws_analysed} draws analysed · ${result.generated_at.slice(0, 10)}</span>
-    </div>
-    <div class="single-balls">
-      ${g.main.map(b => `<span class="ball-lg ball-lg-main">${b}</span>`).join("")}
-      <span class="ball-lg-divider">+</span>
-      <span class="ball-lg ball-lg-pb">${g.powerball}</span>
-    </div>
-    <div class="single-labels">
-      <span>Main Balls (7)</span>
-      <span>Powerball</span>
-    </div>
-    <div class="single-odds">Jackpot odds: 1 in 134,490,400 · For entertainment only</div>
-  `;
-  container.appendChild(panel);
-}
-
 function renderGamesGrid(container, result) {
   const label = STRATEGY_LABELS[result.strategy] || "";
   const panel = document.createElement("div");
@@ -632,7 +626,21 @@ function destroyChart(key) {
   if (charts[key]) { charts[key].destroy(); delete charts[key]; }
 }
 
+function showLoading() {
+  const el = document.createElement("div");
+  el.id = "loading-indicator";
+  el.className = "loading-indicator";
+  el.textContent = "Loading draw data…";
+  document.getElementById("tab-dashboard").prepend(el);
+}
+
+function hideLoading() {
+  const el = document.getElementById("loading-indicator");
+  if (el) el.remove();
+}
+
 function showError(msg) {
+  hideLoading();
   document.querySelector("main").innerHTML =
     `<div class="error-msg">⚠️ ${msg}</div>`;
 }

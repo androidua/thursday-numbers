@@ -9,7 +9,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
 
   # Restrict browser feature/API access to only what the app needs
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=(), fullscreen=()
 
   # Content Security Policy
   # - script-src: local JS + Chart.js CDN only
@@ -22,5 +22,3 @@
   # HTTPS enforcement (supplementary — Cloudflare also enforces this at the edge)
   Strict-Transport-Security: max-age=31536000; includeSubDomains
 
-  # Legacy XSS filter for older browsers
-  X-XSS-Protection: 1; mode=block
