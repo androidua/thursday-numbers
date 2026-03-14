@@ -141,9 +141,9 @@ Every push to `main` triggers an automatic Cloudflare Pages redeploy.
 GitHub Actions runs **every Friday at 4am AEST** (Thursday 18:00 UTC), after Thursday evening's Australian Powerball draw has been published.
 
 The workflow:
-- Scrapes any new draws
-- Generates 18 games → sends email → commits updated JSON files
-- Cloudflare Pages auto-deploys on the next push
+- Scrapes any new draws since the last recorded draw
+- Commits updated `web/data/powerball_draws.json`
+- Cloudflare Pages auto-deploys on every push
 
 ---
 
@@ -214,7 +214,8 @@ Additional hardening:
 
 ### v1.4.2 — 2026-03-14
 - Schedule changed from Friday midnight UTC to Friday 4am AEST (Thursday 18:00 UTC)
-- Removed 3-week email gap check — pipeline now runs and sends email every week
+- Workflow now calls `scrape.py` directly — email is a separate, not-yet-configured workflow
+- Upgraded GitHub Actions to Node.js 24: `actions/checkout@v5`, `actions/setup-python@v6`
 
 ### v1.4.1 — 2026-03-12
 - Number Picker: Hot strategy replaced with recency-weighted sampling across all 35 balls (linear weight: newest draw = 2×, oldest = 1×, all balls eligible)

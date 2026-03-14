@@ -61,17 +61,18 @@ The site is deployed via **Cloudflare Pages** (not GitHub Pages).
 
 ## Automation Schedule
 
-GitHub Actions (`powerball-update.yml`) runs **every Friday at midnight UTC**
-= Friday 10am AEST / 11am AEDT.
+GitHub Actions (`powerball-update.yml`) runs **every Thursday at 18:00 UTC**
+= Friday 4am AEST / 5am AEDT.
 
-**Why Friday?** Australian Powerball draws happen Thursday evening. Running Friday
-morning ensures new results are always available before scraping.
+**Why Thursday 18:00 UTC?** Australian Powerball draws happen Thursday evening AEST.
+By 18:00 UTC (= Friday 4am AEST), results are reliably published.
 
-The workflow:
-1. Scrapes any new draws since last recorded
-2. Checks if 3+ weeks have passed since last email was sent
-3. If yes: generates 18 hot-number games → sends email → commits updated JSON
-4. Cloudflare Pages auto-deploys the updated data on the next push
+The workflow **only scrapes** — email is a separate, not-yet-configured workflow:
+1. Runs `scripts/scrape.py` — fetches any new draws since last recorded
+2. Commits `web/data/powerball_draws.json` if new draws were found
+3. Cloudflare Pages auto-deploys on every push to `main`
+
+**Actions versions (Node.js 24):** `actions/checkout@v5`, `actions/setup-python@v6`
 
 ---
 
@@ -84,7 +85,7 @@ thursday-numbers/
 ├── requirements.txt                       ← Python dependencies
 ├── .github/
 │   └── workflows/
-│       └── powerball-update.yml           ← GitHub Actions (Friday midnight UTC)
+│       └── powerball-update.yml           ← GitHub Actions (Thursday 18:00 UTC = Friday 4am AEST)
 ├── data/
 │   └── powerball_draws.json               ← scraped draw history (source of truth for scripts)
 ├── scripts/
