@@ -61,8 +61,8 @@ def build_html(picks):
         rows.append(
             f'<tr class="game-row">'
             f'<td class="game-label" style="padding:6px 12px;color:#666;font-family:Arial,sans-serif;font-size:14px;white-space:nowrap;">Game {g["game"]}</td>'
-            f'<td style="padding:6px 4px;">{main_balls}</td>'
-            f'<td style="padding:6px 4px;">{pb}</td>'
+            f'<td style="padding:6px 4px;" x-apple-data-detectors="false">{main_balls}</td>'
+            f'<td style="padding:6px 4px;" x-apple-data-detectors="false">{pb}</td>'
             f"</tr>"
         )
 
@@ -115,8 +115,8 @@ def build_html(picks):
         </td></tr>
 
         <!-- Table header -->
-        <tr><td class="games-cell" style="padding:16px 32px 0;">
-          <table cellpadding="0" cellspacing="0">
+        <tr><td class="games-cell" style="padding:16px 32px 0;" align="center">
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
             <thead>
               <tr style="background:#f0f0f0;">
                 <th class="th-game" style="padding:8px 12px;text-align:left;font-size:12px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;">Game</th>
