@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.5.6** — see `web/VERSION` file.
+**v1.5.7** — see `web/VERSION` file.
 
 ---
 
@@ -114,7 +114,7 @@ thursday-numbers/
 
 ---
 
-## What Has Been Built (v1.5.6)
+## What Has Been Built (v1.5.7)
 
 ### Data
 - **1,556 draws** scraped from `australia.national-lottery.com` (complete history)
