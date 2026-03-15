@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.5.11** — see `web/VERSION` file.
+**v1.5.12** — see `web/VERSION` file.
 
 ---
 

@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.11**
+**Current version: v1.5.12**
 
 ---
 
@@ -214,6 +214,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.12 — 2026-03-15
+- Feature: Ko-fi donation button added to sticky nav bar (right-aligned on desktop, hidden on mobile <480px)
 
 ### v1.5.11 — 2026-03-15
 - Fix: wrap ball numbers in no-href `<a>` tags — prevents Apple Mail iOS from auto-linking numbers as phone numbers

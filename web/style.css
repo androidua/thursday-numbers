@@ -96,6 +96,23 @@ nav {
 }
 .tab-btn:hover { color: var(--text); }
 .tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+.donate-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  align-self: center;
+  margin-right: 12px;
+  padding: 6px 16px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.donate-btn:hover { opacity: 0.8; text-decoration: none; }
+@media (max-width: 480px) { .donate-btn { display: none; } }
 
 /* ── Main ── */
 main {
