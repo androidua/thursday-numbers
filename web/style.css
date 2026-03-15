@@ -514,7 +514,7 @@ tbody td { padding: 10px 12px; vertical-align: middle; }
 @media (max-width: 600px) {
   /* Show inline PB alongside main balls; hide the separate PB column */
   .hist-pb-inline { display: inline-flex; align-items: center; }
-  .hist-pb-col    { display: none; }
+  .table-wrap tbody td.hist-pb-col { display: none; }
   /* Convert history table rows to flex cards */
   .table-wrap table,
   .table-wrap tbody { display: block; width: 100%; }
