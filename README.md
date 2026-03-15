@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.7**
+**Current version: v1.5.8**
 
 ---
 
@@ -214,6 +214,13 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.8 — 2026-03-15
+- Fix: email now renders correctly on mobile (Apple Mail iOS, Yahoo Mail iOS)
+- Added `<meta name="viewport">` to HTML email template (was missing)
+- Added `<style>` block with `@media (max-width:600px)` — shrinks balls to 28px, reduces padding
+- Changed container from fixed `width="600"` to `max-width:600px; width:100%` so email scales to viewport
+- Added CSS classes (`ball`, `game-label`, `game-row`) alongside inline styles for media query targeting
 
 ### v1.5.7 — 2026-03-15
 - Legal: replaced footer helpline with a full disclaimer panel (entertainment only, not legal/financial/gambling advice, gamble responsibly, helpline) added to all five tabs — Dashboard, Frequency, Trends, Picker, History
