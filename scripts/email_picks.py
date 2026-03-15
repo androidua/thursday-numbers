@@ -75,6 +75,7 @@ def build_html(picks):
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no">
   <style>
     @media only screen and (max-width: 600px) {{
       .container {{ width: 100% !important; }}
@@ -115,7 +116,7 @@ def build_html(picks):
 
         <!-- Table header -->
         <tr><td class="games-cell" style="padding:16px 32px 0;">
-          <table width="100%" cellpadding="0" cellspacing="0">
+          <table cellpadding="0" cellspacing="0">
             <thead>
               <tr style="background:#f0f0f0;">
                 <th class="th-game" style="padding:8px 12px;text-align:left;font-size:12px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;">Game</th>

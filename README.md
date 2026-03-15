@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.8**
+**Current version: v1.5.9**
 
 ---
 
@@ -214,6 +214,10 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.9 — 2026-03-15
+- Fix: remove `width="100%"` from inner games table — Powerball column no longer pushed to far right; table now sizes to ball content
+- Fix: add `<meta name="format-detection">` — suppresses Apple Mail iOS auto-linking ball numbers as phone numbers (was causing blue underlined text)
 
 ### v1.5.8 — 2026-03-15
 - Fix: email now renders correctly on mobile (Apple Mail iOS, Yahoo Mail iOS)
