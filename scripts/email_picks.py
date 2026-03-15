@@ -40,13 +40,20 @@ def load_latest_picks():
 
 
 def ball_html(number, colour, size=38):
-    style = (
+    span_style = (
         f"display:inline-block;width:{size}px;height:{size}px;"
         f"line-height:{size}px;border-radius:50%;background:{colour};"
         f"color:#fff;font-weight:bold;font-size:14px;text-align:center;"
         f"margin:2px;font-family:Arial,sans-serif;"
     )
-    return f'<span class="ball" style="{style}">{number}</span>'
+    # Wrap number in <a> with no href — Apple Mail skips auto-detection
+    # on content already inside an anchor element.
+    link_style = "color:#fff !important;text-decoration:none !important;"
+    return (
+        f'<span class="ball" style="{span_style}">'
+        f'<a style="{link_style}">{number}</a>'
+        f'</span>'
+    )
 
 
 def build_html(picks):
@@ -61,8 +68,8 @@ def build_html(picks):
         rows.append(
             f'<tr class="game-row">'
             f'<td class="game-label" style="padding:6px 12px;color:#666;font-family:Arial,sans-serif;font-size:14px;white-space:nowrap;">Game {g["game"]}</td>'
-            f'<td style="padding:6px 4px;" x-apple-data-detectors="false">{main_balls}</td>'
-            f'<td style="padding:6px 4px;" x-apple-data-detectors="false">{pb}</td>'
+            f'<td style="padding:6px 8px 6px 4px;">{main_balls}</td>'
+            f'<td style="padding:6px 4px 6px 16px;">{pb}</td>'
             f"</tr>"
         )
 
@@ -86,6 +93,7 @@ def build_html(picks):
       .footer-cell {{ padding: 12px 16px !important; }}
       .game-label {{ padding: 4px 6px !important; font-size: 12px !important; white-space: nowrap; }}
       .game-row td {{ padding: 3px 2px !important; }}
+      .game-row td:last-child {{ padding-left: 10px !important; }}
       .ball {{ width: 28px !important; height: 28px !important; line-height: 28px !important; font-size: 11px !important; margin: 1px !important; }}
       .th-game {{ padding: 6px !important; }}
       .th-main {{ padding: 6px 4px !important; }}
@@ -120,8 +128,8 @@ def build_html(picks):
             <thead>
               <tr style="background:#f0f0f0;">
                 <th class="th-game" style="padding:8px 12px;text-align:left;font-size:12px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;">Game</th>
-                <th class="th-main" style="padding:8px;text-align:left;font-size:12px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Main Numbers</th>
-                <th class="th-pb" style="padding:8px;text-align:left;font-size:12px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;">Powerball</th>
+                <th class="th-main" style="padding:8px 8px 8px 4px;text-align:left;font-size:12px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Main Numbers</th>
+                <th class="th-pb" style="padding:8px 8px 8px 16px;text-align:left;font-size:12px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;">Powerball</th>
               </tr>
             </thead>
             <tbody>
