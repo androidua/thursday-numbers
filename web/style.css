@@ -78,10 +78,22 @@ nav {
   max-width: 1100px;
   margin: 0 auto;
   display: flex;
+  align-items: stretch;
+}
+.nav-tabs {
+  display: flex;
+  flex: 1;
   overflow-x: auto;
   scrollbar-width: none;
 }
-.nav-inner::-webkit-scrollbar { display: none; }
+.nav-tabs::-webkit-scrollbar { display: none; }
+/* Fade the right edge of the tab strip on mobile to hint there are more tabs */
+@media (max-width: 700px) {
+  .nav-tabs {
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 48px), transparent 100%);
+    mask-image: linear-gradient(to right, black calc(100% - 48px), transparent 100%);
+  }
+}
 .tab-btn {
   background: none;
   border: none;
@@ -97,11 +109,11 @@ nav {
 .tab-btn:hover { color: var(--text); }
 .tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent2); }
 .donate-btn {
-  margin-left: auto;
   flex-shrink: 0;
   align-self: center;
   margin-right: 12px;
-  padding: 6px 16px;
+  margin-left: 8px;
+  padding: 6px 14px;
   background: var(--accent);
   color: #fff;
   border-radius: 20px;
@@ -112,7 +124,9 @@ nav {
   transition: opacity 0.2s;
 }
 .donate-btn:hover { opacity: 0.8; text-decoration: none; }
-@media (max-width: 480px) { .donate-btn { display: none; } }
+@media (max-width: 480px) {
+  .donate-btn { padding: 5px 10px; font-size: 0.72rem; margin-right: 8px; }
+}
 
 /* ── Main ── */
 main {
@@ -217,6 +231,8 @@ main {
   font-weight: 600;
 }
 .ball-label { font-size: 12px; color: var(--text-dim); margin-left: 4px; }
+/* Keep each ball + frequency count as an unbreakable pair in flex-wrap layouts */
+.ball-pair { display: inline-flex; align-items: center; gap: 6px; }
 
 /* ── Charts ── */
 .chart-wrap {
@@ -493,6 +509,32 @@ tbody td { padding: 10px 12px; vertical-align: middle; }
 .draw-ball.pb-ball { background: linear-gradient(135deg, var(--pb), #7e22ce); border: none; }
 .draw-separator { color: var(--border); margin: 0 2px; }
 .draw-hot-note  { margin-top: 8px; font-size: 12px; color: var(--text-dim); }
+/* Inline PB (shown in main-balls cell on mobile, hidden on desktop) */
+.hist-pb-inline { display: none; }
+@media (max-width: 600px) {
+  /* Show inline PB alongside main balls; hide the separate PB column */
+  .hist-pb-inline { display: inline-flex; align-items: center; }
+  .hist-pb-col    { display: none; }
+  /* Convert history table rows to flex cards */
+  .table-wrap table,
+  .table-wrap tbody { display: block; width: 100%; }
+  .table-wrap thead { display: none; }
+  .table-wrap tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--border);
+    background: none;
+  }
+  .table-wrap tbody tr:hover { background: var(--bg3); border-radius: 6px; }
+  .table-wrap tbody td { display: block; padding: 0; border: none; }
+  .table-wrap tbody td:first-child { font-size: 13px; }
+  .table-wrap tbody td:nth-child(2) { flex: 1; font-size: 12px; color: var(--text-dim); }
+  /* Main balls row takes full width, dropping to its own line */
+  .table-wrap tbody td:nth-child(3) { width: 100%; }
+}
 
 .pagination {
   display: flex;

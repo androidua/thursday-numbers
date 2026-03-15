@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.12**
+**Current version: v1.5.13**
 
 ---
 
@@ -214,6 +214,12 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.13 — 2026-03-15
+- Fix: nav tabs wrapped in `.nav-tabs` sub-div so donate button is always visible on mobile (not scrolled off-screen)
+- Fix: CSS mask-gradient fade on nav right edge hints there are more tabs on mobile
+- Fix: `.ball-pair` wrapper keeps each ball+frequency count together in flex-wrap layouts
+- Fix: history table converts to flex card layout on mobile; PB shown inline with main balls
 
 ### v1.5.12 — 2026-03-15
 - Feature: Ko-fi donation button added to sticky nav bar (right-aligned on desktop, hidden on mobile <480px)

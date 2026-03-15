@@ -191,22 +191,19 @@ function renderDashboard() {
   // Hot main
   const hotEl = document.getElementById("hot-main-balls");
   hotEl.innerHTML = hotMain.map(b =>
-    `<span class="ball ball-main">${b}</span>
-     <span class="ball ball-freq">${mainFreq[b]}x</span>`
+    `<span class="ball-pair"><span class="ball ball-main">${b}</span><span class="ball ball-freq">${mainFreq[b]}x</span></span>`
   ).join("");
 
   // Cold main
   const coldEl = document.getElementById("cold-main-balls");
   coldEl.innerHTML = coldMain.map(b =>
-    `<span class="ball ball-cold">${b}</span>
-     <span class="ball ball-freq">${mainFreq[b]}x</span>`
+    `<span class="ball-pair"><span class="ball ball-cold">${b}</span><span class="ball ball-freq">${mainFreq[b]}x</span></span>`
   ).join("");
 
   // Hot PBs
   const pbEl = document.getElementById("hot-pb-balls");
   pbEl.innerHTML = hotPb.map(b =>
-    `<span class="ball ball-pb">${b}</span>
-     <span class="ball ball-freq">${pbFreq[b]}x</span>`
+    `<span class="ball-pair"><span class="ball ball-pb">${b}</span><span class="ball ball-freq">${pbFreq[b]}x</span></span>`
   ).join("");
 
   // Latest draw
@@ -521,9 +518,11 @@ function renderHistoryTable() {
           ${d.main.map(b =>
             `<span class="draw-ball ${hotSet.has(b) ? "hot" : ""}">${b}</span>`
           ).join("")}
+          <span class="draw-separator hist-pb-inline">│</span>
+          <span class="draw-ball pb-ball hist-pb-inline">${d.powerball}</span>
         </div>
       </td>
-      <td><span class="draw-ball pb-ball">${d.powerball}</span></td>
+      <td class="hist-pb-col"><span class="draw-ball pb-ball">${d.powerball}</span></td>
     </tr>
   `).join("");
 
