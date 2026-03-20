@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.14**
+**Current version: v1.5.15**
 
 ---
 
@@ -214,6 +214,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.15 — 2026-03-20
+- Fix: change `[skip ci]` to `[skip actions]` in workflow commit messages so Cloudflare Pages deploys auto-commits (draw data + picks history)
 
 ### v1.5.14 — 2026-03-15
 - Fix: increase CSS specificity of `.hist-pb-col { display: none }` so it correctly overrides the more specific `.table-wrap tbody td { display: block }` rule on mobile — removes duplicate powerball in history rows
