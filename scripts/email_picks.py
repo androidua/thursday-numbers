@@ -40,20 +40,15 @@ def load_latest_picks():
 
 
 def ball_html(number, colour, size=38):
+    # format-detection meta tag already suppresses Apple Mail auto-linking;
+    # a bare <a> without href is non-standard and scores badly with spam filters.
     span_style = (
         f"display:inline-block;width:{size}px;height:{size}px;"
         f"line-height:{size}px;border-radius:50%;background:{colour};"
         f"color:#fff;font-weight:bold;font-size:14px;text-align:center;"
         f"margin:2px;font-family:Arial,sans-serif;"
     )
-    # Wrap number in <a> with no href — Apple Mail skips auto-detection
-    # on content already inside an anchor element.
-    link_style = "color:#fff !important;text-decoration:none !important;"
-    return (
-        f'<span class="ball" style="{span_style}">'
-        f'<a style="{link_style}">{number}</a>'
-        f'</span>'
-    )
+    return f'<span class="ball" style="{span_style}">{number}</span>'
 
 
 def build_html(picks):
@@ -199,14 +194,21 @@ def send_email(picks, html_body, text_body):
             sys.exit(1)
 
     draw_date = picks["generated_at"][:10]
-    subject = f"🎱 Your Powerball Picks — Draw Week of {draw_date}"
+    subject = f"Thursday Numbers — your weekly games ({draw_date})"
 
+    # List-Unsubscribe is required by Gmail/Yahoo for bulk senders.
+    # RFC 8058 also requires List-Unsubscribe-Post for one-click support.
+    unsubscribe_mailto = f"mailto:{sender}?subject=unsubscribe"
     payload = {
         "sender": {"name": "Thursday Numbers", "email": sender},
         "to": [{"email": recipient}],
         "subject": subject,
         "htmlContent": html_body,
         "textContent": text_body,
+        "headers": {
+            "List-Unsubscribe": f"<{unsubscribe_mailto}>",
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        },
     }
 
     try:
