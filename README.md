@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.16**
+**Current version: v1.5.17**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.17 — 2026-04-02
+- Add Powerball diversity: pre-sample 18 distinct PBs without replacement (EWMA-weighted) across all 18 games, covering 90% of the PB pool every week vs old formula's fixed 5 PBs (25% coverage)
 
 ### v1.5.16 — 2026-04-02
 - Upgrade statistical formula: replace raw frequency counting with EWMA scoring (α=0.03, half-life ≈23 draws/6 months) in both `generate_picks.py` and `app.js`

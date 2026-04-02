@@ -150,7 +150,14 @@ def pair_diverse(candidate, existing_games, max_shared=4):
 
 def generate_games(main_scores, pb_scores, n=NUM_GAMES):
     """
-    Two-phase game generation.
+    Two-phase game generation with full main-ball and Powerball coverage.
+
+    Powerball diversity (applied across all phases):
+        Pre-sample n PBs without replacement using EWMA weights.  With n=18
+        games and 20 possible PBs, this guarantees 18 distinct Powerballs —
+        covering 90% of the PB pool every week.  The old approach drew from a
+        fixed top-5 pool, repeating the same PBs 3–6 times and leaving 15 PBs
+        with zero chance of appearing.
 
     Phase 1 — Greedy Coverage (games 1 to GREEDY_PHASE_GAMES):
         Sample all 35 main balls without replacement in EWMA-probability order,
@@ -166,13 +173,17 @@ def generate_games(main_scores, pb_scores, n=NUM_GAMES):
     games = []
     seen  = set()
 
+    # ── Pre-sample diverse PBs (n unique PBs from 20, EWMA-weighted) ──────
+    # n=18 < PB_BALLS=20, so sampling without replacement is always feasible.
+    diverse_pbs = weighted_sample(pb_scores, n)
+
     # ── Phase 1: weighted full-coverage partition ──────────────────────────
     ordered = weighted_sample(main_scores, MAIN_BALLS)   # all 35, EWMA order
     covered = set()
     for i in range(GREEDY_PHASE_GAMES):
         main = tuple(sorted(ordered[i * MAIN_PER_GAME : (i + 1) * MAIN_PER_GAME]))
         covered.update(main)
-        pb   = weighted_sample(pb_scores, 1)[0]
+        pb   = diverse_pbs[i]
         key  = (main, pb)
         seen.add(key)
         games.append({"game": i + 1, "main": list(main), "powerball": pb})
@@ -181,15 +192,17 @@ def generate_games(main_scores, pb_scores, n=NUM_GAMES):
           f"{GREEDY_PHASE_GAMES} games")
 
     # ── Phase 2: diverse EWMA-weighted fill ───────────────────────────────
+    pb_idx = GREEDY_PHASE_GAMES          # index into pre-sampled diverse_pbs
     max_attempts = (n - GREEDY_PHASE_GAMES) * 1000
     for _ in range(max_attempts):
         if len(games) >= n:
             break
         main = tuple(sorted(weighted_sample(main_scores, MAIN_PER_GAME)))
-        pb   = weighted_sample(pb_scores, 1)[0]
+        pb   = diverse_pbs[pb_idx] if pb_idx < len(diverse_pbs) else weighted_sample(pb_scores, 1)[0]
         key  = (main, pb)
         if key not in seen and pair_diverse(main, games):
             seen.add(key)
+            pb_idx += 1
             games.append({
                 "game":      len(games) + 1,
                 "main":      list(main),
@@ -200,6 +213,9 @@ def generate_games(main_scores, pb_scores, n=NUM_GAMES):
         raise RuntimeError(
             f"Could not generate {n} unique diverse games. Only produced {len(games)}."
         )
+
+    distinct_pbs = len({g["powerball"] for g in games})
+    print(f"  PB diversity    : {distinct_pbs}/{n} distinct Powerballs across {n} games")
     return games
 
 

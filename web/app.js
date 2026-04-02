@@ -528,11 +528,21 @@ function generateGamesLocal(mode = "hot", count = 1) {
   const games = [];
   const seen  = new Set();
 
+  // Pre-sample diverse Powerballs (up to count PBs without replacement from 20).
+  // With count=18 and 20 possible PBs this covers 18 distinct PBs — 90% of
+  // the PB pool — guaranteeing the winning PB appears in at least one game
+  // with 90% probability, vs the old formula's 25% (5 fixed PBs from 20).
+  const diversePbs = weightedSample(pbRecencyWeightsArr, Math.min(count, 20));
+  let pbIdx = 0;
+
   for (let i = 0; i < count * 1000 && games.length < count; i++) {
     const g   = generateGameWithStrategy(mode);
+    // Override PB with next diverse PB while supply lasts; then fall back to strategy PB
+    if (pbIdx < diversePbs.length) g.powerball = diversePbs[pbIdx];
     const key = g.main.join(",") + "|" + g.powerball;
     if (!seen.has(key)) {
       seen.add(key);
+      pbIdx++;
       games.push({ game: games.length + 1, ...g });
     }
   }
