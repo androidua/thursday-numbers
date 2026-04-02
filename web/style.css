@@ -566,6 +566,27 @@ tbody td { padding: 10px 12px; vertical-align: middle; }
 .disclaimer-panel p { margin-bottom: 8px; }
 .disclaimer-panel p:last-child { margin-bottom: 0; }
 
+/* ── Chi-squared significance note ── */
+.chi-note {
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: none; /* hidden until JS populates it */
+}
+.chi-note:not(:empty) { display: block; }
+.chi-not-significant {
+  background: #0f1e30;
+  border-left: 3px solid #38bdf8;
+  color: #7eb8d4;
+}
+.chi-significant {
+  background: #1a1f0f;
+  border-left: 3px solid #84cc16;
+  color: #a3c45a;
+}
+
 /* ── Footer ── */
 footer {
   border-top: 1px solid var(--border);
