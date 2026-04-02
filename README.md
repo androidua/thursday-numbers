@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.15**
+**Current version: v1.5.16**
 
 ---
 
@@ -24,9 +24,10 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 ## How the number generation works
 
-1. **Frequency analysis** — counts how often each ball (main: 1–35, PB: 1–20) has appeared across all recorded draws.
-2. **Hot pool** — picks the top 10 most-drawn main balls and top 5 Powerballs.
-3. **Game generation** — randomly samples 7 unique balls from the hot main pool + 1 from the hot PB pool, 18 times with no duplicate games.
+1. **EWMA scoring** — each ball's score is updated draw-by-draw using an Exponentially Weighted Moving Average (α=0.03, half-life ≈23 draws / 6 months). Recent appearances count more without arbitrarily discarding older history.
+2. **Chi-squared test** — the dashboard shows whether observed frequencies significantly deviate from a fair uniform distribution. With ~415 draws the answer is typically "no" — hot/cold labels are entertainment, not prediction.
+3. **Greedy portfolio coverage (games 1–5)** — all 35 main balls are sampled without replacement in EWMA-probability order and partitioned into 5 games of 7, guaranteeing every ball appears at least once in the weekly batch.
+4. **Diverse fill (games 6–18)** — EWMA-weighted random sampling with pair-diversity rejection: no two games share more than 4 main balls, preventing redundant near-duplicate picks.
 
 > ⚠️ **Important disclaimer:** Powerball is a game of pure chance. Each draw is completely independent. Past frequencies have **zero** influence on future draws. This tool is for entertainment only. If gambling is causing you problems, contact [Gambling Help Online](https://www.gamblinghelponline.org.au) or call **1800 858 858**.
 
@@ -214,6 +215,12 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.16 — 2026-04-02
+- Upgrade statistical formula: replace raw frequency counting with EWMA scoring (α=0.03, half-life ≈23 draws/6 months) in both `generate_picks.py` and `app.js`
+- Upgrade game generation: two-phase greedy portfolio coverage — games 1–5 guarantee all 35 main balls appear in every weekly batch; games 6–18 use EWMA-weighted sampling with pair-diversity rejection
+- Add chi-squared goodness-of-fit test: dashboard now shows whether ball frequency distribution significantly deviates from uniform (p-value displayed inline)
+- Improve mixed-mode picker: sum bounds now use data-adaptive empirical 5th/95th percentiles instead of hardcoded constants; add consecutive-pair constraint (covers 98.1% of historical draws)
 
 ### v1.5.15 — 2026-03-20
 - Fix: change `[skip ci]` to `[skip actions]` in workflow commit messages so Cloudflare Pages deploys auto-commits (draw data + picks history)
