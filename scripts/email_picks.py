@@ -220,8 +220,8 @@ def send_email(picks, html_body, text_body):
         )
         response.raise_for_status()
         print(f"  Email sent! Status code: {response.status_code}")
-    except requests.HTTPError:
-        print(f"ERROR: Brevo API error {response.status_code}: {response.text}", file=sys.stderr)
+    except requests.HTTPError as e:
+        print(f"ERROR: Brevo API error {e.response.status_code}: {e.response.text}", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
         print(f"ERROR: Failed to send email: {e}", file=sys.stderr)
