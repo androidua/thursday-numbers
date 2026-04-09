@@ -9,6 +9,7 @@ Usage:
 
 import argparse
 import json
+import sys
 import time
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -87,6 +88,9 @@ def main():
 
     print("=== Powerball Scraper ===")
     draws = load_draws()
+    if not draws:
+        print("ERROR: Data file is empty. Cannot determine last draw number or date.", file=sys.stderr)
+        sys.exit(1)
     print(f"  Loaded {len(draws)} existing draws")
 
     last_date = datetime.strptime(draws[-1]["date"], "%Y-%m-%d").date()

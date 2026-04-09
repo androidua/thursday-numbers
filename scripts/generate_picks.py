@@ -24,6 +24,7 @@ import argparse
 import json
 import math
 import random
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -286,6 +287,9 @@ def main():
 
     print("=== Powerball Pick Generator ===")
     draws = load_draws()
+    if not draws:
+        print("ERROR: No current-format draws found. Check that the data file exists and contains 7-ball draws.", file=sys.stderr)
+        sys.exit(1)
     print(f"  Loaded {len(draws)} current-format draws (7-ball era, 2018+)")
 
     main_scores, pb_scores, main_counts, pb_counts = compute_ewma_scores(draws)
