@@ -30,11 +30,25 @@ jobs:
       - name: Scrape new draws
         run: python scripts/scrape.py
 
+      - name: Update sitemap lastmod
+        run: |
+          python -c "
+          import re, datetime
+          today = datetime.date.today().isoformat()
+          path = 'web/sitemap.xml'
+          with open(path) as f:
+              content = f.read()
+          content = re.sub(r'<lastmod>[^<]+</lastmod>', f'<lastmod>{today}</lastmod>', content)
+          with open(path, 'w') as f:
+              f.write(content)
+          print(f'Updated sitemap lastmod to {today}')
+          "
+
       - name: Commit updated data files
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add web/data/powerball_draws.json
+          git add web/data/powerball_draws.json web/sitemap.xml
           git diff --staged --quiet || git commit -m "auto: update draws and picks [skip actions]"
           git push
       # Deployment is handled automatically by Cloudflare Pages,

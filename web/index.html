@@ -33,7 +33,7 @@
   <meta name="twitter:title"       content="Thursday Numbers — Australian Powerball Analyser" />
   <meta name="twitter:description" content="Statistical analysis of Australian Powerball draws. Hot numbers, frequency charts, and smart picks." />
 
-  <!-- Structured data -->
+  <!-- Structured data — WebApplication -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -44,6 +44,56 @@
     "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "Any",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "AUD" }
+  }
+  </script>
+
+  <!-- Structured data — FAQPage (eligible for Google rich results) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Thursday Numbers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Thursday Numbers is a free statistical analysis tool for Australian Powerball. It analyses over 400 current-format draws to show hot and cold numbers, frequency charts, recent trends, and generates 18 number picks each week based on draw history."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How are the Powerball picks generated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Picks are generated using an Exponentially Weighted Moving Average (EWMA) scoring system. Each ball's score is updated draw-by-draw, giving more weight to recent appearances. The tool then uses a two-phase approach: a greedy coverage phase (games 1–5) that guarantees every main ball appears at least once, and a diverse fill phase (games 6–18) with pair-diversity constraints to avoid near-duplicate picks."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can Thursday Numbers predict the winning Powerball numbers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Powerball is a game of pure chance — each draw is independent and random, and past results have zero statistical influence on future draws. The hot and cold number labels are for entertainment only. The chi-squared test on the dashboard typically confirms that no ball is statistically distinguishable from any other."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How often is the draw data updated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The draw data is updated automatically every Friday morning (Australian time) via a GitHub Actions workflow that scrapes results from the official lottery website after Thursday evening's draw is published. The site is rebuilt and deployed automatically on every data update."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Thursday Numbers free to use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Thursday Numbers is completely free. There is no registration, no subscription, and no ads. The full source code is open source and available on GitHub."
+        }
+      }
+    ]
   }
   </script>
 
