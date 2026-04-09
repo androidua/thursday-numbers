@@ -49,14 +49,23 @@ def thursdays_between(start: date, end: date):
 
 
 def fetch_draw(draw_date: date):
-    """Fetch a single draw from the website. Returns (main_balls, powerball) or None."""
+    """Fetch a single draw from the website. Returns (main_balls, powerball) or None.
+    Retries up to 3 times with exponential backoff (2s, 4s, 8s) on transient errors.
+    """
     url = BASE_URL.format(draw_date.strftime("%d-%m-%Y"))
-    try:
-        resp = requests.get(url, headers=HEADERS, timeout=15)
-        resp.raise_for_status()
-    except requests.RequestException as e:
-        print(f"  WARNING: Failed to fetch {draw_date}: {e}")
-        return None
+    for attempt in range(1, 4):
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=15)
+            resp.raise_for_status()
+            break
+        except requests.RequestException as e:
+            if attempt < 3:
+                delay = 2 ** attempt  # 2s, 4s, 8s
+                print(f"  WARNING: Attempt {attempt}/3 failed for {draw_date}: {e}. Retrying in {delay}s...")
+                time.sleep(delay)
+            else:
+                print(f"  WARNING: All 3 attempts failed for {draw_date}: {e}")
+                return None
 
     soup = BeautifulSoup(resp.text, "html.parser")
 

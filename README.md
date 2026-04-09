@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.19**
+**Current version: v1.5.20**
 
 ---
 
@@ -215,6 +215,10 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.20 — 2026-04-09
+- app.js: replace all innerHTML on JSON-sourced data with safe DOM construction (textContent); add JSON structure validation after fetch
+- scrape.py: add 3-attempt exponential backoff retry (2s/4s/8s) on network errors
 
 ### v1.5.19 — 2026-04-09
 - CSP: add explicit `object-src 'none'`; HSTS: add `preload` directive

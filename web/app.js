@@ -85,6 +85,10 @@ async function loadData() {
     const resp = await fetch(DATA_URL);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     draws = await resp.json();
+    if (!Array.isArray(draws) || draws.length === 0 ||
+        !Array.isArray(draws[0].main) || !("powerball" in draws[0])) {
+      throw new Error("Draw data format is invalid");
+    }
   } catch (e) {
     showError(`Could not load draw data: ${e.message}. Are you running this from GitHub Pages or a local server?`);
     return;
@@ -259,23 +263,10 @@ function renderDashboard() {
   // Panel sub-heading: clarify that frequency counts use current-format draws only
   document.getElementById("dash-draws").textContent = currentDraws.length;
 
-  // Hot main
-  const hotEl = document.getElementById("hot-main-balls");
-  hotEl.innerHTML = hotMain.map(b =>
-    `<span class="ball-pair"><span class="ball ball-main">${b}</span><span class="ball ball-freq">${mainFreq[b]}x</span></span>`
-  ).join("");
-
-  // Cold main
-  const coldEl = document.getElementById("cold-main-balls");
-  coldEl.innerHTML = coldMain.map(b =>
-    `<span class="ball-pair"><span class="ball ball-cold">${b}</span><span class="ball ball-freq">${mainFreq[b]}x</span></span>`
-  ).join("");
-
-  // Hot PBs
-  const pbEl = document.getElementById("hot-pb-balls");
-  pbEl.innerHTML = hotPb.map(b =>
-    `<span class="ball-pair"><span class="ball ball-pb">${b}</span><span class="ball ball-freq">${pbFreq[b]}x</span></span>`
-  ).join("");
+  // Hot main, cold main, hot PBs — renderBallRow uses DOM to avoid innerHTML on JSON data
+  renderBallRow(document.getElementById("hot-main-balls"),  hotMain,  "ball-main", mainFreq);
+  renderBallRow(document.getElementById("cold-main-balls"), coldMain, "ball-cold", mainFreq);
+  renderBallRow(document.getElementById("hot-pb-balls"),    hotPb,    "ball-pb",   pbFreq);
 
   // Chi-squared significance note
   const chiEl = document.getElementById("chi-squared-note");
@@ -294,24 +285,47 @@ function renderDashboard() {
     }
   }
 
-  // Latest draw
+  // Latest draw — DOM construction avoids innerHTML on JSON-sourced strings (date, draw number)
   const hotSet = new Set(hotMain);
-  document.getElementById("latest-draw-info").innerHTML = `
-    <div class="latest-draw">
-      <div class="latest-draw-num">Draw #${latest.draw}</div>
-      <div class="latest-draw-date">${formatDate(latest.date)}</div>
-      <div class="draw-balls">
-        ${latest.main.map(b =>
-          `<span class="draw-ball ${hotSet.has(b) ? "hot" : ""}">${b}</span>`
-        ).join("")}
-        <span class="draw-separator">│</span>
-        <span class="draw-ball pb-ball">${latest.powerball}</span>
-      </div>
-      <div class="draw-hot-note">
-        🔥 Highlighted = hot numbers
-      </div>
-    </div>
-  `;
+  const infoEl = document.getElementById("latest-draw-info");
+  infoEl.innerHTML = "";
+  const latestWrap = document.createElement("div");
+  latestWrap.className = "latest-draw";
+
+  const numDiv = document.createElement("div");
+  numDiv.className = "latest-draw-num";
+  numDiv.textContent = `Draw #${latest.draw}`;
+
+  const dateDiv = document.createElement("div");
+  dateDiv.className = "latest-draw-date";
+  dateDiv.textContent = formatDate(latest.date);
+
+  const ballsWrap = document.createElement("div");
+  ballsWrap.className = "draw-balls";
+  for (const b of latest.main) {
+    const s = document.createElement("span");
+    s.className = hotSet.has(b) ? "draw-ball hot" : "draw-ball";
+    s.textContent = b;
+    ballsWrap.appendChild(s);
+  }
+  const sepSpan = document.createElement("span");
+  sepSpan.className = "draw-separator";
+  sepSpan.textContent = "│";
+  ballsWrap.appendChild(sepSpan);
+  const pbSpan = document.createElement("span");
+  pbSpan.className = "draw-ball pb-ball";
+  pbSpan.textContent = latest.powerball;
+  ballsWrap.appendChild(pbSpan);
+
+  const noteDiv = document.createElement("div");
+  noteDiv.className = "draw-hot-note";
+  noteDiv.textContent = "🔥 Highlighted = hot numbers";
+
+  latestWrap.appendChild(numDiv);
+  latestWrap.appendChild(dateDiv);
+  latestWrap.appendChild(ballsWrap);
+  latestWrap.appendChild(noteDiv);
+  infoEl.appendChild(latestWrap);
 }
 
 // ─── Frequency tab ───────────────────────────────────────────────────────────
@@ -575,21 +589,44 @@ function renderGamesGrid(container, result) {
   const label = STRATEGY_LABELS[result.strategy] || "";
   const panel = document.createElement("div");
   panel.className = "panel";
-  panel.innerHTML = `<p class="panel-sub">${label} · ${result.draws_analysed} draws analysed · ${result.generated_at.slice(0, 10)}</p>`;
+  const sub = document.createElement("p");
+  sub.className = "panel-sub";
+  sub.textContent = `${label} · ${result.draws_analysed} draws analysed · ${result.generated_at.slice(0, 10)}`;
+  panel.appendChild(sub);
 
   const grid = document.createElement("div");
   grid.className = "games-grid";
   for (const g of result.games) {
     const card = document.createElement("div");
     card.className = "game-card";
-    const balls = g.main.map(b => `<span class="ball-sm main">${b}</span>`).join("");
-    card.innerHTML = `
-      <div class="gc-header">Game ${g.game}</div>
-      <div class="gc-main">${balls}</div>
-      <div class="gc-pb">
-        <span class="gc-pb-label">Powerball</span>
-        <span class="ball-sm pb">${g.powerball}</span>
-      </div>`;
+
+    const gcHeader = document.createElement("div");
+    gcHeader.className = "gc-header";
+    gcHeader.textContent = `Game ${g.game}`;
+
+    const gcMain = document.createElement("div");
+    gcMain.className = "gc-main";
+    for (const b of g.main) {
+      const s = document.createElement("span");
+      s.className = "ball-sm main";
+      s.textContent = b;
+      gcMain.appendChild(s);
+    }
+
+    const gcPb = document.createElement("div");
+    gcPb.className = "gc-pb";
+    const gcPbLabel = document.createElement("span");
+    gcPbLabel.className = "gc-pb-label";
+    gcPbLabel.textContent = "Powerball";
+    const gcPbBall = document.createElement("span");
+    gcPbBall.className = "ball-sm pb";
+    gcPbBall.textContent = g.powerball;
+    gcPb.appendChild(gcPbLabel);
+    gcPb.appendChild(gcPbBall);
+
+    card.appendChild(gcHeader);
+    card.appendChild(gcMain);
+    card.appendChild(gcPb);
     grid.appendChild(card);
   }
 
@@ -628,22 +665,50 @@ function renderHistoryTable() {
   const page   = histFiltered.slice(start, start + histPerPage);
   const tbody  = document.getElementById("history-tbody");
 
-  tbody.innerHTML = page.map(d => `
-    <tr>
-      <td><strong>#${d.draw}</strong></td>
-      <td>${formatDate(d.date)}</td>
-      <td>
-        <div class="draw-balls">
-          ${d.main.map(b =>
-            `<span class="draw-ball ${hotSet.has(b) ? "hot" : ""}">${b}</span>`
-          ).join("")}
-          <span class="draw-separator hist-pb-inline">│</span>
-          <span class="draw-ball pb-ball hist-pb-inline">${d.powerball}</span>
-        </div>
-      </td>
-      <td class="hist-pb-col"><span class="draw-ball pb-ball">${d.powerball}</span></td>
-    </tr>
-  `).join("");
+  tbody.innerHTML = "";
+  for (const d of page) {
+    const tr = document.createElement("tr");
+
+    const tdNum = document.createElement("td");
+    const strong = document.createElement("strong");
+    strong.textContent = `#${d.draw}`;
+    tdNum.appendChild(strong);
+
+    const tdDate = document.createElement("td");
+    tdDate.textContent = formatDate(d.date);
+
+    const tdBalls = document.createElement("td");
+    const drawBalls = document.createElement("div");
+    drawBalls.className = "draw-balls";
+    for (const b of d.main) {
+      const s = document.createElement("span");
+      s.className = hotSet.has(b) ? "draw-ball hot" : "draw-ball";
+      s.textContent = b;
+      drawBalls.appendChild(s);
+    }
+    const histSep = document.createElement("span");
+    histSep.className = "draw-separator hist-pb-inline";
+    histSep.textContent = "│";
+    drawBalls.appendChild(histSep);
+    const pbInline = document.createElement("span");
+    pbInline.className = "draw-ball pb-ball hist-pb-inline";
+    pbInline.textContent = d.powerball;
+    drawBalls.appendChild(pbInline);
+    tdBalls.appendChild(drawBalls);
+
+    const tdPb = document.createElement("td");
+    tdPb.className = "hist-pb-col";
+    const pbCol = document.createElement("span");
+    pbCol.className = "draw-ball pb-ball";
+    pbCol.textContent = d.powerball;
+    tdPb.appendChild(pbCol);
+
+    tr.appendChild(tdNum);
+    tr.appendChild(tdDate);
+    tr.appendChild(tdBalls);
+    tr.appendChild(tdPb);
+    tbody.appendChild(tr);
+  }
 
   renderPagination();
 }
@@ -652,7 +717,8 @@ function renderPagination() {
   const total = Math.ceil(histFiltered.length / histPerPage);
   const pag   = document.getElementById("hist-pagination");
 
-  if (total <= 1) { pag.innerHTML = ""; return; }
+  pag.innerHTML = "";
+  if (total <= 1) return;
 
   const pages = [];
   if (histPage > 1) pages.push({ label: "←", p: histPage - 1 });
@@ -661,17 +727,18 @@ function renderPagination() {
   }
   if (histPage < total) pages.push({ label: "→", p: histPage + 1 });
 
-  pag.innerHTML = pages.map(({ label, p, active }) =>
-    `<button class="page-btn ${active ? "active" : ""}" data-p="${p}">${label}</button>`
-  ).join("");
-
-  pag.querySelectorAll(".page-btn").forEach(btn => {
+  for (const { label, p, active } of pages) {
+    const btn = document.createElement("button");
+    btn.className = `page-btn${active ? " active" : ""}`;
+    btn.dataset.p = p;
+    btn.textContent = label;
     btn.addEventListener("click", () => {
       histPage = +btn.dataset.p;
       renderHistoryTable();
       document.getElementById("tab-history").scrollIntoView({ behavior: "smooth", block: "start" });
     });
-  });
+    pag.appendChild(btn);
+  }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -762,6 +829,25 @@ function destroyChart(key) {
   if (charts[key]) { charts[key].destroy(); delete charts[key]; }
 }
 
+// Render a list of balls with frequency counts into a container element.
+// Uses DOM construction rather than innerHTML to safely handle JSON-sourced data.
+function renderBallRow(el, balls, cssClass, freqMap) {
+  el.innerHTML = "";
+  for (const b of balls) {
+    const pair = document.createElement("span");
+    pair.className = "ball-pair";
+    const ballEl = document.createElement("span");
+    ballEl.className = `ball ${cssClass}`;
+    ballEl.textContent = b;
+    const freqEl = document.createElement("span");
+    freqEl.className = "ball ball-freq";
+    freqEl.textContent = `${freqMap[b]}x`;
+    pair.appendChild(ballEl);
+    pair.appendChild(freqEl);
+    el.appendChild(pair);
+  }
+}
+
 function showLoading() {
   const el = document.createElement("div");
   el.id = "loading-indicator";
@@ -777,6 +863,10 @@ function hideLoading() {
 
 function showError(msg) {
   hideLoading();
-  document.querySelector("main").innerHTML =
-    `<div class="error-msg">⚠️ ${msg}</div>`;
+  const main = document.querySelector("main");
+  main.innerHTML = "";
+  const div = document.createElement("div");
+  div.className = "error-msg";
+  div.textContent = `⚠️ ${msg}`;
+  main.appendChild(div);
 }
