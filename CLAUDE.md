@@ -34,6 +34,7 @@ Use semantic versioning: `MAJOR.MINOR.PATCH`
 - Update `web/VERSION`, `README.md`, `CLAUDE.md`, **and the hardcoded fallback in `web/index.html` footer (`id="footer-version"`)** whenever you make changes
 - The footer fallback in `index.html` must always match `web/VERSION` — it shows before the async fetch completes and on fetch failure
 - Mention the version in every commit message and README changelog
+- **Create and push a git tag on every version bump:** `git tag vX.X.X && git push origin vX.X.X` — writing the version in the commit message does NOT create a tag; these are separate operations
 - Always push directly to `main` — this is a solo project, no branches needed
 
 ---
@@ -274,6 +275,7 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 
 - Always read this file first before starting any task
 - **Always update `VERSION`, `CLAUDE.md`, `README.md`, and the `id="footer-version"` fallback in `web/index.html` when making changes**
+- **Always create and push a git tag on every version bump** — `git tag vX.X.X && git push origin vX.X.X` — the version in the commit message is NOT a tag
 - **Always push directly to `main`** — no branches
 - The `data/powerball_draws.json` file is the single source of truth — never overwrite, only append
 - All scripts should be runnable standalone: `python scripts/scrape.py`
