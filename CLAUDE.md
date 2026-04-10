@@ -31,8 +31,8 @@ Use semantic versioning: `MAJOR.MINOR.PATCH`
 | PATCH (3rd) | Small fixes, typos, config tweaks | Bug fix, copy update, cron change |
 
 **Rules:**
-- Update `web/VERSION`, `README.md`, and `CLAUDE.md` whenever you make changes
-- Display the version in the web app footer (loaded at runtime from `web/VERSION`)
+- Update `web/VERSION`, `README.md`, `CLAUDE.md`, **and the hardcoded fallback in `web/index.html` footer (`id="footer-version"`)** whenever you make changes
+- The footer fallback in `index.html` must always match `web/VERSION` — it shows before the async fetch completes and on fetch failure
 - Mention the version in every commit message and README changelog
 - Always push directly to `main` — this is a solo project, no branches needed
 
@@ -273,7 +273,7 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 ## Notes for Claude Code
 
 - Always read this file first before starting any task
-- **Always update `VERSION`, `CLAUDE.md`, and `README.md` when making changes**
+- **Always update `VERSION`, `CLAUDE.md`, `README.md`, and the `id="footer-version"` fallback in `web/index.html` when making changes**
 - **Always push directly to `main`** — no branches
 - The `data/powerball_draws.json` file is the single source of truth — never overwrite, only append
 - All scripts should be runnable standalone: `python scripts/scrape.py`
