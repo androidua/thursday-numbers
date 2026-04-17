@@ -33,6 +33,21 @@ let charts = {};     // cache Chart.js instances so we can destroy/rebuild
 let dataLoaded = false;                       // true once draws are ready
 const tabsRendered = new Set(["dashboard"]);  // tracks which tabs have been rendered
 
+// Split-pot avoidance prior (v1.5.23). Multiplicative penalties applied to
+// EWMA scores before normalization, biasing the picker away from numbers
+// humans overpick (dates 1–31, "lucky" 7/11). Doesn't change win probability
+// but raises expected payout per win by reducing pot-split dilution.
+// 13 left at 1.00 (underpicked — unlucky superstition); 32–35 at 1.00 too.
+const POPULARITY_PENALTY_MAIN = {};
+for (let b = 1; b <= 31; b++) POPULARITY_PENALTY_MAIN[b] = 0.90;
+POPULARITY_PENALTY_MAIN[7]  = 0.85;
+POPULARITY_PENALTY_MAIN[11] = 0.85;
+
+const POPULARITY_PENALTY_PB = {};
+for (let b = 1; b <= 20; b++) POPULARITY_PENALTY_PB[b] = 0.95;
+POPULARITY_PENALTY_PB[7]  = 0.90;
+POPULARITY_PENALTY_PB[11] = 0.90;
+
 let histPage = 1;
 let histPerPage = 20;
 let histFiltered = [];
@@ -209,6 +224,12 @@ function computeEwmaWeights() {
       pbScores[b] = alpha * (draw.powerball === b ? 1 : 0) + (1 - alpha) * pbScores[b];
     }
   }
+
+  // Apply split-pot avoidance prior before normalization. Raw mainFreq/pbFreq
+  // used by the Dashboard and chi-squared test are unaffected (computed above
+  // from observed draws), so the "Hot main balls" panel still reflects reality.
+  for (let b = 1; b <= 35; b++) mainScores[b] *= (POPULARITY_PENALTY_MAIN[b] || 1.0);
+  for (let b = 1; b <= 20; b++) pbScores[b]   *= (POPULARITY_PENALTY_PB[b]   || 1.0);
 
   const mainTotal = Object.values(mainScores).reduce((s, v) => s + v, 0);
   recencyWeightsArr = [];

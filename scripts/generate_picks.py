@@ -38,6 +38,22 @@ MAIN_PER_GAME     = 7
 EWMA_ALPHA        = 0.03   # half-life = ln(0.5)/ln(1−α) ≈ 23 draws ≈ 6 months
 GREEDY_PHASE_GAMES = 5     # games dedicated to full-coverage greedy phase
 
+# Split-pot avoidance prior (v1.5.23). Multiplicative penalties applied to
+# EWMA scores before sampling, biasing away from numbers humans overpick.
+# Doesn't affect win probability (draws are random) but raises expected
+# payout ~10–30% per win by reducing pot-split dilution.
+#   • 1–31: down-weighted (date/birthday cluster)
+#   • 7, 11: extra penalty (common "lucky" picks)
+#   • 13: unchanged (underpicked due to unlucky superstition)
+#   • 32–35: unchanged (beyond date range, already unpopular)
+POPULARITY_PENALTY_MAIN = {b: 0.90 for b in range(1, 32)}
+POPULARITY_PENALTY_MAIN[7]  = 0.85
+POPULARITY_PENALTY_MAIN[11] = 0.85
+
+POPULARITY_PENALTY_PB = {b: 0.95 for b in range(1, 21)}
+POPULARITY_PENALTY_PB[7]  = 0.90
+POPULARITY_PENALTY_PB[11] = 0.90
+
 
 # ─── Data loading ────────────────────────────────────────────────────────────
 
@@ -88,6 +104,14 @@ def compute_ewma_scores(draws):
             pb_scores[b] = alpha * appeared + (1 - alpha) * pb_scores[b]
             if appeared:
                 pb_counts[b] += 1
+
+    # Split-pot avoidance: bias sampling away from overpicked numbers.
+    # Raw counts (main_counts/pb_counts) are left untouched so the chi-squared
+    # test still reports the true observed frequency distribution.
+    for b in main_scores:
+        main_scores[b] *= POPULARITY_PENALTY_MAIN.get(b, 1.0)
+    for b in pb_scores:
+        pb_scores[b] *= POPULARITY_PENALTY_PB.get(b, 1.0)
 
     return main_scores, pb_scores, main_counts, pb_counts
 
@@ -236,6 +260,7 @@ def build_result(draws, games, main_scores, pb_scores,
         "draws_analysed":  len(draws),
         "data_range":      f"{first_date} to {last_date}",
         "ewma_alpha":      EWMA_ALPHA,
+        "popularity_prior": "v1.5.23",
         "hot_main_balls":  top_balls(main_scores, 10),
         "hot_powerballs":  top_balls(pb_scores, 5),
         "freq_significant": p_main is not None and p_main < 0.05,

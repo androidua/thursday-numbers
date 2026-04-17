@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.22**
+**Current version: v1.5.23**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.23 — 2026-04-17
+- Statistical: add split-pot avoidance prior to EWMA scoring. Multiplicatively down-weights numbers 1–31 (dates) by 0.90 and "lucky" 7/11 by 0.85. Does not change win probability — Powerball is random — but raises expected payout ~10–30% per win by reducing pot-split dilution. 13 and 32–35 unchanged (underpicked in practice). Applied in `scripts/generate_picks.py` (`compute_ewma_scores`) and `web/app.js` (`computeEwmaWeights`), so both the Thursday email and the "Hot Numbers" / "Balanced Draw" picker strategies inherit the bias. "Cold" and "True Random" strategies unaffected. Dashboard hot-ball display uses raw counts and remains an honest record of observed history.
 
 ### v1.5.22 — 2026-04-17
 - Performance: add explicit `Cache-Control` rules in `_headers` (short + SWR for JSON data, long for static assets) — fewer revalidation round-trips
