@@ -39,16 +39,45 @@ let histFiltered = [];
 
 // ─── Bootstrap ──────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
+  setupGlobalErrorHandlers();
   setupTabs();
   loadVersion();
   loadData();
 });
 
+// Surfaces any uncaught runtime error or unhandled promise rejection to the
+// console — without these, exceptions outside the loadData try/catch fail silently in prod.
+function setupGlobalErrorHandlers() {
+  window.addEventListener("error", (ev) => {
+    console.error("[thursday-numbers] uncaught error:", ev.error || ev.message);
+  });
+  window.addEventListener("unhandledrejection", (ev) => {
+    console.error("[thursday-numbers] unhandled promise rejection:", ev.reason);
+  });
+}
+
+// Two attempts with 500ms backoff. Retries only on network failure or non-OK response,
+// not on AbortError. Returns the Response; caller handles .json()/.text() parsing.
+async function fetchWithRetry(url, options = {}, maxAttempts = 2) {
+  let lastErr;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const resp = await fetch(url, options);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return resp;
+    } catch (e) {
+      lastErr = e;
+      if (e.name === "AbortError" || attempt === maxAttempts) break;
+      await new Promise(r => setTimeout(r, 500));
+    }
+  }
+  throw lastErr;
+}
+
 // ─── Version ────────────────────────────────────────────────────────────────
 async function loadVersion() {
   try {
-    const resp = await fetch(VERSION_URL);
-    if (!resp.ok) return;
+    const resp = await fetchWithRetry(VERSION_URL);
     const ver = (await resp.text()).trim();
     const el = document.getElementById("footer-version");
     if (el) el.textContent = `v${ver}`;
@@ -82,8 +111,7 @@ function maybeRenderTab(tab) {
 async function loadData() {
   showLoading();
   try {
-    const resp = await fetch(DATA_URL);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const resp = await fetchWithRetry(DATA_URL);
     draws = await resp.json();
     if (!Array.isArray(draws) || draws.length === 0 ||
         !Array.isArray(draws[0].main) || !("powerball" in draws[0])) {

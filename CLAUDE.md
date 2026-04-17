@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.5.21** — see `web/VERSION` file.
+**v1.5.22** — see `web/VERSION` file.
 
 ---
 
@@ -115,7 +115,7 @@ thursday-numbers/
 
 ---
 
-## What Has Been Built (v1.5.7)
+## What Has Been Built
 
 ### Data
 - **1,556 draws** scraped from `australia.national-lottery.com` (complete history)
@@ -191,10 +191,10 @@ Repo → Settings → Secrets and variables → Actions → New repository secre
 
 ## Current Data Stats
 
-- **Total draws (all eras):** 1,555
-- **Full range:** Draw #1 (1996-05-23) → Draw #1555 (2026-03-05)
-- **Current-format draws (used for analysis):** 412 (Draw #1144, 2018-04-19 → Draw #1555, 2026-03-05)
-- **Format eras:** 5-ball 1–45 (1996–2013, ~876 draws), 6-ball 1–40 (2013–2018, ~267 draws), 7-ball 1–35 + PB 1–20 (2018–present, 412 draws)
+- **Total draws (all eras):** 1,556
+- **Full range:** Draw #1 (1996-05-23) → Draw #1556 (2026-03-12)
+- **Current-format draws (used for analysis):** 413 (Draw #1144, 2018-04-19 → Draw #1556, 2026-03-12)
+- **Format eras:** 5-ball 1–45 (1996–2013, ~876 draws), 6-ball 1–40 (2013–2018, ~267 draws), 7-ball 1–35 + PB 1–20 (2018–present, 413 draws)
 - **Hot main balls (current format):** 9, 7, 17, 11, 19, 18, 23, 14, 12, 30
 - **Cold main balls (current format):** 31, 13, 26, 29, 8, 33, 35, 15, 34, 5
 - **Hot Powerballs (current format):** 2, 4, 6, 10, 3

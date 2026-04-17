@@ -24,3 +24,28 @@
   # preload: submittable to hstspreload.org for browser-native HSTS preloading
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
+  # Cross-origin isolation (defence-in-depth — CSP already blocks most attack surface)
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+
+# Long-lived cache for static JS/CSS (served via Cloudflare edge; can be purged on redeploy)
+/app.js
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+/style.css
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+# Short cache + SWR for JSON data — draw file updates weekly, SWR keeps visitors fast
+/data/*.json
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+
+/picks/*.json
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+
+# VERSION file — short cache so deploys surface quickly in the footer
+/VERSION
+  Cache-Control: public, max-age=60
+
+# OG images — long cache; filename changes when image regenerates
+/og-image.*
+  Cache-Control: public, max-age=604800

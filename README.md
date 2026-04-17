@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.21**
+**Current version: v1.5.22**
 
 ---
 
@@ -215,6 +215,17 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.5.22 — 2026-04-17
+- Performance: add explicit `Cache-Control` rules in `_headers` (short + SWR for JSON data, long for static assets) — fewer revalidation round-trips
+- Performance: `preconnect` + `dns-prefetch` to jsdelivr CDN — ~100–200ms faster first chart render on cold networks
+- Performance: convert `og-image.png` (109KB) → `og-image.webp` (24KB) — 77% size reduction; PNG preserved on disk as fallback
+- Security: add `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Resource-Policy: same-origin` headers (defence-in-depth)
+- Reliability: `app.js` — add `fetchWithRetry()` (2 attempts, 500ms backoff) around draws and VERSION fetches; matches the retry discipline already present in `scrape.py`
+- Reliability: `app.js` — add global error handlers (`error` + `unhandledrejection`) so uncaught exceptions surface to console instead of failing silently
+- Reliability: `scrape.py` — reject out-of-range or duplicate balls before append (main 1–35, PB 1–20) — data-integrity safety net for the append-only draws file
+- Reliability: both workflows — add `timeout-minutes: 10`, shared `concurrency` group (`cancel-in-progress: false`), and `set -euo pipefail` on all multi-line shell steps — prevents hung runners and silent cascading failures
+- Reliability: workflow commit steps now use explicit `if/else` around the no-staged-changes branch so intent is auditable in logs
 
 ### v1.5.21 — 2026-04-09
 - powerball-update.yml: auto-update sitemap.xml lastmod on every successful data scrape

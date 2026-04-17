@@ -7,9 +7,14 @@ on:
     - cron: '0 0 * * 4'
   workflow_dispatch:   # Allow manual trigger from the GitHub Actions UI for testing
 
+concurrency:
+  group: powerball-pipeline
+  cancel-in-progress: false
+
 jobs:
   email:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     permissions:
       contents: write   # Needed so the bot can commit the updated picks history
@@ -24,22 +29,33 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          set -euo pipefail
+          pip install -r requirements.txt
 
       - name: Generate picks
-        run: python scripts/generate_picks.py
+        run: |
+          set -euo pipefail
+          python scripts/generate_picks.py
 
       - name: Send email
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
           EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
           EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
-        run: python scripts/email_picks.py
+        run: |
+          set -euo pipefail
+          python scripts/email_picks.py
 
       - name: Commit updated picks history
         run: |
+          set -euo pipefail
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add web/picks/picks_history.json
-          git diff --staged --quiet || git commit -m "auto: update picks history [skip actions]"
-          git push
+          if git diff --staged --quiet; then
+            echo "No staged changes — nothing to commit."
+          else
+            git commit -m "auto: update picks history [skip actions]"
+            git push
+          fi

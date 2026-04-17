@@ -8,9 +8,14 @@ on:
     - cron: '0 18 * * 4'
   workflow_dispatch:   # Allow manual trigger from the GitHub Actions UI
 
+concurrency:
+  group: powerball-pipeline
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     permissions:
       contents: write   # Needed so the bot can push the updated JSON files
@@ -25,13 +30,18 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          set -euo pipefail
+          pip install -r requirements.txt
 
       - name: Scrape new draws
-        run: python scripts/scrape.py
+        run: |
+          set -euo pipefail
+          python scripts/scrape.py
 
       - name: Update sitemap lastmod
         run: |
+          set -euo pipefail
           python -c "
           import re, datetime
           today = datetime.date.today().isoformat()
@@ -46,10 +56,15 @@ jobs:
 
       - name: Commit updated data files
         run: |
+          set -euo pipefail
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add web/data/powerball_draws.json web/sitemap.xml
-          git diff --staged --quiet || git commit -m "auto: update draws and picks [skip actions]"
-          git push
+          if git diff --staged --quiet; then
+            echo "No staged changes — nothing to commit."
+          else
+            git commit -m "auto: update draws and picks [skip actions]"
+            git push
+          fi
       # Deployment is handled automatically by Cloudflare Pages,
       # which watches the main branch and deploys on every push.

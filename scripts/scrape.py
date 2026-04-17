@@ -87,6 +87,15 @@ def fetch_draw(draw_date: date):
         print(f"  WARNING: Unexpected data for {draw_date}: main={main_balls}, pb={powerball}")
         return None
 
+    # Current-format range check: main balls 1–35, PB 1–20. Reject on any out-of-range
+    # or duplicate value — corrupt data would append silently into powerball_draws.json.
+    if any(b < 1 or b > 35 for b in main_balls) or len(set(main_balls)) != 7:
+        print(f"  WARNING: Invalid main balls for {draw_date}: {main_balls}")
+        return None
+    if powerball < 1 or powerball > 20:
+        print(f"  WARNING: Invalid powerball for {draw_date}: {powerball}")
+        return None
+
     return sorted(main_balls), powerball
 
 
