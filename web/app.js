@@ -790,7 +790,7 @@ function renderScoreboard(sb) {
     pendEl.textContent = "";
     if (Array.isArray(sb.pending_weeks) && sb.pending_weeks.length > 0) {
       pendEl.textContent =
-        `${sb.pending_weeks.length} pick batch(es) generated after the most recent recorded draw — waiting for results.`;
+        `${sb.pending_weeks.length} pick batch(es) generated after the most recent recorded draw — waiting for the next draw to score.`;
     }
   }
 
@@ -837,7 +837,7 @@ function renderScoreboardTable(weeks) {
     const td = document.createElement("td");
     td.colSpan = 6;
     td.className = "scoreboard-empty";
-    td.textContent = "No weeks scored yet — your first email is on Thursday.";
+    td.textContent = "No weeks scored yet — the first email goes out Thursday.";
     tr.appendChild(td);
     tbody.appendChild(tr);
     return;
@@ -861,8 +861,8 @@ function renderScoreboardTable(weeks) {
 }
 
 // One scannable row per week — the chevron column is a visual affordance for
-// "click to see your picks". The click handler is on the whole row, not just
-// the chevron, so anywhere on the row works.
+// "click to see the emailed picks". The click handler is on the whole row,
+// not just the chevron, so anywhere on the row works.
 function buildScoreboardSummaryRow(w) {
   const tr = document.createElement("tr");
   tr.className = "scoreboard-row";
@@ -922,10 +922,10 @@ function buildScoreboardSummaryRow(w) {
 }
 
 // Initially hidden — expanded via the .expanded class on the parent row.
-// Shows the actual 18 picks emailed to the user that week, with main balls
-// rendered green when they matched the drawn balls, and the PB rendered with
-// a green ring when it matched. This is the visible answer to "where did
-// these numbers come from?" — they came from your inbox on Thursday morning.
+// Shows the actual 18 picks emailed for that draw, with main balls rendered
+// green when they matched the drawn balls, and the PB rendered with a green
+// ring when it matched. This is the visible answer to "where did these
+// numbers come from?" — they came from the site's Thursday email workflow.
 function buildScoreboardDetailRow(w) {
   const tr = document.createElement("tr");
   tr.className = "scoreboard-detail";
@@ -938,8 +938,8 @@ function buildScoreboardDetailRow(w) {
   const header = document.createElement("p");
   header.className = "scoreboard-detail-header";
   header.textContent =
-    `The 18 games emailed to you for the ${formatDate(w.matched_draw.date)} draw. ` +
-    `Green = your ball matched the actual draw.`;
+    `The 18 picks emailed for the ${formatDate(w.matched_draw.date)} draw. ` +
+    `Green = a picked ball matched the actual winning number.`;
   td.appendChild(header);
 
   const grid = document.createElement("div");

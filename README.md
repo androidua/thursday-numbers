@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.6.1**
+**Current version: v1.6.2**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.6.2 — 2026-05-14
+- Copy: Scoreboard page reframed from personal ("your picks") to public-facing — panel now describes the site's automated Thursday workflow emailing 18 picks to its creator, with the scoreboard as the public track record. Removed all "your/you" language. Stat label renamed to "Prize Wins"; column header to "Best Result"; division chart and weekly breakdown subtitles updated to match
 
 ### v1.6.1 — 2026-05-14
 - Scoreboard reframed as personal — "Your Personal Scoreboard" with copy clarifying these are the 18 games delivered to the user's Thursday email, scored against the actual draw. Stat labels updated: Emails Tracked / Games Played / Your Prize Hits / Best Result. Footnote: "Auto-updates every Friday morning AEST after the draw is announced"
