@@ -835,9 +835,9 @@ function renderScoreboardTable(weeks) {
   if (weeks.length === 0) {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
-    td.colSpan = 5;
+    td.colSpan = 6;
     td.className = "scoreboard-empty";
-    td.textContent = "No weeks scored yet.";
+    td.textContent = "No weeks scored yet — your first email is on Thursday.";
     tr.appendChild(td);
     tbody.appendChild(tr);
     return;
@@ -848,58 +848,150 @@ function renderScoreboardTable(weeks) {
     (b.matched_draw?.date || "").localeCompare(a.matched_draw?.date || "")
   );
 
-  const hotSet = new Set(hotMain);
   for (const w of sorted) {
-    const tr = document.createElement("tr");
+    const summaryRow = buildScoreboardSummaryRow(w);
+    const detailRow  = buildScoreboardDetailRow(w);
+    summaryRow.addEventListener("click", () => {
+      const expanded = detailRow.classList.toggle("expanded");
+      summaryRow.classList.toggle("expanded", expanded);
+    });
+    tbody.appendChild(summaryRow);
+    tbody.appendChild(detailRow);
+  }
+}
 
-    const tdDate = document.createElement("td");
-    tdDate.textContent = formatDate(w.matched_draw.date);
+// One scannable row per week — the chevron column is a visual affordance for
+// "click to see your picks". The click handler is on the whole row, not just
+// the chevron, so anywhere on the row works.
+function buildScoreboardSummaryRow(w) {
+  const tr = document.createElement("tr");
+  tr.className = "scoreboard-row";
 
-    const tdNum = document.createElement("td");
-    const strong = document.createElement("strong");
-    strong.textContent = `#${w.matched_draw.draw}`;
-    tdNum.appendChild(strong);
+  const tdChevron = document.createElement("td");
+  tdChevron.className = "scoreboard-chevron";
+  tdChevron.textContent = "▸";
 
-    const tdBalls = document.createElement("td");
+  const tdDate = document.createElement("td");
+  tdDate.textContent = formatDate(w.matched_draw.date);
+
+  const tdNum = document.createElement("td");
+  const strong = document.createElement("strong");
+  strong.textContent = `#${w.matched_draw.draw}`;
+  tdNum.appendChild(strong);
+
+  const tdBalls = document.createElement("td");
+  const ballsWrap = document.createElement("div");
+  ballsWrap.className = "draw-balls";
+  for (const b of w.matched_draw.main) {
+    const s = document.createElement("span");
+    s.className = "draw-ball draw-ball-actual";
+    s.textContent = b;
+    ballsWrap.appendChild(s);
+  }
+  const sep = document.createElement("span");
+  sep.className = "draw-separator";
+  sep.textContent = "│";
+  ballsWrap.appendChild(sep);
+  const pbBall = document.createElement("span");
+  pbBall.className = "draw-ball pb-ball";
+  pbBall.textContent = w.matched_draw.powerball;
+  ballsWrap.appendChild(pbBall);
+  tdBalls.appendChild(ballsWrap);
+
+  const tdDiv = document.createElement("td");
+  const divBadge = document.createElement("span");
+  if (w.best_division) {
+    divBadge.className = "div-badge div-win";
+    divBadge.textContent = `Div ${w.best_division}`;
+  } else {
+    divBadge.className = "div-badge div-none";
+    divBadge.textContent = "—";
+  }
+  tdDiv.appendChild(divBadge);
+
+  const tdAny = document.createElement("td");
+  tdAny.textContent = `${w.any_prize_count} / ${w.games.length}`;
+
+  tr.appendChild(tdChevron);
+  tr.appendChild(tdDate);
+  tr.appendChild(tdNum);
+  tr.appendChild(tdBalls);
+  tr.appendChild(tdDiv);
+  tr.appendChild(tdAny);
+  return tr;
+}
+
+// Initially hidden — expanded via the .expanded class on the parent row.
+// Shows the actual 18 picks emailed to the user that week, with main balls
+// rendered green when they matched the drawn balls, and the PB rendered with
+// a green ring when it matched. This is the visible answer to "where did
+// these numbers come from?" — they came from your inbox on Thursday morning.
+function buildScoreboardDetailRow(w) {
+  const tr = document.createElement("tr");
+  tr.className = "scoreboard-detail";
+
+  const td = document.createElement("td");
+  td.colSpan = 6;
+
+  const drawnMain = new Set(w.matched_draw.main);
+
+  const header = document.createElement("p");
+  header.className = "scoreboard-detail-header";
+  header.textContent =
+    `The 18 games emailed to you for the ${formatDate(w.matched_draw.date)} draw. ` +
+    `Green = your ball matched the actual draw.`;
+  td.appendChild(header);
+
+  const grid = document.createElement("div");
+  grid.className = "scoreboard-picks-grid";
+
+  for (const g of w.games) {
+    const card = document.createElement("div");
+    card.className = "scoreboard-pick-card";
+
+    const label = document.createElement("span");
+    label.className = "scoreboard-pick-game";
+    label.textContent = `Game ${g.game}`;
+
     const ballsWrap = document.createElement("div");
-    ballsWrap.className = "draw-balls";
-    for (const b of w.matched_draw.main) {
-      const s = document.createElement("span");
-      s.className = hotSet.has(b) ? "draw-ball hot" : "draw-ball";
-      s.textContent = b;
-      ballsWrap.appendChild(s);
+    ballsWrap.className = "scoreboard-pick-balls";
+
+    for (const b of g.main) {
+      const ball = document.createElement("span");
+      ball.className = drawnMain.has(b) ? "ball-sm main matched" : "ball-sm main";
+      ball.textContent = b;
+      ballsWrap.appendChild(ball);
     }
+
     const sep = document.createElement("span");
-    sep.className = "draw-separator";
+    sep.className = "scoreboard-pick-sep";
     sep.textContent = "│";
     ballsWrap.appendChild(sep);
-    const pbBall = document.createElement("span");
-    pbBall.className = "draw-ball pb-ball";
-    pbBall.textContent = w.matched_draw.powerball;
-    ballsWrap.appendChild(pbBall);
-    tdBalls.appendChild(ballsWrap);
 
-    const tdDiv = document.createElement("td");
+    const pbBall = document.createElement("span");
+    pbBall.className = g.pb_match ? "ball-sm pb matched" : "ball-sm pb";
+    pbBall.textContent = g.powerball;
+    ballsWrap.appendChild(pbBall);
+
     const divBadge = document.createElement("span");
-    if (w.best_division) {
-      divBadge.className = "div-badge";
-      divBadge.textContent = `Div ${w.best_division}`;
+    if (g.division) {
+      divBadge.className = "div-badge div-win";
+      divBadge.textContent = `Div ${g.division}`;
     } else {
       divBadge.className = "div-badge div-none";
-      divBadge.textContent = "—";
+      const matchSummary = g.main_matches + (g.pb_match ? " main + PB" : " main");
+      divBadge.textContent = matchSummary;
     }
-    tdDiv.appendChild(divBadge);
 
-    const tdAny = document.createElement("td");
-    tdAny.textContent = `${w.any_prize_count} / ${w.games.length}`;
-
-    tr.appendChild(tdDate);
-    tr.appendChild(tdNum);
-    tr.appendChild(tdBalls);
-    tr.appendChild(tdDiv);
-    tr.appendChild(tdAny);
-    tbody.appendChild(tr);
+    card.appendChild(label);
+    card.appendChild(ballsWrap);
+    card.appendChild(divBadge);
+    grid.appendChild(card);
   }
+
+  td.appendChild(grid);
+  tr.appendChild(td);
+  return tr;
 }
 
 // ─── History tab ─────────────────────────────────────────────────────────────

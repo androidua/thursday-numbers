@@ -289,25 +289,25 @@
     <!-- SCOREBOARD -->
     <section id="tab-scoreboard" class="tab-content">
       <div class="panel">
-        <h2>🏆 Pick Performance Scoreboard</h2>
-        <p class="panel-sub">How the weekly 18 picks have performed against actual Powerball draws. Accountability, not learning — the chi-squared test in the Dashboard already shows past draws have no predictive value.</p>
+        <h2>🏆 Your Personal Scoreboard</h2>
+        <p class="panel-sub">Your weekly performance from the Thursday email. Each row scores the 18 games delivered to your inbox against that week's actual Powerball draw. Auto-updates every Friday morning AEST after the draw is announced.</p>
 
         <div class="stats-grid scoreboard-stats">
           <div class="stat-card">
             <div class="stat-value" id="sb-weeks">—</div>
-            <div class="stat-label">Weeks Scored</div>
+            <div class="stat-label">Emails Tracked</div>
           </div>
           <div class="stat-card">
             <div class="stat-value" id="sb-games">—</div>
-            <div class="stat-label">Games Scored</div>
+            <div class="stat-label">Games Played</div>
           </div>
           <div class="stat-card">
             <div class="stat-value" id="sb-prizes">—</div>
-            <div class="stat-label">Any-Prize Games</div>
+            <div class="stat-label">Your Prize Hits</div>
           </div>
           <div class="stat-card">
             <div class="stat-value" id="sb-best">—</div>
-            <div class="stat-label">Best Division Hit</div>
+            <div class="stat-label">Best Result</div>
           </div>
         </div>
 
@@ -316,7 +316,7 @@
 
       <div class="panel">
         <h2>Division Hits</h2>
-        <p class="panel-sub">How many games across all weeks hit each Australian Powerball division</p>
+        <p class="panel-sub">How many of your emailed games have won at each Australian Powerball division</p>
         <div class="chart-wrap">
           <canvas id="chart-divisions"></canvas>
         </div>
@@ -324,16 +324,17 @@
 
       <div class="panel">
         <h2>Weekly Breakdown</h2>
-        <p class="panel-sub">Each row is one weekly batch of 18 games scored against that week's actual Powerball draw</p>
+        <p class="panel-sub">Click a row to see your 18 emailed picks for that week — matched balls are highlighted in green</p>
         <div class="table-wrap">
           <table id="scoreboard-table">
             <thead>
               <tr>
+                <th></th>
                 <th>Draw Date</th>
                 <th>Draw #</th>
-                <th>Actual Draw</th>
-                <th>Best Division</th>
-                <th>Any-Prize</th>
+                <th>Actual Winning Numbers</th>
+                <th>Your Best Result</th>
+                <th>Wins</th>
               </tr>
             </thead>
             <tbody id="scoreboard-tbody"></tbody>
@@ -388,7 +389,7 @@
       <p>🎱 Thursday Numbers &mdash; Statistical analysis of Australian Powerball draws</p>
       <p>Data: <a href="https://australia.national-lottery.com/powerball" target="_blank" rel="noopener noreferrer">australia.national-lottery.com</a> &nbsp;|&nbsp; <a href="https://github.com/androidua/thursday-numbers" target="_blank" rel="noopener noreferrer">GitHub</a></p>
       <p class="footer-disclaimer">For entertainment only. Not financial or gambling advice. Gamble responsibly.</p>
-      <p class="footer-version" id="footer-version">v1.6.0</p>
+      <p class="footer-version" id="footer-version">v1.6.1</p>
     </div>
   </footer>
 

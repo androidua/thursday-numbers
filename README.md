@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.6.0**
+**Current version: v1.6.1**
 
 ---
 
@@ -215,6 +215,13 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.6.1 — 2026-05-14
+- Scoreboard reframed as personal — "Your Personal Scoreboard" with copy clarifying these are the 18 games delivered to the user's Thursday email, scored against the actual draw. Stat labels updated: Emails Tracked / Games Played / Your Prize Hits / Best Result. Footnote: "Auto-updates every Friday morning AEST after the draw is announced"
+- Scoreboard rows are now expandable — clicking a week reveals all 18 emailed picks for that draw, with main balls rendered green when they matched the actual winning numbers and the PB ringed in green when it matched
+- Scoreboard now filters to Thursday-cron email runs only — the 8 dev/test entries from 2026-03-15 (Sunday) that were written while the v1.5.5 commit-after-email fix was being developed are no longer scored. `scripts/score_history.py` adds an `is_email_run()` helper using day-of-week, and surfaces the excluded count via a new `skipped_non_email` field on the scoreboard payload. Real emailed weeks tracked: 8 (since 2026-03-19)
+- `scoreboard.json` now embeds each game's emailed picks (`main` + `powerball`) alongside the match summary, so the UI can render the actual numbers without a second fetch of `picks_history.json`
+- Verified: all four recent emails (2026-04-16, 2026-04-23, 2026-04-30, 2026-05-07) match `picks_history.json` byte-for-byte — picks emailed = picks stored = picks scored
 
 ### v1.6.0 — 2026-05-13
 - Feature: **Scoreboard tab** — new `scripts/score_history.py` joins `picks_history.json` against `powerball_draws.json`, maps each game to its Australian Powerball division (Div 1–9), and produces `web/scoreboard.json`. New "🏆 Scoreboard" tab on the site shows weeks scored, total games, any-prize count and rate, best division ever hit, a division-hits bar chart, and a per-week breakdown table. Auto-refreshes via `powerball-update.yml` every Thursday evening AEST after the scrape. Backfills all existing 16 weeks (288 games) on first run. Picks-vs-draw matching uses the earliest draw with `date >= generated_at[:10]` (handles same-day Thursday match and degrades gracefully); entries generated after the most recent recorded draw are flagged "pending"
