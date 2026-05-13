@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.5.23** — see `web/VERSION` file.
+**v1.6.0** — see `web/VERSION` file.
 
 ---
 
@@ -94,8 +94,9 @@ thursday-numbers/
 ├── scripts/
 │   ├── scrape.py                          ← fetches new draws since last known draw
 │   ├── scrape_historical.py               ← one-time backfill: year-archive pages 1996–2018
-│   ├── generate_picks.py                  ← generates 18 hot-number games
+│   ├── generate_picks.py                  ← generates 18 hot-number games (seeded since v1.6.0)
 │   ├── email_picks.py                     ← sends picks via Brevo REST API
+│   ├── score_history.py                   ← scores picks_history against draws → scoreboard.json (v1.6.0)
 │   └── run_all.py                         ← entry point: scrape → generate → email
 └── web/                                   ← served by Cloudflare Pages
     ├── VERSION                            ← current version number (read by app.js)
@@ -105,6 +106,7 @@ thursday-numbers/
     ├── _headers                           ← Cloudflare Pages HTTP security headers (CSP, HSTS, etc.)
     ├── robots.txt                         ← crawler policy + sitemap reference
     ├── sitemap.xml                        ← XML sitemap for search engine indexing
+    ├── scoreboard.json                    ← pick-vs-draw performance log (v1.6.0); served to web app
     ├── data/
     │   └── powerball_draws.json           ← draw history; read/written by scripts; served to web app
     └── picks/

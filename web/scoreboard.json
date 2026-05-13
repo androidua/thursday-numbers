@@ -1,0 +1,2093 @@
+{
+  "generated_at": "2026-05-13T19:26:12",
+  "weeks_scored": 16,
+  "games_scored": 288,
+  "pending_weeks": [],
+  "aggregate": {
+    "division_hits": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 1,
+      "9": 17
+    },
+    "any_prize_games": 18,
+    "any_prize_rate": 0.0625,
+    "best_week": {
+      "date": "2026-04-23",
+      "best_division": "8",
+      "best_main_matches": 3,
+      "had_pb": true
+    }
+  },
+  "weeks": [
+    {
+      "generated_at": "2026-03-15T00:53:15",
+      "matched_draw": {
+        "draw": 1557,
+        "date": "2026-03-19",
+        "main": [
+          4,
+          9,
+          18,
+          20,
+          22,
+          25,
+          35
+        ],
+        "powerball": 15
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 6,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 12,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 14,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": "9",
+      "any_prize_count": 3
+    },
+    {
+      "generated_at": "2026-03-15T01:03:37",
+      "matched_draw": {
+        "draw": 1557,
+        "date": "2026-03-19",
+        "main": [
+          4,
+          9,
+          18,
+          20,
+          22,
+          25,
+          35
+        ],
+        "powerball": 15
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": null,
+      "any_prize_count": 0
+    },
+    {
+      "generated_at": "2026-03-15T01:09:12",
+      "matched_draw": {
+        "draw": 1557,
+        "date": "2026-03-19",
+        "main": [
+          4,
+          9,
+          18,
+          20,
+          22,
+          25,
+          35
+        ],
+        "powerball": 15
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 18,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        }
+      ],
+      "best_division": "9",
+      "any_prize_count": 1
+    },
+    {
+      "generated_at": "2026-03-15T01:20:27",
+      "matched_draw": {
+        "draw": 1557,
+        "date": "2026-03-19",
+        "main": [
+          4,
+          9,
+          18,
+          20,
+          22,
+          25,
+          35
+        ],
+        "powerball": 15
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": null,
+      "any_prize_count": 0
+    },
+    {
+      "generated_at": "2026-03-15T02:12:46",
+      "matched_draw": {
+        "draw": 1557,
+        "date": "2026-03-19",
+        "main": [
+          4,
+          9,
+          18,
+          20,
+          22,
+          25,
+          35
+        ],
+        "powerball": 15
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 3,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 17,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": "9",
+      "any_prize_count": 2
+    },
+    {
+      "generated_at": "2026-03-15T02:26:40",
+      "matched_draw": {
+        "draw": 1557,
+        "date": "2026-03-19",
+        "main": [
+          4,
+          9,
+          18,
+          20,
+          22,
+          25,
+          35
+        ],
+        "powerball": 15
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 3,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 15,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": "9",
+      "any_prize_count": 2
+    },
+    {
+      "generated_at": "2026-03-15T02:33:55",
+      "matched_draw": {
+        "draw": 1557,
+        "date": "2026-03-19",
+        "main": [
+          4,
+          9,
+          18,
+          20,
+          22,
+          25,
+          35
+        ],
+        "powerball": 15
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 3,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 5,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 8,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": "9",
+      "any_prize_count": 3
+    },
+    {
+      "generated_at": "2026-03-15T02:40:07",
+      "matched_draw": {
+        "draw": 1557,
+        "date": "2026-03-19",
+        "main": [
+          4,
+          9,
+          18,
+          20,
+          22,
+          25,
+          35
+        ],
+        "powerball": 15
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 2,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 5,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 16,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": "9",
+      "any_prize_count": 3
+    },
+    {
+      "generated_at": "2026-03-19T01:49:19",
+      "matched_draw": {
+        "draw": 1557,
+        "date": "2026-03-19",
+        "main": [
+          4,
+          9,
+          18,
+          20,
+          22,
+          25,
+          35
+        ],
+        "powerball": 15
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 2,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 13,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        }
+      ],
+      "best_division": "9",
+      "any_prize_count": 2
+    },
+    {
+      "generated_at": "2026-03-26T01:53:45",
+      "matched_draw": {
+        "draw": 1558,
+        "date": "2026-03-26",
+        "main": [
+          5,
+          9,
+          20,
+          22,
+          24,
+          25,
+          28
+        ],
+        "powerball": 20
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 4,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 4,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 4,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": null,
+      "any_prize_count": 0
+    },
+    {
+      "generated_at": "2026-04-02T01:51:25",
+      "matched_draw": {
+        "draw": 1559,
+        "date": "2026-04-02",
+        "main": [
+          20,
+          23,
+          27,
+          30,
+          32,
+          34,
+          35
+        ],
+        "powerball": 18
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 0,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 0,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": null,
+      "any_prize_count": 0
+    },
+    {
+      "generated_at": "2026-04-09T01:48:37",
+      "matched_draw": {
+        "draw": 1560,
+        "date": "2026-04-09",
+        "main": [
+          3,
+          15,
+          17,
+          26,
+          27,
+          32,
+          33
+        ],
+        "powerball": 20
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": null,
+      "any_prize_count": 0
+    },
+    {
+      "generated_at": "2026-04-16T02:07:01",
+      "matched_draw": {
+        "draw": 1561,
+        "date": "2026-04-16",
+        "main": [
+          3,
+          7,
+          13,
+          14,
+          15,
+          19,
+          27
+        ],
+        "powerball": 18
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 2,
+          "pb_match": true,
+          "division": "9"
+        },
+        {
+          "game": 11,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 4,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": "9",
+      "any_prize_count": 1
+    },
+    {
+      "generated_at": "2026-04-23T02:06:18",
+      "matched_draw": {
+        "draw": 1562,
+        "date": "2026-04-23",
+        "main": [
+          4,
+          11,
+          28,
+          29,
+          30,
+          34,
+          35
+        ],
+        "powerball": 3
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 3,
+          "pb_match": true,
+          "division": "8"
+        },
+        {
+          "game": 2,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": "8",
+      "any_prize_count": 1
+    },
+    {
+      "generated_at": "2026-04-30T02:29:21",
+      "matched_draw": {
+        "draw": 1563,
+        "date": "2026-04-30",
+        "main": [
+          4,
+          13,
+          16,
+          17,
+          21,
+          24,
+          27
+        ],
+        "powerball": 17
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 0,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": null,
+      "any_prize_count": 0
+    },
+    {
+      "generated_at": "2026-05-07T02:26:01",
+      "matched_draw": {
+        "draw": 1564,
+        "date": "2026-05-07",
+        "main": [
+          7,
+          15,
+          17,
+          23,
+          28,
+          30,
+          31
+        ],
+        "powerball": 18
+      },
+      "games": [
+        {
+          "game": 1,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main_matches": 4,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": null,
+      "any_prize_count": 0
+    }
+  ]
+}

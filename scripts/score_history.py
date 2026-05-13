@@ -1,0 +1,292 @@
+#!/usr/bin/env python3
+"""
+score_history.py — Score every batch in picks_history.json against the actual
+Powerball draw that followed it. Produces web/scoreboard.json for the site's
+Scoreboard tab.
+
+This is accountability tooling, not a learning loop. The output answers the
+question "how have our 18 weekly picks actually performed?" — it does not feed
+back into generate_picks.py. (Powerball is genuinely random; the chi-squared
+test in generate_picks.py and app.js confirms past frequencies have no
+predictive value. See CLAUDE.md.)
+
+Pick-to-draw matching:
+    For each entry in picks_history.json, find the earliest draw in
+    powerball_draws.json with date >= generated_at[:10]. The email workflow
+    runs Thursday 00:00 UTC (~10am AEST) and the draw is Thursday evening
+    AEST, so this normally matches same-day. Entries generated after the
+    most recent recorded draw are flagged "pending" and excluded from
+    aggregates.
+
+Australian Powerball divisions (from powerball.com.au):
+    Div 1: 7 main + PB     Div 6: 4 main + PB
+    Div 2: 7 main          Div 7: 5 main
+    Div 3: 6 main + PB     Div 8: 3 main + PB
+    Div 4: 6 main          Div 9: 2 main + PB
+    Div 5: 5 main + PB
+
+Usage:
+    python scripts/score_history.py
+    python scripts/score_history.py --dry-run         # Print summary, don't write file
+    python scripts/score_history.py --verbose         # Print per-week table
+"""
+
+import argparse
+import json
+import sys
+from datetime import datetime
+from pathlib import Path
+
+DATA_FILE       = Path(__file__).parent.parent / "web" / "data"  / "powerball_draws.json"
+PICKS_FILE      = Path(__file__).parent.parent / "web" / "picks" / "picks_history.json"
+SCOREBOARD_FILE = Path(__file__).parent.parent / "web" / "scoreboard.json"
+
+DIVISIONS = ("1", "2", "3", "4", "5", "6", "7", "8", "9")
+
+
+# ─── Loading ─────────────────────────────────────────────────────────────────
+
+def load_json(path):
+    with open(path) as f:
+        return json.load(f)
+
+
+# ─── Pick-to-draw matching ───────────────────────────────────────────────────
+
+def find_matching_draw(generated_at, draws_sorted):
+    """
+    Return the earliest draw with date >= generated_at[:10].
+    Returns None if generated_at is later than every recorded draw.
+    draws_sorted MUST be sorted ascending by date.
+    """
+    gen_date = generated_at[:10]
+    for d in draws_sorted:
+        if d["date"] >= gen_date:
+            return d
+    return None
+
+
+# ─── Division mapping ────────────────────────────────────────────────────────
+
+def division_for(main_matches, pb_match):
+    """
+    Map (main_matches, pb_match) → division string, or None if no prize.
+    Mirrors the official Australian Powerball division table.
+    """
+    if main_matches == 7 and pb_match:    return "1"
+    if main_matches == 7:                 return "2"
+    if main_matches == 6 and pb_match:    return "3"
+    if main_matches == 6:                 return "4"
+    if main_matches == 5 and pb_match:    return "5"
+    if main_matches == 4 and pb_match:    return "6"
+    if main_matches == 5:                 return "7"
+    if main_matches == 3 and pb_match:    return "8"
+    if main_matches == 2 and pb_match:    return "9"
+    return None
+
+
+def division_rank(div):
+    """Lower rank == better prize (Div 1 best). None == no prize, ranked worst."""
+    return int(div) if div is not None else 999
+
+
+# ─── Scoring ─────────────────────────────────────────────────────────────────
+
+def score_game(game, draw):
+    """Score one game against one draw. Returns dict with matches + division."""
+    drawn_main  = set(draw["main"])
+    drawn_pb    = draw["powerball"]
+    main_matches = len([b for b in game["main"] if b in drawn_main])
+    pb_match     = (game["powerball"] == drawn_pb)
+    division     = division_for(main_matches, pb_match)
+    return {
+        "game":         game["game"],
+        "main_matches": main_matches,
+        "pb_match":     pb_match,
+        "division":     division,
+    }
+
+
+def score_week(entry, draw):
+    """Score all 18 games in one picks_history entry against the matched draw."""
+    game_results = [score_game(g, draw) for g in entry["games"]]
+
+    any_prize_count = sum(1 for g in game_results if g["division"] is not None)
+    best_division   = None
+    best_rank       = 999
+    for g in game_results:
+        rank = division_rank(g["division"])
+        if rank < best_rank:
+            best_rank, best_division = rank, g["division"]
+
+    return {
+        "generated_at": entry["generated_at"],
+        "matched_draw": {
+            "draw":      draw["draw"],
+            "date":      draw["date"],
+            "main":      draw["main"],
+            "powerball": draw["powerball"],
+        },
+        "games":           game_results,
+        "best_division":   best_division,
+        "any_prize_count": any_prize_count,
+    }
+
+
+# ─── Aggregation ─────────────────────────────────────────────────────────────
+
+def aggregate(weeks):
+    """Aggregate stats across all scored weeks."""
+    division_hits = {d: 0 for d in DIVISIONS}
+    any_prize_games = 0
+    games_scored    = 0
+    best_overall    = None  # {"date", "best_division", "best_main_matches", "had_pb"}
+    best_overall_rank = 999
+
+    for w in weeks:
+        for g in w["games"]:
+            games_scored += 1
+            if g["division"] is not None:
+                division_hits[g["division"]] += 1
+                any_prize_games += 1
+
+        # Track best week overall (lowest division rank wins; ties broken by
+        # more main matches, then PB match)
+        rank = division_rank(w["best_division"])
+        if rank < best_overall_rank:
+            best_overall_rank = rank
+            best_game = max(
+                w["games"],
+                key=lambda g: (
+                    -division_rank(g["division"]),
+                    g["main_matches"],
+                    int(g["pb_match"]),
+                ),
+            )
+            best_overall = {
+                "date":              w["matched_draw"]["date"],
+                "best_division":     w["best_division"],
+                "best_main_matches": best_game["main_matches"],
+                "had_pb":            best_game["pb_match"],
+            }
+
+    return {
+        "division_hits":   division_hits,
+        "any_prize_games": any_prize_games,
+        "any_prize_rate":  round(any_prize_games / games_scored, 4) if games_scored else 0.0,
+        "best_week":       best_overall,
+    }
+
+
+# ─── Output assembly ─────────────────────────────────────────────────────────
+
+def build_scoreboard(picks_history, draws):
+    """Build the full scoreboard payload from raw history + draws."""
+    draws_sorted = sorted(draws, key=lambda d: d["date"])
+
+    scored_weeks = []
+    pending      = []
+    for entry in picks_history:
+        draw = find_matching_draw(entry["generated_at"], draws_sorted)
+        if draw is None:
+            pending.append(entry["generated_at"])
+            continue
+        scored_weeks.append(score_week(entry, draw))
+
+    games_scored = sum(len(w["games"]) for w in scored_weeks)
+
+    return {
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+        "weeks_scored": len(scored_weeks),
+        "games_scored": games_scored,
+        "pending_weeks": pending,        # entries generated after the latest known draw
+        "aggregate":    aggregate(scored_weeks),
+        "weeks":        scored_weeks,
+    }
+
+
+# ─── Pretty-printing ─────────────────────────────────────────────────────────
+
+def print_summary(scoreboard):
+    agg = scoreboard["aggregate"]
+    print(f"  Weeks scored : {scoreboard['weeks_scored']}")
+    print(f"  Games scored : {scoreboard['games_scored']}")
+    print(f"  Any-prize    : {agg['any_prize_games']} games  ({agg['any_prize_rate']:.2%})")
+    print(f"  Division hits:")
+    for d in DIVISIONS:
+        n = agg["division_hits"][d]
+        if n:
+            print(f"    Div {d}: {n}")
+    if agg["best_week"]:
+        bw = agg["best_week"]
+        pb = " + PB" if bw["had_pb"] else ""
+        print(f"  Best week    : {bw['date']} — Div {bw['best_division']} "
+              f"({bw['best_main_matches']} main{pb})")
+    if scoreboard["pending_weeks"]:
+        print(f"  Pending      : {len(scoreboard['pending_weeks'])} entries generated "
+              f"after the most recent draw")
+
+
+def print_verbose(scoreboard):
+    print()
+    print(f"  {'Date':<12} {'Draw':<6} {'Best Div':<9} {'Any Prize':<10} {'Best Game':<22}")
+    print(f"  {'-'*12} {'-'*6} {'-'*9} {'-'*10} {'-'*22}")
+    for w in scoreboard["weeks"]:
+        best = max(
+            w["games"],
+            key=lambda g: (
+                -division_rank(g["division"]),
+                g["main_matches"],
+                int(g["pb_match"]),
+            ),
+        )
+        pb_str  = "✓" if best["pb_match"] else "✗"
+        div_str = f"Div {w['best_division']}" if w["best_division"] else "—"
+        print(f"  {w['matched_draw']['date']:<12} "
+              f"#{w['matched_draw']['draw']:<5} "
+              f"{div_str:<9} "
+              f"{w['any_prize_count']:<10} "
+              f"#{best['game']:>2} ({best['main_matches']} main, PB {pb_str})")
+
+
+# ─── Entry point ─────────────────────────────────────────────────────────────
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Score picks_history.json against powerball_draws.json"
+    )
+    parser.add_argument("--dry-run", action="store_true", help="Print only, don't write scoreboard.json")
+    parser.add_argument("--verbose", action="store_true", help="Print per-week match table")
+    args = parser.parse_args()
+
+    print("=== Pick History Scorer ===")
+    if not PICKS_FILE.exists():
+        print(f"ERROR: {PICKS_FILE} not found.", file=sys.stderr)
+        sys.exit(1)
+    if not DATA_FILE.exists():
+        print(f"ERROR: {DATA_FILE} not found.", file=sys.stderr)
+        sys.exit(1)
+
+    picks_history = load_json(PICKS_FILE)
+    draws         = load_json(DATA_FILE)
+    print(f"  Loaded {len(picks_history)} picks entries and {len(draws)} draws")
+
+    scoreboard = build_scoreboard(picks_history, draws)
+    print_summary(scoreboard)
+    if args.verbose:
+        print_verbose(scoreboard)
+
+    if args.dry_run:
+        print("\n  [dry-run] Skipping save.")
+    else:
+        SCOREBOARD_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(SCOREBOARD_FILE, "w") as f:
+            json.dump(scoreboard, f, indent=2)
+        print(f"  Saved to {SCOREBOARD_FILE}")
+
+    print("=== Done ===")
+    return scoreboard
+
+
+if __name__ == "__main__":
+    main()

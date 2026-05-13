@@ -5,8 +5,9 @@
 "use strict";
 
 // ─── Data paths (relative to web/ folder) ───────────────────────────────────
-const DATA_URL    = "data/powerball_draws.json";
-const VERSION_URL = "VERSION";
+const DATA_URL       = "data/powerball_draws.json";
+const SCOREBOARD_URL = "scoreboard.json";
+const VERSION_URL    = "VERSION";
 
 // ─── State ──────────────────────────────────────────────────────────────────
 let draws = [];         // ALL draws (1996–present, all formats)
@@ -120,6 +121,7 @@ function maybeRenderTab(tab) {
   tabsRendered.add(tab);
   if (tab === "frequency") renderFrequency();
   else if (tab === "trends") renderTrends();
+  else if (tab === "scoreboard") loadScoreboard();
 }
 
 // ─── Data loading ────────────────────────────────────────────────────────────
@@ -587,6 +589,29 @@ function generateBalancedMain() {
   return sample(allMain, 7).sort((a, b) => a - b); // fallback (essentially impossible)
 }
 
+// Pair-diversity check (v1.6.0): true if candidate shares ≤ maxShared balls
+// with every existing game. Mirrors pair_diverse() in scripts/generate_picks.py.
+function pairDiverse(candidate, existing, maxShared = 4) {
+  const c = new Set(candidate);
+  for (const g of existing) {
+    let shared = 0;
+    for (const b of g.main) if (c.has(b)) shared++;
+    if (shared > maxShared) return false;
+  }
+  return true;
+}
+
+// Two-phase 18-game generator (v1.6.0): brings the web app to parity with
+// scripts/generate_picks.py for hot/mixed strategies at count ≥ 5.
+//
+//   Phase 1 — coverage:  sample all 35 main balls in EWMA-probability order,
+//     partition into the first 5 games of 7. Guarantees every main ball
+//     appears at least once across the batch.
+//   Phase 2 — diverse fill: EWMA-weighted strategy sampling with pair-diversity
+//     rejection (no two games share more than 4 main balls).
+//
+// For cold/random strategies, or single-game generation, Phase 1 is skipped
+// (cold deliberately samples from bottom-10 only; random covers in expectation).
 function generateGamesLocal(mode = "hot", count = 1) {
   const games = [];
   const seen  = new Set();
@@ -598,16 +623,34 @@ function generateGamesLocal(mode = "hot", count = 1) {
   const diversePbs = weightedSample(pbRecencyWeightsArr, Math.min(count, 20));
   let pbIdx = 0;
 
-  for (let i = 0; i < count * 1000 && games.length < count; i++) {
-    const g   = generateGameWithStrategy(mode);
-    // Override PB with next diverse PB while supply lasts; then fall back to strategy PB
-    if (pbIdx < diversePbs.length) g.powerball = diversePbs[pbIdx];
-    const key = g.main.join(",") + "|" + g.powerball;
-    if (!seen.has(key)) {
+  // Phase 1 — coverage guarantee for hot/mixed batches of 5+ games.
+  const useTwoPhase = count >= 5 && (mode === "hot" || mode === "mixed");
+  if (useTwoPhase) {
+    const allMain = weightedSample(recencyWeightsArr, 35);  // EWMA-ordered, all 35
+    for (let i = 0; i < 5; i++) {
+      const main = allMain.slice(i * 7, i * 7 + 7).sort((a, b) => a - b);
+      const pb   = pbIdx < diversePbs.length
+        ? diversePbs[pbIdx]
+        : weightedSample(pbRecencyWeightsArr, 1)[0];
+      const key  = main.join(",") + "|" + pb;
       seen.add(key);
       pbIdx++;
-      games.push({ game: games.length + 1, ...g });
+      games.push({ game: games.length + 1, main, powerball: pb });
     }
+  }
+
+  // Phase 2 — diverse fill. Loop iteration cap is the same as the previous
+  // implementation; pair-diversity rejection is the new constraint (only active
+  // when useTwoPhase is true).
+  for (let i = 0; i < count * 1000 && games.length < count; i++) {
+    const g = generateGameWithStrategy(mode);
+    if (pbIdx < diversePbs.length) g.powerball = diversePbs[pbIdx];
+    const key = g.main.join(",") + "|" + g.powerball;
+    if (seen.has(key)) continue;
+    if (useTwoPhase && !pairDiverse(g.main, games)) continue;
+    seen.add(key);
+    pbIdx++;
+    games.push({ game: games.length + 1, ...g });
   }
 
   return {
@@ -681,6 +724,182 @@ function renderGamesGrid(container, result) {
 
   panel.appendChild(grid);
   container.appendChild(panel);
+}
+
+// ─── Scoreboard tab (v1.6.0) ─────────────────────────────────────────────────
+// Loads web/scoreboard.json (produced by scripts/score_history.py) and renders
+// summary stats + division-hit chart + per-week table.
+// All DOM construction goes through textContent / createElement — no innerHTML
+// on JSON-sourced data, per the security rule established in v1.5.20.
+
+const DIVISION_LABELS = {
+  "1": "Div 1 (7+PB)",
+  "2": "Div 2 (7)",
+  "3": "Div 3 (6+PB)",
+  "4": "Div 4 (6)",
+  "5": "Div 5 (5+PB)",
+  "6": "Div 6 (4+PB)",
+  "7": "Div 7 (5)",
+  "8": "Div 8 (3+PB)",
+  "9": "Div 9 (2+PB)",
+};
+
+async function loadScoreboard() {
+  try {
+    const resp = await fetchWithRetry(SCOREBOARD_URL);
+    const sb   = await resp.json();
+    if (typeof sb !== "object" || !Array.isArray(sb.weeks)) {
+      throw new Error("Scoreboard JSON shape invalid");
+    }
+    renderScoreboard(sb);
+  } catch (e) {
+    // Scoreboard is non-critical — show a friendly placeholder rather than
+    // breaking the page if the file is missing on a fresh deploy.
+    const tbody = document.getElementById("scoreboard-tbody");
+    if (tbody) {
+      tbody.innerHTML = "";
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 5;
+      td.className = "scoreboard-empty";
+      td.textContent = "Scoreboard data not yet available. It updates every Thursday evening AEST after each draw.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    }
+    console.error("[thursday-numbers] could not load scoreboard:", e);
+  }
+}
+
+function renderScoreboard(sb) {
+  // Summary stat cards
+  const agg = sb.aggregate || {};
+  document.getElementById("sb-weeks").textContent  = sb.weeks_scored ?? "—";
+  document.getElementById("sb-games").textContent  = sb.games_scored ?? "—";
+
+  const prizeCount = agg.any_prize_games ?? 0;
+  const prizeRate  = agg.any_prize_rate  ?? 0;
+  document.getElementById("sb-prizes").textContent = `${prizeCount} (${(prizeRate * 100).toFixed(1)}%)`;
+
+  const best = agg.best_week;
+  document.getElementById("sb-best").textContent =
+    best && best.best_division ? `Div ${best.best_division}` : "—";
+
+  // Pending notice (entries generated after the latest known draw)
+  const pendEl = document.getElementById("sb-pending");
+  if (pendEl) {
+    pendEl.textContent = "";
+    if (Array.isArray(sb.pending_weeks) && sb.pending_weeks.length > 0) {
+      pendEl.textContent =
+        `${sb.pending_weeks.length} pick batch(es) generated after the most recent recorded draw — waiting for results.`;
+    }
+  }
+
+  renderDivisionChart(agg.division_hits || {});
+  renderScoreboardTable(sb.weeks || []);
+}
+
+function renderDivisionChart(divisionHits) {
+  const labels = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+  const data   = labels.map(d => divisionHits[d] || 0);
+
+  destroyChart("divisions");
+  const canvas = document.getElementById("chart-divisions");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  charts["divisions"] = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels.map(d => DIVISION_LABELS[d] || `Div ${d}`),
+      datasets: [{
+        label: "Games won at this division",
+        // Higher divisions (Div 1 best) shaded warmer; lower divisions cooler.
+        // Mirrors the hot/cold colour vocabulary used elsewhere in the app.
+        backgroundColor: ["#fbbf24cc", "#f97316cc", "#ef4444cc", "#ec4899cc",
+                          "#a855f7cc", "#8b5cf6cc", "#6366f1cc", "#3b82f6cc", "#38bdf8cc"],
+        borderColor:     ["#fbbf24",   "#f97316",   "#ef4444",   "#ec4899",
+                          "#a855f7",   "#8b5cf6",   "#6366f1",   "#3b82f6",   "#38bdf8"],
+        borderWidth: 1,
+        data,
+      }]
+    },
+    options: chartOptions("Division hits", "Division", "Games"),
+  });
+}
+
+function renderScoreboardTable(weeks) {
+  const tbody = document.getElementById("scoreboard-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  if (weeks.length === 0) {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 5;
+    td.className = "scoreboard-empty";
+    td.textContent = "No weeks scored yet.";
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    return;
+  }
+
+  // Newest first
+  const sorted = [...weeks].sort((a, b) =>
+    (b.matched_draw?.date || "").localeCompare(a.matched_draw?.date || "")
+  );
+
+  const hotSet = new Set(hotMain);
+  for (const w of sorted) {
+    const tr = document.createElement("tr");
+
+    const tdDate = document.createElement("td");
+    tdDate.textContent = formatDate(w.matched_draw.date);
+
+    const tdNum = document.createElement("td");
+    const strong = document.createElement("strong");
+    strong.textContent = `#${w.matched_draw.draw}`;
+    tdNum.appendChild(strong);
+
+    const tdBalls = document.createElement("td");
+    const ballsWrap = document.createElement("div");
+    ballsWrap.className = "draw-balls";
+    for (const b of w.matched_draw.main) {
+      const s = document.createElement("span");
+      s.className = hotSet.has(b) ? "draw-ball hot" : "draw-ball";
+      s.textContent = b;
+      ballsWrap.appendChild(s);
+    }
+    const sep = document.createElement("span");
+    sep.className = "draw-separator";
+    sep.textContent = "│";
+    ballsWrap.appendChild(sep);
+    const pbBall = document.createElement("span");
+    pbBall.className = "draw-ball pb-ball";
+    pbBall.textContent = w.matched_draw.powerball;
+    ballsWrap.appendChild(pbBall);
+    tdBalls.appendChild(ballsWrap);
+
+    const tdDiv = document.createElement("td");
+    const divBadge = document.createElement("span");
+    if (w.best_division) {
+      divBadge.className = "div-badge";
+      divBadge.textContent = `Div ${w.best_division}`;
+    } else {
+      divBadge.className = "div-badge div-none";
+      divBadge.textContent = "—";
+    }
+    tdDiv.appendChild(divBadge);
+
+    const tdAny = document.createElement("td");
+    tdAny.textContent = `${w.any_prize_count} / ${w.games.length}`;
+
+    tr.appendChild(tdDate);
+    tr.appendChild(tdNum);
+    tr.appendChild(tdBalls);
+    tr.appendChild(tdDiv);
+    tr.appendChild(tdAny);
+    tbody.appendChild(tr);
+  }
 }
 
 // ─── History tab ─────────────────────────────────────────────────────────────

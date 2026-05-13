@@ -556,6 +556,40 @@ tbody td { padding: 10px 12px; vertical-align: middle; }
 .page-btn:hover { background: var(--border); color: var(--text); }
 .page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
+/* ── Scoreboard (v1.6.0) ── */
+/* Reuses .stats-grid / .stat-card / .panel / .table-wrap etc. — only adds the
+   bits that are specific to the scoreboard tab (badge colours, empty state). */
+.scoreboard-stats { margin-bottom: 0; }
+.scoreboard-pending {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+.scoreboard-empty {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-style: italic;
+}
+.div-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid var(--accent);
+  color: var(--accent2);
+}
+.div-badge.div-none {
+  background: var(--bg3);
+  border-color: var(--border);
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
 /* ── Disclaimer ── */
 .disclaimer-panel {
   border-color: #4a3020;

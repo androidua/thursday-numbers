@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.5.23**
+**Current version: v1.6.0**
 
 ---
 
@@ -215,6 +215,13 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.6.0 — 2026-05-13
+- Feature: **Scoreboard tab** — new `scripts/score_history.py` joins `picks_history.json` against `powerball_draws.json`, maps each game to its Australian Powerball division (Div 1–9), and produces `web/scoreboard.json`. New "🏆 Scoreboard" tab on the site shows weeks scored, total games, any-prize count and rate, best division ever hit, a division-hits bar chart, and a per-week breakdown table. Auto-refreshes via `powerball-update.yml` every Thursday evening AEST after the scrape. Backfills all existing 16 weeks (288 games) on first run. Picks-vs-draw matching uses the earliest draw with `date >= generated_at[:10]` (handles same-day Thursday match and degrades gracefully); entries generated after the most recent recorded draw are flagged "pending"
+- Feature: **Seeded determinism** in `scripts/generate_picks.py` — seed derived from `YYYY-MM-DD-<len(draws)>` so the same UTC date + same dataset produces byte-identical picks. Lets the user reproduce the emailed batch locally from the public data with no hidden state. Seed value included in `picks_history.json` for transparency. Web app deliberately remains non-deterministic (the site is for experimentation)
+- Improvement: **Web app coverage parity** — `generateGamesLocal()` in `web/app.js` now matches the Python script's two-phase generator for `hot` and `mixed` modes at 18 games. Phase 1 (games 1–5) guarantees every main ball 1–35 appears at least once; Phase 2 (games 6–18) enforces pair-diversity (no two games share more than 4 main balls). `cold` and `random` strategies unchanged (coverage doesn't apply by design)
+- Workflow: `powerball-update.yml` now runs `score_history.py` after the scrape and commits `web/scoreboard.json` alongside the draws JSON
+- Headers: `web/_headers` — added short-cache + SWR rule for `/scoreboard.json` matching the existing pattern for data/picks JSON
 
 ### v1.5.23 — 2026-04-17
 - Statistical: add split-pot avoidance prior to EWMA scoring. Multiplicatively down-weights numbers 1–31 (dates) by 0.90 and "lucky" 7/11 by 0.85. Does not change win probability — Powerball is random — but raises expected payout ~10–30% per win by reducing pot-split dilution. 13 and 32–35 unchanged (underpicked in practice). Applied in `scripts/generate_picks.py` (`compute_ewma_scores`) and `web/app.js` (`computeEwmaWeights`), so both the Thursday email and the "Hot Numbers" / "Balanced Draw" picker strategies inherit the bias. "Cold" and "True Random" strategies unaffected. Dashboard hot-ball display uses raw counts and remains an honest record of observed history.

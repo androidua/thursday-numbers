@@ -21,6 +21,7 @@ Usage:
 """
 
 import argparse
+import datetime as _dt
 import json
 import math
 import random
@@ -252,7 +253,7 @@ def top_balls(scores, n):
 
 
 def build_result(draws, games, main_scores, pb_scores,
-                 chi2_main, p_main, chi2_pb, p_pb):
+                 chi2_main, p_main, chi2_pb, p_pb, seed_string=None):
     first_date = draws[0]["date"]
     last_date  = draws[-1]["date"]
     return {
@@ -261,6 +262,7 @@ def build_result(draws, games, main_scores, pb_scores,
         "data_range":      f"{first_date} to {last_date}",
         "ewma_alpha":      EWMA_ALPHA,
         "popularity_prior": "v1.5.23",
+        "seed":            seed_string,
         "hot_main_balls":  top_balls(main_scores, 10),
         "hot_powerballs":  top_balls(pb_scores, 5),
         "freq_significant": p_main is not None and p_main < 0.05,
@@ -317,6 +319,16 @@ def main():
         sys.exit(1)
     print(f"  Loaded {len(draws)} current-format draws (7-ball era, 2018+)")
 
+    # Deterministic seed: same UTC date + same dataset size → same 18 numbers.
+    # Lets the user reproduce locally what the workflow emailed Thursday morning
+    # using only the public data, with no hidden state. Two distinct components:
+    #   • date  — workflow runs Thursday 00:00 UTC, so this is stable within a run
+    #   • len(draws) — changes after a new draw is scraped, producing a fresh
+    #                  (still reproducible) seed for the following week
+    seed_string = f"{_dt.date.today().isoformat()}-{len(draws)}"
+    random.seed(seed_string)
+    print(f"  Seed            : {seed_string} (reproducible)")
+
     main_scores, pb_scores, main_counts, pb_counts = compute_ewma_scores(draws)
 
     chi2_main, p_main = compute_chi_squared(main_counts, len(draws), MAIN_BALLS, MAIN_PER_GAME)
@@ -330,7 +342,8 @@ def main():
 
     games  = generate_games(main_scores, pb_scores)
     result = build_result(draws, games, main_scores, pb_scores,
-                          chi2_main, p_main, chi2_pb, p_pb)
+                          chi2_main, p_main, chi2_pb, p_pb,
+                          seed_string=seed_string)
 
     print_picks(result)
 

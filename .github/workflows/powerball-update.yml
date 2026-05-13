@@ -39,6 +39,11 @@ jobs:
           set -euo pipefail
           python scripts/scrape.py
 
+      - name: Score picks history against latest draws
+        run: |
+          set -euo pipefail
+          python scripts/score_history.py
+
       - name: Update sitemap lastmod
         run: |
           set -euo pipefail
@@ -59,7 +64,7 @@ jobs:
           set -euo pipefail
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add web/data/powerball_draws.json web/sitemap.xml
+          git add web/data/powerball_draws.json web/scoreboard.json web/sitemap.xml
           if git diff --staged --quiet; then
             echo "No staged changes — nothing to commit."
           else
