@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.0**
+**Current version: v1.7.1**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.1 — 2026-05-14
+- Fix: Added `Cache-Control: no-cache` for `index.html` in `web/_headers` — browsers now always revalidate the HTML before serving from cache, so new deployments surface immediately without requiring a hard refresh. Reduced `stale-while-revalidate` on `app.js`/`style.css` from 24h to 1h to limit stale JS exposure after deployments
 
 ### v1.7.0 — 2026-05-14
 - Feature: **Oz Lotteries Powerball automation** — new `scripts/automate_picks.py` reads the latest 18 picks from `picks_history.json`, opens Chrome via Playwright, logs in to ozlotteries.com, switches to "Pick your numbers" mode, selects 18 games, fills every ball for all 18 games, and stops at the cart for manual payment. `Fill Powerball Numbers.command` at the project root is a double-clickable macOS launcher. `.env.example` added as credential template. Local one-time setup: `pip install playwright python-dotenv && playwright install chromium`

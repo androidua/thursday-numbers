@@ -28,12 +28,18 @@
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Resource-Policy: same-origin
 
+# index.html — always revalidate so new deployments surface immediately
+# no-cache means "cache it but check with the server before serving" (not "don't cache")
+/index.html
+  Cache-Control: no-cache
+
 # Long-lived cache for static JS/CSS (served via Cloudflare edge; can be purged on redeploy)
+# SWR window reduced to 1h (was 24h) to limit stale JS exposure after a deployment
 /app.js
-  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=3600, stale-while-revalidate=3600
 
 /style.css
-  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=3600, stale-while-revalidate=3600
 
 # Short cache + SWR for JSON data — draw file updates weekly, SWR keeps visitors fast
 /data/*.json
