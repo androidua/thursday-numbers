@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.6**
+**Current version: v1.7.7**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.7 — 2026-05-14
+- Fix: password step now uses `input[type="password"]` selector instead of `#loginRegisterEmail_password` — avoids React remount timing issue where the ID-based locator fails during component re-render after email submit; final login button corrected to data-id selector
 
 ### v1.7.6 — 2026-05-14
 - Fix: login now waits for `networkidle` after email submit before looking for the password field — gives Oz Lotteries' email-check API call time to complete and the password step to render
