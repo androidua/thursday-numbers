@@ -76,7 +76,7 @@ def do_login(page, email, password):
 
     # Step 2: fill password using type selector (avoids React remount ID issues)
     page.locator('input[type="password"]').fill(password)
-    page.locator('[data-id="loginRegisterEmail_submit"]').click()
+    page.get_by_role("button", name="Login", exact=True).click()
 
     # Wait until the login form disappears (redirected away or account loaded)
     try:
