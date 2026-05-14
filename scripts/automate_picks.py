@@ -102,13 +102,13 @@ def select_numbers_for_game(page, game_index, main_balls, powerball):
     # Click each of the 7 main ball labels.
     # Main ball labels precede powerball labels in DOM order within the open row.
     for num in main_balls:
-        page.locator(f'label[for="{num}"]').first().click()
+        page.locator(f'label[for="{num}"]').first.click()
         page.wait_for_timeout(150)
 
     # Click the powerball label.
     # For numbers 1–20 there are two label[for="N"] elements (main + PB);
     # .last() reliably picks the powerball one since it follows the main grid.
-    page.locator(f'label[for="{powerball}"]').last().click()
+    page.locator(f'label[for="{powerball}"]').last.click()
     page.wait_for_timeout(150)
 
 
