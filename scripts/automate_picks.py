@@ -140,11 +140,24 @@ def run_automation(playwright: Playwright, games: list):
     page.locator("#numberOfGamesSelect").select_option(GAME_COUNT)
     page.wait_for_timeout(800)
 
+    # Close the "Play favourite numbers" tooltip if it's visible
+    tooltip_close = page.locator('[aria-label="Close"]').or_(page.locator('button:has-text("×")')).or_(page.locator('[data-id*="tooltip"] button'))
+    if tooltip_close.count() > 0:
+        try:
+            tooltip_close.first.click(timeout=2_000)
+            page.wait_for_timeout(300)
+        except Exception:
+            pass
+
     page.screenshot(path=str(ROOT / "powerball_debug.png"))
     print(f"  Screenshot saved: powerball_debug.png")
-    # Dump first game row HTML for selector diagnosis
-    first_row = page.locator('[data-id="gameNumberSelect_gameRow"]').first
-    print(f"  First game row HTML snippet:\n{first_row.inner_html()[:800]}")
+    # Dump number picker HTML to find correct selectors
+    print(f"  Page HTML around number grid:")
+    html = page.content()
+    # Find the section with number cells
+    idx = html.find("gameNumberCell")
+    if idx >= 0:
+        print(html[max(0, idx-100):idx+1500])
 
     print(f"\nFilling {len(games)} games...")
     for i, game in enumerate(games):
