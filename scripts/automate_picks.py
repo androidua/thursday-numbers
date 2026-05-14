@@ -140,6 +140,12 @@ def run_automation(playwright: Playwright, games: list):
     page.locator("#numberOfGamesSelect").select_option(GAME_COUNT)
     page.wait_for_timeout(800)
 
+    page.screenshot(path=str(ROOT / "powerball_debug.png"))
+    print(f"  Screenshot saved: powerball_debug.png")
+    # Dump first game row HTML for selector diagnosis
+    first_row = page.locator('[data-id="gameNumberSelect_gameRow"]').first
+    print(f"  First game row HTML snippet:\n{first_row.inner_html()[:800]}")
+
     print(f"\nFilling {len(games)} games...")
     for i, game in enumerate(games):
         print(f"  Game {i + 1:2d}/{len(games)}: {game['main']} + pb {game['powerball']}")
