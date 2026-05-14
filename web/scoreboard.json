@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-14T08:18:49",
-  "weeks_scored": 8,
-  "games_scored": 144,
+  "generated_at": "2026-05-14T19:39:45",
+  "weeks_scored": 9,
+  "games_scored": 162,
   "pending_weeks": [],
   "skipped_non_email": [
     "2026-03-15T00:53:15",
@@ -26,7 +26,7 @@
       "9": 3
     },
     "any_prize_games": 4,
-    "any_prize_rate": 0.0278,
+    "any_prize_rate": 0.0247,
     "best_week": {
       "date": "2026-04-23",
       "best_division": "8",
@@ -2500,6 +2500,315 @@
           ],
           "powerball": 13,
           "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        }
+      ],
+      "best_division": null,
+      "any_prize_count": 0
+    },
+    {
+      "generated_at": "2026-05-14T02:38:58",
+      "matched_draw": {
+        "draw": 1565,
+        "date": "2026-05-14",
+        "main": [
+          1,
+          2,
+          3,
+          16,
+          19,
+          22,
+          25
+        ],
+        "powerball": 18
+      },
+      "games": [
+        {
+          "game": 1,
+          "main": [
+            4,
+            9,
+            17,
+            21,
+            28,
+            30,
+            33
+          ],
+          "powerball": 9,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 2,
+          "main": [
+            3,
+            6,
+            7,
+            15,
+            16,
+            24,
+            25
+          ],
+          "powerball": 13,
+          "main_matches": 3,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 3,
+          "main": [
+            2,
+            20,
+            22,
+            26,
+            32,
+            34,
+            35
+          ],
+          "powerball": 3,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 4,
+          "main": [
+            1,
+            5,
+            11,
+            12,
+            14,
+            27,
+            29
+          ],
+          "powerball": 5,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 5,
+          "main": [
+            8,
+            10,
+            13,
+            18,
+            19,
+            23,
+            31
+          ],
+          "powerball": 18,
+          "main_matches": 1,
+          "pb_match": true,
+          "division": null
+        },
+        {
+          "game": 6,
+          "main": [
+            5,
+            9,
+            15,
+            16,
+            26,
+            31,
+            32
+          ],
+          "powerball": 17,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 7,
+          "main": [
+            4,
+            12,
+            15,
+            25,
+            27,
+            31,
+            34
+          ],
+          "powerball": 19,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 8,
+          "main": [
+            4,
+            6,
+            7,
+            16,
+            19,
+            29,
+            30
+          ],
+          "powerball": 15,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 9,
+          "main": [
+            1,
+            9,
+            16,
+            21,
+            28,
+            29,
+            33
+          ],
+          "powerball": 20,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 10,
+          "main": [
+            1,
+            4,
+            7,
+            9,
+            23,
+            28,
+            32
+          ],
+          "powerball": 8,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 11,
+          "main": [
+            1,
+            7,
+            15,
+            17,
+            26,
+            30,
+            35
+          ],
+          "powerball": 4,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 12,
+          "main": [
+            17,
+            27,
+            29,
+            30,
+            31,
+            32,
+            35
+          ],
+          "powerball": 2,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 13,
+          "main": [
+            7,
+            12,
+            15,
+            23,
+            27,
+            28,
+            32
+          ],
+          "powerball": 14,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 14,
+          "main": [
+            14,
+            19,
+            23,
+            25,
+            27,
+            30,
+            33
+          ],
+          "powerball": 10,
+          "main_matches": 2,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 15,
+          "main": [
+            8,
+            10,
+            14,
+            15,
+            20,
+            33,
+            34
+          ],
+          "powerball": 7,
+          "main_matches": 0,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 16,
+          "main": [
+            4,
+            7,
+            11,
+            12,
+            18,
+            25,
+            29
+          ],
+          "powerball": 16,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 17,
+          "main": [
+            3,
+            13,
+            14,
+            15,
+            17,
+            24,
+            32
+          ],
+          "powerball": 1,
+          "main_matches": 1,
+          "pb_match": false,
+          "division": null
+        },
+        {
+          "game": 18,
+          "main": [
+            4,
+            12,
+            13,
+            15,
+            29,
+            30,
+            31
+          ],
+          "powerball": 6,
+          "main_matches": 0,
           "pb_match": false,
           "division": null
         }
