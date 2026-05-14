@@ -69,12 +69,13 @@ def do_login(page, email, password):
     page.goto(LOGIN_URL)
     page.wait_for_load_state("networkidle")
 
-    # Step 1: submit email (password field is hidden until after this click)
+    # Step 1: submit email; wait for the email-check API call to settle
     page.locator("#loginRegisterEmail_email").fill(email)
     page.locator('[data-id="loginRegisterEmail_submit"]').click()
+    page.wait_for_load_state("networkidle")
 
     # Step 2: wait for password to become visible, then submit
-    page.locator("#loginRegisterEmail_password").wait_for(state="visible", timeout=10_000)
+    page.locator("#loginRegisterEmail_password").wait_for(state="visible", timeout=15_000)
     page.locator("#loginRegisterEmail_password").fill(password)
     page.locator('[data-id="loginRegisterEmail_submit"]').click()
 

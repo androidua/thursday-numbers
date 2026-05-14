@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.5**
+**Current version: v1.7.6**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.6 — 2026-05-14
+- Fix: login now waits for `networkidle` after email submit before looking for the password field — gives Oz Lotteries' email-check API call time to complete and the password step to render
 
 ### v1.7.5 — 2026-05-14
 - Fix: `Fill Powerball Numbers.command` now runs `git pull origin main` on every launch — no more manual pulls needed after fixes
