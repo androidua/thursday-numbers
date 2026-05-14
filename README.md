@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.1**
+**Current version: v1.7.2**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.2 — 2026-05-14
+- Fix: Oz Lotteries login updated for two-step ("email-first") flow — email is now submitted first, then the script waits for the password field to become visible before filling it and clicking "Log in"
 
 ### v1.7.1 — 2026-05-14
 - Fix: Added `Cache-Control: no-cache` for `index.html` in `web/_headers` — browsers now always revalidate the HTML before serving from cache, so new deployments surface immediately without requiring a hard refresh. Reduced `stale-while-revalidate` on `app.js`/`style.css` from 24h to 1h to limit stale JS exposure after deployments

@@ -50,9 +50,14 @@ def do_login(page, email, password):
     page.goto(LOGIN_URL)
     page.wait_for_load_state("networkidle")
 
+    # Step 1: submit email (password field is hidden until after this click)
     page.locator("#loginRegisterEmail_email").fill(email)
-    page.locator("#loginRegisterEmail_password").fill(password)
     page.get_by_role("button", name="Continue").click()
+
+    # Step 2: wait for password to become visible, then submit
+    page.locator("#loginRegisterEmail_password").wait_for(state="visible", timeout=10_000)
+    page.locator("#loginRegisterEmail_password").fill(password)
+    page.get_by_role("button", name="Log in").click()
 
     # Wait until the login form disappears (redirected away or account loaded)
     try:
