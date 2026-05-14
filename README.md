@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.7**
+**Current version: v1.7.8**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.8 — 2026-05-15
+- Fix: number-filling rewritten to use JS-based clicking scoped to the currently open picker (offsetHeight > 0), bypassing React remount timing and multi-picker DOM ambiguity; games auto-advance so accordion management removed entirely; tooltip dismissed with Escape before filling
 
 ### v1.7.7 — 2026-05-14
 - Fix: password step now uses `input[type="password"]` selector instead of `#loginRegisterEmail_password` — avoids React remount timing issue where the ID-based locator fails during component re-render after email submit; final login button corrected to data-id selector

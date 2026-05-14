@@ -90,26 +90,39 @@ def do_login(page, email, password):
 
 
 def select_numbers_for_game(page, game_index, main_balls, powerball):
-    game_rows = page.locator('[data-id="gameNumberSelect_gameRow"]')
+    # Games auto-advance after all 8 picks are made; no accordion management needed.
+    # Wait for any picker to be open (offsetHeight > 0 means the accordion is expanded).
+    page.wait_for_function(
+        """() => {
+            const pickers = document.querySelectorAll('[class*="NumberPickerWrapper"]');
+            return Array.from(pickers).some(p => p.offsetHeight > 0);
+        }""",
+        timeout=10_000,
+    )
 
-    # Game 0 is already open on page load; click others to expand (accordion).
-    if game_index > 0:
-        game_rows.nth(game_index).scroll_into_view_if_needed()
-        game_rows.nth(game_index).click()
-        # Wait for the number picker to appear inside this row
-        page.locator('[class*="NumberPickerWrapper"]').wait_for(state="visible", timeout=5_000)
-
-    # Click each of the 7 main ball labels.
-    # Main ball labels precede powerball labels in DOM order within the open row.
-    for num in main_balls:
-        page.locator(f'label[for="{num}"]').first.click()
+    def js_click(num, last=False):
+        # There are 18 picker tables in the DOM; only the open one has offsetHeight > 0.
+        # For numbers 1-20, both main and PB sections have a label — last=True picks PB.
+        idx = "inVisible.length - 1" if last else "0"
+        page.evaluate(f"""
+            (() => {{
+                const all = Array.from(document.querySelectorAll(
+                    'label[data-id="numberGrids_numbers_numberItem"][for="{num}"]'
+                ));
+                const inVisible = all.filter(l => {{
+                    const p = l.closest('[class*="NumberPickerWrapper"]');
+                    return p && p.offsetHeight > 0;
+                }});
+                const t = inVisible[{idx}];
+                if (t) t.click();
+            }})()
+        """)
         page.wait_for_timeout(150)
 
-    # Click the powerball label.
-    # For numbers 1–20 there are two label[for="N"] elements (main + PB);
-    # .last() reliably picks the powerball one since it follows the main grid.
-    page.locator(f'label[for="{powerball}"]').last.click()
-    page.wait_for_timeout(150)
+    for num in main_balls:
+        js_click(num)
+
+    js_click(powerball, last=True)
 
 
 def run_automation(playwright: Playwright, games: list):
@@ -140,24 +153,9 @@ def run_automation(playwright: Playwright, games: list):
     page.locator("#numberOfGamesSelect").select_option(GAME_COUNT)
     page.wait_for_timeout(800)
 
-    # Close the "Play favourite numbers" tooltip if it's visible
-    tooltip_close = page.locator('[aria-label="Close"]').or_(page.locator('button:has-text("×")')).or_(page.locator('[data-id*="tooltip"] button'))
-    if tooltip_close.count() > 0:
-        try:
-            tooltip_close.first.click(timeout=2_000)
-            page.wait_for_timeout(300)
-        except Exception:
-            pass
-
-    page.screenshot(path=str(ROOT / "powerball_debug.png"))
-    print(f"  Screenshot saved: powerball_debug.png")
-    # Dump number picker HTML to find correct selectors
-    print(f"  Page HTML around number grid:")
-    html = page.content()
-    # Find the section with number cells
-    idx = html.find("gameNumberCell")
-    if idx >= 0:
-        print(html[max(0, idx-100):idx+1500])
+    # Dismiss any tooltip overlays before filling numbers.
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(300)
 
     print(f"\nFilling {len(games)} games...")
     for i, game in enumerate(games):
