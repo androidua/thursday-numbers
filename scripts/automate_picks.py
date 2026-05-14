@@ -74,6 +74,11 @@ def do_login(page, email, password):
     page.locator('[data-id="loginRegisterEmail_submit"]').click()
     page.wait_for_load_state("networkidle")
 
+    screenshot_path = str(ROOT / "login_debug.png")
+    page.screenshot(path=screenshot_path)
+    print(f"  URL after email submit: {page.url}")
+    print(f"  Screenshot saved: {screenshot_path}")
+
     # Step 2: wait for password to become visible, then submit
     page.locator("#loginRegisterEmail_password").wait_for(state="visible", timeout=15_000)
     page.locator("#loginRegisterEmail_password").fill(password)
