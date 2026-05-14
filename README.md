@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.4**
+**Current version: v1.7.5**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.5 — 2026-05-14
+- Fix: `Fill Powerball Numbers.command` now runs `git pull origin main` on every launch — no more manual pulls needed after fixes
 
 ### v1.7.4 — 2026-05-14
 - Fix: login "Continue" button now targeted by `data-id="loginRegisterEmail_submit"` instead of role+name — eliminates strict mode violation caused by "Continue with Apple" button also matching the role/name selector

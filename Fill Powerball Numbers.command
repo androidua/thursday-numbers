@@ -14,6 +14,10 @@ echo "  Oz Lotteries — Fill 18 Games"
 echo "==================================="
 echo ""
 
+echo "Pulling latest script updates..."
+git pull origin main --quiet || echo "  (git pull failed — running with existing version)"
+echo ""
+
 # Activate Python virtual environment if one exists in the project
 if [ -f ".venv/bin/activate" ]; then
     source .venv/bin/activate
