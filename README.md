@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.2**
+**Current version: v1.7.3**
 
 ---
 
@@ -215,6 +215,10 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.3 — 2026-05-14
+- Fix: `automate_picks.py` now auto-generates fresh picks if the latest entry is 6+ days old, so the script always enters this week's numbers regardless of whether the GitHub Actions workflow has already run
+- Fix: login flow — final submit button after password step corrected to "Continue" (matching Oz Lotteries two-step login UI)
 
 ### v1.7.2 — 2026-05-14
 - Fix: Oz Lotteries login updated for two-step ("email-first") flow — email is now submitted first, then the script waits for the password field to become visible before filling it and clicking "Log in"

@@ -14,7 +14,9 @@ Usage:
 import argparse
 import json
 import os
+import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -36,7 +38,24 @@ def load_latest_picks():
     if not history:
         print("ERROR: picks_history.json is empty.")
         sys.exit(1)
-    return history[-1]
+
+    latest = history[-1]
+    age_days = (datetime.now() - datetime.fromisoformat(latest["generated_at"])).days
+    if age_days >= 6:
+        print(f"  Picks are {age_days} days old — generating fresh picks for today...")
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "generate_picks.py")],
+            cwd=ROOT,
+        )
+        if result.returncode != 0:
+            print("  WARNING: generate_picks.py failed. Proceeding with existing picks.")
+        else:
+            with open(PICKS_PATH) as f:
+                history = json.load(f)
+            latest = history[-1]
+            print(f"  Fresh picks ready ({latest['generated_at'][:10]}).")
+
+    return latest
 
 
 def print_games(entry):
@@ -57,7 +76,7 @@ def do_login(page, email, password):
     # Step 2: wait for password to become visible, then submit
     page.locator("#loginRegisterEmail_password").wait_for(state="visible", timeout=10_000)
     page.locator("#loginRegisterEmail_password").fill(password)
-    page.get_by_role("button", name="Log in").click()
+    page.get_by_role("button", name="Continue").click()
 
     # Wait until the login form disappears (redirected away or account loaded)
     try:
