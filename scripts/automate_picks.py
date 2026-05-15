@@ -113,6 +113,19 @@ def select_numbers_for_game(page, game_index, main_balls, powerball):
             print("    [debug] all pickers visible — using index-based targeting (correct)")
         elif open_count == 1:
             print("    [debug] single open picker — index-based targeting still used")
+        # Dump sample label attributes to verify the 'for' attribute format.
+        sample = page.evaluate("""() => {
+            const picker = document.querySelectorAll('[class*="NumberPickerWrapper"]')[0];
+            if (!picker) return 'no-picker';
+            const labels = Array.from(
+                picker.querySelectorAll('label[data-id="numberGrids_numbers_numberItem"]')
+            );
+            const info = labels.slice(0, 3).map(
+                l => '"' + l.getAttribute('for') + '":' + l.textContent.trim()
+            ).join('  ');
+            return '(' + labels.length + ' labels)  first 3: ' + info;
+        }""")
+        print(f"    [debug] picker[0] labels: {sample}")
 
     def js_click(num, is_powerball=False):
         # Numbers 1-20 exist in both the main-ball grid and the PB grid within each
