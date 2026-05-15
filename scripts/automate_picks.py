@@ -90,54 +90,46 @@ def do_login(page, email, password):
 
 
 def select_numbers_for_game(page, game_index, main_balls, powerball):
-    # All 18 picker tables are in the DOM simultaneously. We target the Nth picker
-    # directly by index rather than relying on accordion state (offsetHeight can be > 0
-    # for all pickers when the site uses overflow:hidden collapse instead of display:none).
-    # JS element.click() fires React's event handlers even on visually-hidden elements.
+    # Oz Lotteries lazy-renders: only the open game's picker exists in the DOM.
+    # For game 0 it is already open on page load. For N > 0 we click the game row
+    # header to open it, which unmounts the previous game's picker and mounts the new one.
 
-    # On the first game, wait until pickers are rendered and print a diagnostic.
+    if game_index > 0:
+        game_rows = page.locator('[data-id="gameNumberSelect_gameRow"]')
+        game_rows.nth(game_index).scroll_into_view_if_needed()
+        game_rows.nth(game_index).click()
+
+    # Wait for the single lazy-rendered picker to mount (always exactly 1 when open).
+    page.wait_for_function(
+        "() => !!document.querySelector('[class*=\"NumberPickerWrapper\"]')",
+        timeout=10_000,
+    )
+
     if game_index == 0:
-        page.wait_for_function(
-            "() => document.querySelectorAll('[class*=\"NumberPickerWrapper\"]').length >= 18",
-            timeout=10_000,
-        )
-        open_count = page.evaluate("""() => {
-            const ps = document.querySelectorAll('[class*="NumberPickerWrapper"]');
-            return Array.from(ps).filter(p => p.offsetHeight > 0).length;
-        }""")
-        total = page.evaluate(
-            "() => document.querySelectorAll('[class*=\"NumberPickerWrapper\"]').length"
-        )
-        print(f"    [debug] pickers in DOM: {total}  |  offsetHeight > 0: {open_count}")
-        if open_count == total:
-            print("    [debug] all pickers visible — using index-based targeting (correct)")
-        elif open_count == 1:
-            print("    [debug] single open picker — index-based targeting still used")
-        # Dump sample label attributes to verify the 'for' attribute format.
+        # Show the 'for' attribute format and total label count so we can confirm
+        # whether main-ball and PB grids share the same attribute format.
         sample = page.evaluate("""() => {
-            const picker = document.querySelectorAll('[class*="NumberPickerWrapper"]')[0];
+            const picker = document.querySelector('[class*="NumberPickerWrapper"]');
             if (!picker) return 'no-picker';
             const labels = Array.from(
                 picker.querySelectorAll('label[data-id="numberGrids_numbers_numberItem"]')
             );
-            const info = labels.slice(0, 3).map(
-                l => '"' + l.getAttribute('for') + '":' + l.textContent.trim()
-            ).join('  ');
-            return '(' + labels.length + ' labels)  first 3: ' + info;
+            const fmt = l => '"' + l.getAttribute('for') + '":' + l.textContent.trim();
+            const first = labels.slice(0, 3).map(fmt).join('  ');
+            const last  = labels.slice(-3).map(fmt).join('  ');
+            return '(' + labels.length + ' labels)  first: ' + first + '  ...last: ' + last;
         }""")
-        print(f"    [debug] picker[0] labels: {sample}")
+        print(f"    [debug] labels: {sample}")
 
     def js_click(num, is_powerball=False):
-        # Numbers 1-20 exist in both the main-ball grid and the PB grid within each
-        # picker. For PB, take the last matching label (PB grid follows main in DOM order).
+        # querySelector always returns the single mounted picker.
+        # For numbers 1-20: if both main and PB grids use for="N", there are 2 labels;
+        # PB grid follows main in DOM, so labels[-1] is the PB label.
         label_expr = "labels[labels.length - 1]" if is_powerball else "labels[0]"
         result = page.evaluate(f"""
             (() => {{
-                const pickers = Array.from(
-                    document.querySelectorAll('[class*="NumberPickerWrapper"]')
-                );
-                const picker = pickers[{game_index}];
-                if (!picker) return 'no-picker-' + {game_index} + '-of-' + pickers.length;
+                const picker = document.querySelector('[class*="NumberPickerWrapper"]');
+                if (!picker) return 'no-picker';
                 const labels = Array.from(
                     picker.querySelectorAll(
                         'label[data-id="numberGrids_numbers_numberItem"][for="{num}"]'
@@ -145,11 +137,13 @@ def select_numbers_for_game(page, game_index, main_balls, powerball):
                 );
                 if (!labels.length) return 'no-label-{num}';
                 {label_expr}.click();
-                return 'ok';
+                return 'ok:' + labels.length;
             }})()
         """)
-        if result != "ok":
+        if not result.startswith("ok"):
             print(f"    [warn] js_click num={num} pb={is_powerball}: {result}")
+        elif is_powerball and result == "ok:1":
+            print(f"    [warn] PB {num}: only 1 label found — may need different PB selector")
         page.wait_for_timeout(150)
 
     for num in main_balls:

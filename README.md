@@ -216,6 +216,9 @@ Additional hardening:
 
 ## Changelog
 
+### v1.7.10 — 2026-05-16
+- Fix: Oz Lotteries lazy-renders pickers — only the open game's `NumberPickerWrapper` is mounted (always exactly 1, not 18); `wait_for_function` now checks `!!querySelector(...)` (1 picker) not `length >= 18`; game row accordion is explicitly clicked for games 2-18 before filling; `querySelector` replaces index-based `pickers[N]` lookup; PB "ok:1" warning added to detect single-label edge case
+
 ### v1.7.9 — 2026-05-15
 - Fix: number-filling rewritten to use game-index-scoped DOM targeting instead of offsetHeight visibility check; `offsetHeight > 0` is unreliable when the site uses `overflow:hidden` collapse (all 18 pickers appear open); direct `picker[N].querySelector(label)` bypasses accordion state entirely; JS `element.click()` still fires React events on hidden elements via event delegation; added per-click success/failure return and first-game diagnostic showing picker count and open count
 
