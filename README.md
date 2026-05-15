@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.8**
+**Current version: v1.7.9**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.9 — 2026-05-15
+- Fix: number-filling rewritten to use game-index-scoped DOM targeting instead of offsetHeight visibility check; `offsetHeight > 0` is unreliable when the site uses `overflow:hidden` collapse (all 18 pickers appear open); direct `picker[N].querySelector(label)` bypasses accordion state entirely; JS `element.click()` still fires React events on hidden elements via event delegation; added per-click success/failure return and first-game diagnostic showing picker count and open count
 
 ### v1.7.8 — 2026-05-15
 - Fix: number-filling rewritten to use JS-based clicking scoped to the currently open picker (offsetHeight > 0), bypassing React remount timing and multi-picker DOM ambiguity; games auto-advance so accordion management removed entirely; tooltip dismissed with Escape before filling

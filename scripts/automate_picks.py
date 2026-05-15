@@ -90,39 +90,59 @@ def do_login(page, email, password):
 
 
 def select_numbers_for_game(page, game_index, main_balls, powerball):
-    # Games auto-advance after all 8 picks are made; no accordion management needed.
-    # Wait for any picker to be open (offsetHeight > 0 means the accordion is expanded).
-    page.wait_for_function(
-        """() => {
-            const pickers = document.querySelectorAll('[class*="NumberPickerWrapper"]');
-            return Array.from(pickers).some(p => p.offsetHeight > 0);
-        }""",
-        timeout=10_000,
-    )
+    # All 18 picker tables are in the DOM simultaneously. We target the Nth picker
+    # directly by index rather than relying on accordion state (offsetHeight can be > 0
+    # for all pickers when the site uses overflow:hidden collapse instead of display:none).
+    # JS element.click() fires React's event handlers even on visually-hidden elements.
 
-    def js_click(num, last=False):
-        # There are 18 picker tables in the DOM; only the open one has offsetHeight > 0.
-        # For numbers 1-20, both main and PB sections have a label — last=True picks PB.
-        idx = "inVisible.length - 1" if last else "0"
-        page.evaluate(f"""
+    # On the first game, wait until pickers are rendered and print a diagnostic.
+    if game_index == 0:
+        page.wait_for_function(
+            "() => document.querySelectorAll('[class*=\"NumberPickerWrapper\"]').length >= 18",
+            timeout=10_000,
+        )
+        open_count = page.evaluate("""() => {
+            const ps = document.querySelectorAll('[class*="NumberPickerWrapper"]');
+            return Array.from(ps).filter(p => p.offsetHeight > 0).length;
+        }""")
+        total = page.evaluate(
+            "() => document.querySelectorAll('[class*=\"NumberPickerWrapper\"]').length"
+        )
+        print(f"    [debug] pickers in DOM: {total}  |  offsetHeight > 0: {open_count}")
+        if open_count == total:
+            print("    [debug] all pickers visible — using index-based targeting (correct)")
+        elif open_count == 1:
+            print("    [debug] single open picker — index-based targeting still used")
+
+    def js_click(num, is_powerball=False):
+        # Numbers 1-20 exist in both the main-ball grid and the PB grid within each
+        # picker. For PB, take the last matching label (PB grid follows main in DOM order).
+        label_expr = "labels[labels.length - 1]" if is_powerball else "labels[0]"
+        result = page.evaluate(f"""
             (() => {{
-                const all = Array.from(document.querySelectorAll(
-                    'label[data-id="numberGrids_numbers_numberItem"][for="{num}"]'
-                ));
-                const inVisible = all.filter(l => {{
-                    const p = l.closest('[class*="NumberPickerWrapper"]');
-                    return p && p.offsetHeight > 0;
-                }});
-                const t = inVisible[{idx}];
-                if (t) t.click();
+                const pickers = Array.from(
+                    document.querySelectorAll('[class*="NumberPickerWrapper"]')
+                );
+                const picker = pickers[{game_index}];
+                if (!picker) return 'no-picker-' + {game_index} + '-of-' + pickers.length;
+                const labels = Array.from(
+                    picker.querySelectorAll(
+                        'label[data-id="numberGrids_numbers_numberItem"][for="{num}"]'
+                    )
+                );
+                if (!labels.length) return 'no-label-{num}';
+                {label_expr}.click();
+                return 'ok';
             }})()
         """)
+        if result != "ok":
+            print(f"    [warn] js_click num={num} pb={is_powerball}: {result}")
         page.wait_for_timeout(150)
 
     for num in main_balls:
         js_click(num)
 
-    js_click(powerball, last=True)
+    js_click(powerball, is_powerball=True)
 
 
 def run_automation(playwright: Playwright, games: list):
