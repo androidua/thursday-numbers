@@ -106,50 +106,68 @@ def select_numbers_for_game(page, game_index, main_balls, powerball):
     )
 
     if game_index == 0:
-        # Show the 'for' attribute format and total label count so we can confirm
-        # whether main-ball and PB grids share the same attribute format.
-        sample = page.evaluate("""() => {
+        counts = page.evaluate("""() => {
             const picker = document.querySelector('[class*="NumberPickerWrapper"]');
             if (!picker) return 'no-picker';
-            const labels = Array.from(
-                picker.querySelectorAll('label[data-id="numberGrids_numbers_numberItem"]')
-            );
-            const fmt = l => '"' + l.getAttribute('for') + '":' + l.textContent.trim();
-            const first = labels.slice(0, 3).map(fmt).join('  ');
-            const last  = labels.slice(-3).map(fmt).join('  ');
-            return '(' + labels.length + ' labels)  first: ' + first + '  ...last: ' + last;
+            const main = picker.querySelectorAll(
+                'label[data-id="numberGrids_numbers_numberItem"]'
+            ).length;
+            const total = picker.querySelectorAll('label').length;
+            return 'main=' + main + ' total=' + total;
         }""")
-        print(f"    [debug] labels: {sample}")
+        print(f"    [debug] {counts}")
 
-    def js_click(num, is_powerball=False):
-        # querySelector always returns the single mounted picker.
-        # For numbers 1-20: if both main and PB grids use for="N", there are 2 labels;
-        # PB grid follows main in DOM, so labels[-1] is the PB label.
-        label_expr = "labels[labels.length - 1]" if is_powerball else "labels[0]"
+    def click_main(num):
         result = page.evaluate(f"""
             (() => {{
                 const picker = document.querySelector('[class*="NumberPickerWrapper"]');
                 if (!picker) return 'no-picker';
-                const labels = Array.from(
-                    picker.querySelectorAll(
-                        'label[data-id="numberGrids_numbers_numberItem"][for="{num}"]'
-                    )
+                const label = picker.querySelector(
+                    'label[data-id="numberGrids_numbers_numberItem"][for="{num}"]'
                 );
-                if (!labels.length) return 'no-label-{num}';
-                {label_expr}.click();
-                return 'ok:' + labels.length;
+                if (!label) return 'no-label-{num}';
+                label.click();
+                return 'ok';
+            }})()
+        """)
+        if result != "ok":
+            print(f"    [warn] main {num}: {result}")
+        page.wait_for_timeout(150)
+
+    def click_pb(num):
+        result = page.evaluate(f"""
+            (() => {{
+                const picker = document.querySelector('[class*="NumberPickerWrapper"]');
+                if (!picker) return 'no-picker';
+                // Try the expected PB data-id.
+                let label = picker.querySelector(
+                    '[data-id="numberGrids_powerball_numberItem"][for="{num}"]'
+                );
+                if (label) {{ label.click(); return 'ok-dataid'; }}
+                // Fallback: all labels minus the 35 known main-ball ones; match by text.
+                const mainSet = new Set(Array.from(
+                    picker.querySelectorAll('label[data-id="numberGrids_numbers_numberItem"]')
+                ));
+                const pbLabels = Array.from(picker.querySelectorAll('label'))
+                    .filter(l => !mainSet.has(l));
+                label = pbLabels.find(l => l.textContent.trim() === '{num}');
+                if (label) {{
+                    label.click();
+                    return 'ok-text:data-id=' + label.getAttribute('data-id') + ',for=' + label.getAttribute('for');
+                }}
+                return 'miss:{num}:pb-candidates=' + pbLabels.length;
             }})()
         """)
         if not result.startswith("ok"):
-            print(f"    [warn] js_click num={num} pb={is_powerball}: {result}")
-        elif is_powerball and result == "ok:1":
-            print(f"    [warn] PB {num}: only 1 label found — may need different PB selector")
+            print(f"    [warn] PB {num}: {result}")
+        elif result.startswith("ok-text:"):
+            print(f"    [info] PB {num} via text fallback — {result}")
         page.wait_for_timeout(150)
 
     for num in main_balls:
-        js_click(num)
+        click_main(num)
 
-    js_click(powerball, is_powerball=True)
+    click_pb(powerball)
 
 
 def run_automation(playwright: Playwright, games: list):

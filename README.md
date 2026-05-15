@@ -216,6 +216,9 @@ Additional hardening:
 
 ## Changelog
 
+### v1.7.11 — 2026-05-16
+- Fix: PB grid uses a different `data-id` from main-ball grid (35 main labels confirmed, PB labels have a different attribute); `click_pb()` now tries `data-id="numberGrids_powerball_numberItem"` first, then falls back to text-matching across all non-main labels and reports the actual `data-id` found; `click_main()` split into separate function for clarity
+
 ### v1.7.10 — 2026-05-16
 - Fix: Oz Lotteries lazy-renders pickers — only the open game's `NumberPickerWrapper` is mounted (always exactly 1, not 18); `wait_for_function` now checks `!!querySelector(...)` (1 picker) not `length >= 18`; game row accordion is explicitly clicked for games 2-18 before filling; `querySelector` replaces index-based `pickers[N]` lookup; PB "ok:1" warning added to detect single-label edge case
 
