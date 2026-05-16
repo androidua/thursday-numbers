@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.15**
+**Current version: v1.7.16**
 
 ---
 
@@ -215,6 +215,14 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.16 — 2026-05-16
+- Fix: Powerball number entry on ozlotteries.com — three compounded defects identified by live DOM inspection:
+  1. **PB selection silently toggled the wrong checkbox** since the feature was first written. The page emits two `<input id="N">` per `N ∈ 1..20` (main grid + PB grid); HTML for/id resolution hits the first match, so `label[data-id="numberGrids_powerball_numberItem"][for="N"]` always toggled the MAIN grid's input.
+  2. Hidden `<input>` (opacity:0, absolute, same rect as the label) intercepts pointer events, tripping Playwright's actionability check on `label.click()`.
+  3. Sticky `lotterySubNavigation` covers the top ~114px of viewport, blocking scrolled-into-view labels.
+- Switched to `input[data-id="numberGrids_<type>_hiddenCheckbox"][id="N"]` selectors with `dispatch_event("click")`, which targets the correct grid and fires a real DOM click that React's onChange picks up while bypassing actionability checks.
+- Removed now-redundant `cellsContainer.click()` accordion call — the page auto-advances after the 8th selection (PB). Added a condition-based wait for the next game's picker to render before the loop continues; skipped for the last game.
 
 ### v1.7.15 — 2026-05-16
 - Fix: game 1 timeout caused by "Play favourite numbers" tooltip overlaying the number picker — Playwright's occlusion check blocked all label clicks until the tooltip cleared; now explicitly clicks the tooltip X button before the fill loop (Escape was unreliable); `[data-id="tooltipInfo_root"] button[type="button"]` with 3s timeout, no-op if tooltip absent

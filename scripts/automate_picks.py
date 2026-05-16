@@ -89,30 +89,35 @@ def do_login(page, email, password):
         print("WARNING: Login may have failed or is taking too long. Check the browser.")
 
 
-def select_numbers_for_game(page, game_index, main_balls, powerball):
-    # Oz Lotteries lazy-renders: only the open game's picker exists in the DOM.
-    # Game 1 (index 0) is pre-opened on page load — no accordion click needed.
-    # For games 2–18 click the cells-container header to open this game's picker,
-    # which closes the previous game's picker automatically (single-expand accordion).
+def select_numbers_for_game(page, game_index, total_games, main_balls, powerball):
+    # Target the hidden <input> directly, not label[for=N]. The page emits
+    # two <input id="N"> per N in 1..20 (one in the main grid, one in the PB
+    # grid); HTML for/id resolution hits the first, so PB labels for 1..20
+    # toggle the MAIN grid's input instead of the PB input. The data-id
+    # "numberGrids_<type>_hiddenCheckbox" uniquely scopes each grid.
     #
-    # No explicit wait_for — Playwright's click() auto-waits for each label to be
-    # visible, stable, and actionable before firing the event sequence.
-
-    if game_index > 0:
-        page.locator('[data-id="gameNumberSelect_gameRow"]').nth(game_index).locator(
-            '[data-id="gameNumberSelect_gameRowCellsContainer"]'
-        ).click()
+    # dispatch_event("click") fires a real DOM click that React's onChange
+    # handler responds to, while bypassing Playwright's actionability checks.
+    # That sidesteps two occluders: the absolute-positioned hidden input
+    # sitting on top of its own label, and the sticky lotterySubNavigation
+    # bar that covers the top ~114px of the viewport.
 
     for num in main_balls:
         page.locator(
-            f'label[data-id="numberGrids_numbers_numberItem"][for="{num}"]'
-        ).click()
-        page.wait_for_timeout(100)
+            f'input[data-id="numberGrids_numbers_hiddenCheckbox"][id="{num}"]'
+        ).dispatch_event("click")
 
     page.locator(
-        f'[data-id="numberGrids_powerball_numberItem"][for="{powerball}"]'
-    ).click()
-    page.wait_for_timeout(100)
+        f'input[data-id="numberGrids_powerball_hiddenCheckbox"][id="{powerball}"]'
+    ).dispatch_event("click")
+
+    # After the PB click the page auto-advances: the current game's picker
+    # collapses and the next game's picker opens. Wait for that next picker
+    # to render before the caller moves on. Skip after the last game.
+    if game_index < total_games - 1:
+        page.locator('[data-id="gameNumberSelect_gameRow"]').nth(game_index + 1).locator(
+            '[data-id="numberGrids_numbers_numberItem"]'
+        ).first.wait_for(state="visible", timeout=5_000)
 
 
 def run_automation(playwright: Playwright, games: list):
@@ -158,9 +163,9 @@ def run_automation(playwright: Playwright, games: list):
     for i, game in enumerate(games):
         print(f"  Game {i + 1:2d}/{len(games)}: {game['main']} + pb {game['powerball']}")
         try:
-            select_numbers_for_game(page, i, game["main"], game["powerball"])
+            select_numbers_for_game(page, i, len(games), game["main"], game["powerball"])
         except PlaywrightTimeout:
-            print(f"  WARNING: Timeout opening game {i + 1}. The page may have changed.")
+            print(f"  WARNING: Timeout on game {i + 1}. The page may have changed.")
             print("           Check the browser and continue manually if needed.")
 
     print("\nAll games filled. Clicking Add to cart...")
