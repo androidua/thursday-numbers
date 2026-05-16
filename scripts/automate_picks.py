@@ -28,7 +28,6 @@ load_dotenv(ROOT / ".env")
 PICKS_PATH = ROOT / "web" / "picks" / "picks_history.json"
 LOGIN_URL = "https://www.ozlotteries.com/my-account"
 POWERBALL_URL = "https://www.ozlotteries.com/powerball"
-CART_URL = "https://www.ozlotteries.com/cart"
 GAME_COUNT = "18"
 
 
@@ -177,9 +176,18 @@ def run_automation(playwright: Playwright, games: list):
     print("\nAll games filled. Clicking Add to cart...")
     # Use data-id to avoid ambiguity with a second "Add to cart" button on the page.
     page.locator('[data-id="addToCart_button"]').click()
-    page.wait_for_url(f"**{CART_URL}**", timeout=15_000)
 
-    print("\nDone. Browser is open at the cart. Review your games and complete payment.")
+    # Let the navigation settle. Don't enforce a specific URL — oz lotteries
+    # may route through /cart, /cart/checkout, or a transitional page. Crashing
+    # here would close the browser context and erase the filled cart.
+    try:
+        page.wait_for_load_state("domcontentloaded", timeout=15_000)
+        page.wait_for_timeout(1_500)
+    except PlaywrightTimeout:
+        pass
+
+    print(f"\nDone. Browser is at: {page.url}")
+    print("Review your games and complete payment.")
     input("Press Enter here to close the browser when you are finished...")
     browser.close()
     return 0

@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.17**
+**Current version: v1.7.18**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.18 — 2026-05-16
+- Fix: `wait_for_url` after Add to cart was set up after the click, so it missed the navigation event and timed out — the resulting crash closed the browser context and erased the just-filled cart. Replaced with `wait_for_load_state("domcontentloaded")` + a brief settle; the script no longer enforces a specific destination URL (oz lotteries may route through `/cart`, `/cart/checkout`, or a transitional page) and prints whatever URL we ended up at. Removed the now-unused `CART_URL` constant.
 
 ### v1.7.17 — 2026-05-16
 - Fix: strict-mode violation on game 3+ in `automate_picks.py` — during the page's picker slide animation the previous game's picker briefly stays mounted while the new one renders, so `input[id="N"]` matched two elements. Scoped all selectors to the current game's `nth(game_index)` row via `game_row.locator(...)`.
