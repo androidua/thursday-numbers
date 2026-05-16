@@ -101,13 +101,19 @@ def select_numbers_for_game(page, game_index, total_games, main_balls, powerball
     # That sidesteps two occluders: the absolute-positioned hidden input
     # sitting on top of its own label, and the sticky lotterySubNavigation
     # bar that covers the top ~114px of the viewport.
+    #
+    # Scope all selectors to this game's row. During the page's slide
+    # animation the previous game's picker can briefly stay mounted while
+    # the new one is rendered, which causes input[id="N"] to resolve to
+    # two elements and trips Playwright's strict-mode check.
+    game_row = page.locator('[data-id="gameNumberSelect_gameRow"]').nth(game_index)
 
     for num in main_balls:
-        page.locator(
+        game_row.locator(
             f'input[data-id="numberGrids_numbers_hiddenCheckbox"][id="{num}"]'
         ).dispatch_event("click")
 
-    page.locator(
+    game_row.locator(
         f'input[data-id="numberGrids_powerball_hiddenCheckbox"][id="{powerball}"]'
     ).dispatch_event("click")
 

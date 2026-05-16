@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.16**
+**Current version: v1.7.17**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.17 — 2026-05-16
+- Fix: strict-mode violation on game 3+ in `automate_picks.py` — during the page's picker slide animation the previous game's picker briefly stays mounted while the new one renders, so `input[id="N"]` matched two elements. Scoped all selectors to the current game's `nth(game_index)` row via `game_row.locator(...)`.
 
 ### v1.7.16 — 2026-05-16
 - Fix: Powerball number entry on ozlotteries.com — three compounded defects identified by live DOM inspection:
