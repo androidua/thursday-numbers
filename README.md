@@ -216,6 +216,9 @@ Additional hardening:
 
 ## Changelog
 
+### v1.7.12 — 2026-05-16
+- Fix: switch number clicks from JS `element.click()` to Playwright `locator.click()` — JS synthetic click only fires the `click` event and misses React's `onPointerDown`/`onMouseDown` handlers; Playwright fires the full native mouse event sequence (pointerdown, mousedown, mouseup, click); also fix Add to Cart selector to `[data-id="addToCart_button"]` to avoid strict-mode ambiguity with a second button on the page
+
 ### v1.7.11 — 2026-05-16
 - Fix: PB grid uses a different `data-id` from main-ball grid (35 main labels confirmed, PB labels have a different attribute); `click_pb()` now tries `data-id="numberGrids_powerball_numberItem"` first, then falls back to text-matching across all non-main labels and reports the actual `data-id` found; `click_main()` split into separate function for clarity
 

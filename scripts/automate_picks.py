@@ -103,79 +103,26 @@ def select_numbers_for_game(page, game_index, main_balls, powerball):
 
     if game_index > 0:
         game_rows.nth(game_index).scroll_into_view_if_needed()
-
-        if game_index == 1:
-            # Dump closed game row 2 HTML once to reveal its structure / click target.
-            row_html = game_rows.nth(1).inner_html()
-            print(f"    [debug] game-row-2 HTML (first 600):\n{row_html[:600]}")
-
         game_rows.nth(game_index).click()
-        page.wait_for_timeout(400)  # Let React settle before checking picker state.
-
-        # Confirm the picker changed (if still game_index==1 after click, something is wrong).
-        picker_exists = page.evaluate(
-            "() => !!document.querySelector('[class*=\"NumberPickerWrapper\"]')"
-        )
-        if game_index == 1:
-            print(f"    [debug] picker present after clicking row 2: {picker_exists}")
 
     # Wait for the single lazy-rendered picker to mount (always exactly 1 when open).
-    page.wait_for_function(
-        "() => !!document.querySelector('[class*=\"NumberPickerWrapper\"]')",
-        timeout=10_000,
-    )
+    page.locator('[class*="NumberPickerWrapper"]').wait_for(state="visible", timeout=10_000)
 
-    def click_main(num):
-        result = page.evaluate(f"""
-            (() => {{
-                const picker = document.querySelector('[class*="NumberPickerWrapper"]');
-                if (!picker) return 'no-picker';
-                const label = picker.querySelector(
-                    'label[data-id="numberGrids_numbers_numberItem"][for="{num}"]'
-                );
-                if (!label) return 'no-label-{num}';
-                label.click();
-                return 'ok';
-            }})()
-        """)
-        if result != "ok":
-            print(f"    [warn] main {num}: {result}")
-        page.wait_for_timeout(150)
-
-    def click_pb(num):
-        result = page.evaluate(f"""
-            (() => {{
-                const picker = document.querySelector('[class*="NumberPickerWrapper"]');
-                if (!picker) return 'no-picker';
-                // Try the expected PB data-id.
-                let label = picker.querySelector(
-                    '[data-id="numberGrids_powerball_numberItem"][for="{num}"]'
-                );
-                if (label) {{ label.click(); return 'ok-dataid'; }}
-                // Fallback: all labels minus the 35 known main-ball ones; match by text.
-                const mainSet = new Set(Array.from(
-                    picker.querySelectorAll('label[data-id="numberGrids_numbers_numberItem"]')
-                ));
-                const pbLabels = Array.from(picker.querySelectorAll('label'))
-                    .filter(l => !mainSet.has(l));
-                label = pbLabels.find(l => l.textContent.trim() === '{num}');
-                if (label) {{
-                    label.click();
-                    return 'ok-text:data-id=' + label.getAttribute('data-id') + ',for=' + label.getAttribute('for');
-                }}
-                return 'miss:{num}:pb-candidates=' + pbLabels.length;
-            }})()
-        """)
-        if not result.startswith("ok"):
-            print(f"    [warn] PB {num}: {result}")
-        elif result.startswith("ok-text:"):
-            print(f"    [info] PB {num} via text fallback — {result}")
-        page.wait_for_timeout(150)
+    # Use Playwright locator.click() — it fires the full mouse event sequence
+    # (pointerdown, mousedown, mouseup, click). JS element.click() only fires the
+    # synthetic click event, which React's onPointerDown/onMouseDown handlers miss.
+    picker = page.locator('[class*="NumberPickerWrapper"]')
 
     for num in main_balls:
-        click_main(num)
+        picker.locator(
+            f'label[data-id="numberGrids_numbers_numberItem"][for="{num}"]'
+        ).click()
+        page.wait_for_timeout(100)
 
-    click_pb(powerball)
+    picker.locator(
+        f'[data-id="numberGrids_powerball_numberItem"][for="{powerball}"]'
+    ).click()
+    page.wait_for_timeout(100)
 
 
 def run_automation(playwright: Playwright, games: list):
@@ -220,7 +167,8 @@ def run_automation(playwright: Playwright, games: list):
             print("           Check the browser and continue manually if needed.")
 
     print("\nAll games filled. Clicking Add to cart...")
-    page.get_by_role("button", name="Add to cart").click()
+    # Use data-id to avoid ambiguity with a second "Add to cart" button on the page.
+    page.locator('[data-id="addToCart_button"]').click()
     page.wait_for_url(f"**{CART_URL}**", timeout=15_000)
 
     print("\nDone. Browser is open at the cart. Review your games and complete payment.")
