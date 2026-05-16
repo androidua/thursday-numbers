@@ -87,6 +87,7 @@ thursday-numbers/
 ├── CLAUDE.md                              ← this file
 ├── README.md                              ← public-facing project description
 ├── requirements.txt                       ← Python dependencies
+├── Fill Powerball Numbers.command         ← macOS double-clickable shortcut → scripts/automate_picks.py
 ├── .github/
 │   └── workflows/
 │       ├── powerball-update.yml           ← GitHub Actions scrape (Thursday 18:00 UTC = Friday 4am AEST)
@@ -97,6 +98,7 @@ thursday-numbers/
 │   ├── generate_picks.py                  ← generates 18 hot-number games (seeded since v1.6.0)
 │   ├── email_picks.py                     ← sends picks via Brevo REST API
 │   ├── score_history.py                   ← scores picks_history against draws → scoreboard.json (v1.6.0)
+│   ├── automate_picks.py                  ← Playwright: log in to ozlotteries.com, fill 18 games, stop at cart (v1.7.0+)
 │   └── run_all.py                         ← entry point: scrape → generate → email
 └── web/                                   ← served by Cloudflare Pages
     ├── VERSION                            ← current version number (read by app.js)
@@ -133,6 +135,7 @@ thursday-numbers/
 - `generate_picks.py` — frequency analysis, top-10 hot main + top-5 hot PBs, 18 unique games
 - `email_picks.py` — HTML email via Brevo REST API with coloured ball layout (indigo main, purple PB)
 - `run_all.py` — full pipeline with `--dry-run` and `--force` flags, 3-week gap check
+- `automate_picks.py` — Playwright: opens Chrome, logs in to ozlotteries.com using `OZ_EMAIL`/`OZ_PASSWORD` from `.env`, switches to manual pick mode, selects 18 games, fills all from the latest `picks_history.json` entry, clicks Add to cart, leaves browser open for the user to complete payment (see "load-bearing patterns" under Script Details — do not regress)
 
 ### Web App
 - Dark-themed single-page app: Dashboard, Frequency, Recent Trends, Number Picker, History
@@ -176,6 +179,19 @@ Output format per run:
 - `--dry-run`: skip email send and data file writes
 - `--force`: bypass the 3-week gap check
 - Exits with code 1 on failure (GitHub Actions marks run as failed)
+
+### `scripts/automate_picks.py` — load-bearing patterns
+This script fills the Oz Lotteries cart end-to-end. Several patterns inside `select_numbers_for_game` and the cart-click block look like they could be simplified but are **load-bearing** — verified against the live DOM in v1.7.16-v1.7.18. **Do not "improve" or "simplify" them without re-verifying against the live page first.**
+
+| Pattern | Why it's required |
+|---|---|
+| Click hidden `<input data-id="numberGrids_<numbers\|powerball>_hiddenCheckbox">`, never `<label for="N">` | The page emits `<input id="N">` twice per `N ∈ 1..20` (main grid + PB grid). HTML for/id resolution picks the first match — so PB `label[for="N"]` silently toggles the **main** grid's input. `data-id` uniquely scopes each grid. |
+| `dispatch_event("click")`, never `.click()` | The hidden input is `opacity:0 absolute` on top of its label, AND `[data-id="lotterySubNavigation"]` is `sticky` covering the top ~114px. Both trip Playwright actionability checks on labels. `dispatch_event` fires a real DOM click React's onChange responds to, bypassing actionability. |
+| Scope locators to `game_row = page.locator('[data-id="gameNumberSelect_gameRow"]').nth(game_index)` | The page's picker slide animation briefly mounts both old and new pickers, so global `input[id="N"]` matches 2 elements → strict-mode violation. |
+| No `cellsContainer.click()` to switch games | Page auto-advances after PB click. Use a condition-based `wait_for(state="visible")` for `nth(game_index + 1)`'s picker; skip for the last game. |
+| No `wait_for_url` after Add to cart | The waiter is set up after the click, misses the navigation event, times out at 15s, and the exception tears down the browser context — erasing the filled cart. Use `wait_for_load_state("domcontentloaded")` in try/except and print the final URL. |
+
+Env vars: `OZ_EMAIL`, `OZ_PASSWORD` in `.env` at the repo root (gitignored). See `.env.example`. CLI flag: `--dry-run` prints picks without opening the browser. Triggered manually via `Fill Powerball Numbers.command` (macOS double-clickable).
 
 ---
 
@@ -261,6 +277,7 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 | Branch strategy | Push directly to `main` | Solo project; no branching needed |
 | Security headers | `web/_headers` file | Cloudflare Pages native approach — zero infrastructure, applied at edge |
 | No inline styles in JS | CSS classes only | Keeps CSP clean (`style-src 'self'` with no `unsafe-inline`) |
+| Oz Lotteries cart-fill clicks | `input[data-id="numberGrids_*_hiddenCheckbox"]` + `dispatch_event("click")` scoped to `gameRow.nth(i)` | Page has duplicate `id="N"` across main/PB grids (silent wrong-toggle on `label[for=N]`), input/sticky-nav occlude labels, and the picker animation briefly mounts two grids. See `automate_picks.py` script details. |
 
 ---
 
@@ -288,3 +305,5 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 - **If upgrading Chart.js**, recompute the SRI hash (see SRI maintenance rule above) and update `integrity` in `index.html`
 - The `web/_headers` file controls all HTTP security headers — edit there, not in `index.html` meta tags (meta tags are a fallback only)
 - **Workflow auto-commits must use `[skip actions]`, never `[skip ci]`** — Cloudflare Pages respects `[skip ci]` and will silently skip the deployment. `[skip actions]` prevents GitHub Actions re-runs without blocking Cloudflare Pages. Also, never mention `[skip ci]` anywhere in a commit message body, as Cloudflare Pages scans the full message.
+- **Do not "simplify" the click strategy in `scripts/automate_picks.py`** — the `input[data-id="..."]` + `dispatch_event("click")` + per-row scoping is load-bearing (see Script Details for `automate_picks.py`). Reverting to `label[for=N].click()` silently breaks PB selection because the page has duplicate `id` attributes; reverting to `.click()` instead of `dispatch_event` re-introduces occlusion failures. Verify against the live page before changing any selector here.
+- **For Playwright/DOM-integration bugs, inspect the live target before iterating** — v1.7.11-15 shipped five failed patches for the cart-fill because no one verified `pbsChecked` actually changed after a PB click. Use the Playwright MCP (`browser_navigate`, `browser_evaluate`) to read real state before forming a hypothesis.
