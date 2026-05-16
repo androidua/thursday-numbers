@@ -94,28 +94,36 @@ def select_numbers_for_game(page, game_index, main_balls, powerball):
     # For game 0 it is already open on page load. For N > 0 we click the game row
     # header to open it, which unmounts the previous game's picker and mounts the new one.
 
+    game_rows = page.locator('[data-id="gameNumberSelect_gameRow"]')
+
+    if game_index == 0:
+        # Confirm how many game rows exist in the DOM (should be exactly 18).
+        row_count = game_rows.count()
+        print(f"    [debug] game rows in DOM: {row_count}")
+
     if game_index > 0:
-        game_rows = page.locator('[data-id="gameNumberSelect_gameRow"]')
         game_rows.nth(game_index).scroll_into_view_if_needed()
+
+        if game_index == 1:
+            # Dump closed game row 2 HTML once to reveal its structure / click target.
+            row_html = game_rows.nth(1).inner_html()
+            print(f"    [debug] game-row-2 HTML (first 600):\n{row_html[:600]}")
+
         game_rows.nth(game_index).click()
+        page.wait_for_timeout(400)  # Let React settle before checking picker state.
+
+        # Confirm the picker changed (if still game_index==1 after click, something is wrong).
+        picker_exists = page.evaluate(
+            "() => !!document.querySelector('[class*=\"NumberPickerWrapper\"]')"
+        )
+        if game_index == 1:
+            print(f"    [debug] picker present after clicking row 2: {picker_exists}")
 
     # Wait for the single lazy-rendered picker to mount (always exactly 1 when open).
     page.wait_for_function(
         "() => !!document.querySelector('[class*=\"NumberPickerWrapper\"]')",
         timeout=10_000,
     )
-
-    if game_index == 0:
-        counts = page.evaluate("""() => {
-            const picker = document.querySelector('[class*="NumberPickerWrapper"]');
-            if (!picker) return 'no-picker';
-            const main = picker.querySelectorAll(
-                'label[data-id="numberGrids_numbers_numberItem"]'
-            ).length;
-            const total = picker.querySelectorAll('label').length;
-            return 'main=' + main + ' total=' + total;
-        }""")
-        print(f"    [debug] {counts}")
 
     def click_main(num):
         result = page.evaluate(f"""
