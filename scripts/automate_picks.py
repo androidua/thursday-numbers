@@ -91,35 +91,33 @@ def do_login(page, email, password):
 
 def select_numbers_for_game(page, game_index, main_balls, powerball):
     # Oz Lotteries lazy-renders: only the open game's picker exists in the DOM.
-    # For game 0 it is already open on page load. For N > 0 we click the game row
-    # header to open it, which unmounts the previous game's picker and mounts the new one.
+    # For N > 0 click the game row header, which unmounts the previous picker and mounts the new one.
+    # For game 0 the picker may already be open; only click if the labels are not yet visible.
 
     game_rows = page.locator('[data-id="gameNumberSelect_gameRow"]')
+    ball_labels = page.locator('label[data-id="numberGrids_numbers_numberItem"]')
 
     if game_index == 0:
-        # Confirm how many game rows exist in the DOM (should be exactly 18).
-        row_count = game_rows.count()
-        print(f"    [debug] game rows in DOM: {row_count}")
-
-    if game_index > 0:
+        if not ball_labels.first.is_visible():
+            game_rows.nth(0).scroll_into_view_if_needed()
+            game_rows.nth(0).click()
+    else:
         game_rows.nth(game_index).scroll_into_view_if_needed()
         game_rows.nth(game_index).click()
 
-    # Wait for the single lazy-rendered picker to mount (always exactly 1 when open).
-    page.locator('[class*="NumberPickerWrapper"]').wait_for(state="visible", timeout=10_000)
+    # Wait for ball labels (stable data-id, not a fragile CSS-module class name).
+    ball_labels.first.wait_for(state="visible", timeout=15_000)
 
-    # Use Playwright locator.click() — it fires the full mouse event sequence
-    # (pointerdown, mousedown, mouseup, click). JS element.click() only fires the
-    # synthetic click event, which React's onPointerDown/onMouseDown handlers miss.
-    picker = page.locator('[class*="NumberPickerWrapper"]')
-
+    # Use Playwright locator.click() — fires the full native mouse event sequence
+    # (pointerdown, mousedown, mouseup, click) so React's handlers fire correctly.
+    # Only one picker exists in the DOM at a time, so page-level locators are unambiguous.
     for num in main_balls:
-        picker.locator(
+        page.locator(
             f'label[data-id="numberGrids_numbers_numberItem"][for="{num}"]'
         ).click()
         page.wait_for_timeout(100)
 
-    picker.locator(
+    page.locator(
         f'[data-id="numberGrids_powerball_numberItem"][for="{powerball}"]'
     ).click()
     page.wait_for_timeout(100)
@@ -149,9 +147,11 @@ def run_automation(playwright: Playwright, games: list):
     page.locator('label[for="chooseNumbers_manualPickGames"]').click()
     page.wait_for_timeout(500)
 
-    # Select 18 games.
+    # Select 18 games; wait until all rows are rendered (condition-based, not a fixed timeout).
     page.locator("#numberOfGamesSelect").select_option(GAME_COUNT)
-    page.wait_for_timeout(800)
+    page.locator('[data-id="gameNumberSelect_gameRow"]').nth(17).wait_for(
+        state="visible", timeout=20_000
+    )
 
     # Dismiss any tooltip overlays before filling numbers.
     page.keyboard.press("Escape")
