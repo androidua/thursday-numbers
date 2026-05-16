@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.14**
+**Current version: v1.7.15**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.15 — 2026-05-16
+- Fix: game 1 timeout caused by "Play favourite numbers" tooltip overlaying the number picker — Playwright's occlusion check blocked all label clicks until the tooltip cleared; now explicitly clicks the tooltip X button before the fill loop (Escape was unreliable); `[data-id="tooltipInfo_root"] button[type="button"]` with 3s timeout, no-op if tooltip absent
 
 ### v1.7.14 — 2026-05-16
 - Fix: game 1 picker timeout — remove `is_visible()` guard + explicit `wait_for` in `select_numbers_for_game`; for game 0 skip accordion click entirely (picker pre-opened on page load); for games 2–18 click `gameNumberSelect_gameRowCellsContainer` header instead of full row; rely on Playwright click() actionability auto-wait throughout

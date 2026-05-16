@@ -145,9 +145,14 @@ def run_automation(playwright: Playwright, games: list):
         state="visible", timeout=20_000
     )
 
-    # Dismiss any tooltip overlays before filling numbers.
-    page.keyboard.press("Escape")
-    page.wait_for_timeout(300)
+    # Dismiss the "Play favourite numbers" tooltip — it overlays the number picker
+    # and causes Playwright's occlusion check to block label clicks for game 1.
+    # Escape is unreliable; click the X button on the tooltip directly.
+    try:
+        page.locator('[data-id="tooltipInfo_root"] button[type="button"]').click(timeout=3_000)
+        page.wait_for_timeout(200)
+    except PlaywrightTimeout:
+        pass  # No tooltip visible, continue
 
     print(f"\nFilling {len(games)} games...")
     for i, game in enumerate(games):
