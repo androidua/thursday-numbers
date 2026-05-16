@@ -512,14 +512,18 @@ tbody td { padding: 10px 12px; vertical-align: middle; }
 /* Inline PB (shown in main-balls cell on mobile, hidden on desktop) */
 .hist-pb-inline { display: none; }
 @media (max-width: 600px) {
-  /* Show inline PB alongside main balls; hide the separate PB column */
+  /* Show inline PB alongside main balls; hide the separate PB column.
+     Scoped to #history-table because the Scoreboard table also lives inside
+     .table-wrap and would otherwise inherit these row-collapse rules — which
+     would override .scoreboard-detail { display: none } via higher specificity
+     and leave every detail row expanded by default on mobile. */
   .hist-pb-inline { display: inline-flex; align-items: center; }
-  .table-wrap tbody td.hist-pb-col { display: none; }
+  #history-table tbody td.hist-pb-col { display: none; }
   /* Convert history table rows to flex cards */
-  .table-wrap table,
-  .table-wrap tbody { display: block; width: 100%; }
-  .table-wrap thead { display: none; }
-  .table-wrap tbody tr {
+  #history-table,
+  #history-table tbody { display: block; width: 100%; }
+  #history-table thead { display: none; }
+  #history-table tbody tr {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -528,12 +532,12 @@ tbody td { padding: 10px 12px; vertical-align: middle; }
     border-bottom: 1px solid var(--border);
     background: none;
   }
-  .table-wrap tbody tr:hover { background: var(--bg3); border-radius: 6px; }
-  .table-wrap tbody td { display: block; padding: 0; border: none; }
-  .table-wrap tbody td:first-child { font-size: 13px; }
-  .table-wrap tbody td:nth-child(2) { flex: 1; font-size: 12px; color: var(--text-dim); }
+  #history-table tbody tr:hover { background: var(--bg3); border-radius: 6px; }
+  #history-table tbody td { display: block; padding: 0; border: none; }
+  #history-table tbody td:first-child { font-size: 13px; }
+  #history-table tbody td:nth-child(2) { flex: 1; font-size: 12px; color: var(--text-dim); }
   /* Main balls row takes full width, dropping to its own line */
-  .table-wrap tbody td:nth-child(3) { width: 100%; }
+  #history-table tbody td:nth-child(3) { width: 100%; }
 }
 
 .pagination {

@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.18**
+**Current version: v1.7.19**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.19 — 2026-05-16
+- Fix: Scoreboard detail rows were expanded by default on phones (≤600px). Root cause was a CSS specificity collision — the History tab's mobile row-collapse rule `.table-wrap tbody tr { display: flex; ... }` (specificity 0,0,1,2) was overriding `.scoreboard-detail { display: none; }` (0,0,1,0), because both tables share the `.table-wrap` wrapper. Scoped the History mobile block to `#history-table` so its rules no longer leak into the Scoreboard. Wider mobile audit of the other five tabs found no further issues — charts are responsive, the Picker grid reflows 3→2→1 col cleanly, and the nav strip already has an edge-fade hint at ≤700px.
 
 ### v1.7.18 — 2026-05-16
 - Fix: `wait_for_url` after Add to cart was set up after the click, so it missed the navigation event and timed out — the resulting crash closed the browser context and erased the just-filled cart. Replaced with `wait_for_load_state("domcontentloaded")` + a brief settle; the script no longer enforces a specific destination URL (oz lotteries may route through `/cart`, `/cart/checkout`, or a transitional page) and prints whatever URL we ended up at. Removed the now-unused `CART_URL` constant.
