@@ -91,26 +91,18 @@ def do_login(page, email, password):
 
 def select_numbers_for_game(page, game_index, main_balls, powerball):
     # Oz Lotteries lazy-renders: only the open game's picker exists in the DOM.
-    # For N > 0 click the game row header, which unmounts the previous picker and mounts the new one.
-    # For game 0 the picker may already be open; only click if the labels are not yet visible.
+    # Game 1 (index 0) is pre-opened on page load — no accordion click needed.
+    # For games 2–18 click the cells-container header to open this game's picker,
+    # which closes the previous game's picker automatically (single-expand accordion).
+    #
+    # No explicit wait_for — Playwright's click() auto-waits for each label to be
+    # visible, stable, and actionable before firing the event sequence.
 
-    game_rows = page.locator('[data-id="gameNumberSelect_gameRow"]')
-    ball_labels = page.locator('label[data-id="numberGrids_numbers_numberItem"]')
+    if game_index > 0:
+        page.locator('[data-id="gameNumberSelect_gameRow"]').nth(game_index).locator(
+            '[data-id="gameNumberSelect_gameRowCellsContainer"]'
+        ).click()
 
-    if game_index == 0:
-        if not ball_labels.first.is_visible():
-            game_rows.nth(0).scroll_into_view_if_needed()
-            game_rows.nth(0).click()
-    else:
-        game_rows.nth(game_index).scroll_into_view_if_needed()
-        game_rows.nth(game_index).click()
-
-    # Wait for ball labels (stable data-id, not a fragile CSS-module class name).
-    ball_labels.first.wait_for(state="visible", timeout=15_000)
-
-    # Use Playwright locator.click() — fires the full native mouse event sequence
-    # (pointerdown, mousedown, mouseup, click) so React's handlers fire correctly.
-    # Only one picker exists in the DOM at a time, so page-level locators are unambiguous.
     for num in main_balls:
         page.locator(
             f'label[data-id="numberGrids_numbers_numberItem"][for="{num}"]'
