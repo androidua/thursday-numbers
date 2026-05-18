@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.7.19** — see `web/VERSION` file.
+**v1.7.20** — see `web/VERSION` file.
 
 ---
 
@@ -33,6 +33,7 @@ Use semantic versioning: `MAJOR.MINOR.PATCH`
 **Rules:**
 - Update `web/VERSION`, `README.md`, `CLAUDE.md`, **and the hardcoded fallback in `web/index.html` footer (`id="footer-version"`)** whenever you make changes
 - The footer fallback in `index.html` must always match `web/VERSION` — it shows before the async fetch completes and on fetch failure
+- **Bump the cache-bust query strings in `web/index.html`** — both `<link rel="stylesheet" href="style.css?v=X.X.X">` and `<script src="app.js?v=X.X.X">` must match the new version. Without this, Cloudflare's edge cache + Safari's aggressive CSS caching can leave users on stale assets for days after a fix is deployed (this happened with the v1.7.19 mobile scoreboard fix). Treat these query strings as part of the release artefact, not as boilerplate.
 - Mention the version in every commit message and README changelog
 - **Create and push a git tag on every version bump:** `git tag vX.X.X && git push origin vX.X.X` — writing the version in the commit message does NOT create a tag; these are separate operations
 - Always push directly to `main` — this is a solo project, no branches needed
@@ -293,7 +294,7 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 ## Notes for Claude Code
 
 - Always read this file first before starting any task
-- **Always update `VERSION`, `CLAUDE.md`, `README.md`, and the `id="footer-version"` fallback in `web/index.html` when making changes**
+- **Always update `VERSION`, `CLAUDE.md`, `README.md`, the `id="footer-version"` fallback in `web/index.html`, AND the `style.css?v=X.X.X` / `app.js?v=X.X.X` cache-bust query strings in `web/index.html` when making changes**
 - **Always create and push a git tag on every version bump** — `git tag vX.X.X && git push origin vX.X.X` — the version in the commit message is NOT a tag
 - **Always push directly to `main`** — no branches
 - The `data/powerball_draws.json` file is the single source of truth — never overwrite, only append
@@ -302,6 +303,8 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 - Write clear `print()` statements so GitHub Actions logs are readable
 - The web app needs an HTTP server to run locally (uses `fetch()` for JSON)
 - **Never add inline `style="..."` attributes to JS-generated HTML** — use CSS classes to preserve the strict CSP
+- **Scope mobile table-collapse rules to a table ID, not `.table-wrap`** — multiple tables (`#history-table`, `#scoreboard-table`) share the `.table-wrap` parent. A `@media` rule like `.table-wrap tbody tr { display: flex }` will silently leak across tables and beat lower-specificity defaults like `.scoreboard-detail { display: none }`. v1.7.19 fixed exactly this regression. When adding a new responsive table, use `#that-table tbody tr { ... }`.
+- **After every visible fix, hard-refresh the live site** — Cloudflare Pages deploys in seconds, but iOS Safari aggressively caches `style.css` / `app.js` until next reload. The cache-bust query strings in `<link>` and `<script>` (bumped per release) are what makes returning users see the fix. If a user reports a fix isn't live, check the deployed `/VERSION` and the live CSS contents before re-debugging — it's usually their cache.
 - **If upgrading Chart.js**, recompute the SRI hash (see SRI maintenance rule above) and update `integrity` in `index.html`
 - The `web/_headers` file controls all HTTP security headers — edit there, not in `index.html` meta tags (meta tags are a fallback only)
 - **Workflow auto-commits must use `[skip actions]`, never `[skip ci]`** — Cloudflare Pages respects `[skip ci]` and will silently skip the deployment. `[skip actions]` prevents GitHub Actions re-runs without blocking Cloudflare Pages. Also, never mention `[skip ci]` anywhere in a commit message body, as Cloudflare Pages scans the full message.

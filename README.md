@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.19**
+**Current version: v1.7.20**
 
 ---
 
@@ -215,6 +215,10 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.20 — 2026-05-18
+- Chore: Added cache-bust query strings to `<link href="style.css?v=X.X.X">` and `<script src="app.js?v=X.X.X">` in `index.html`. Without this, Cloudflare Pages deploys correctly but iOS Safari keeps serving the old CSS/JS from local cache — users reported the v1.7.19 scoreboard fix as "still broken" while the bytes on the wire were already correct. Bumping the query string per release forces a clean fetch. Documented as a mandatory version-bump step in CLAUDE.md and MEMORY.md so this never recurs.
+- Docs: Captured two project-specific lessons in CLAUDE.md — (a) scope mobile table-collapse rules to a table ID, never `.table-wrap`, to prevent specificity collisions between sibling tables; (b) check `/VERSION` and live CSS before re-debugging a user-reported regression, since 9/10 of "still broken" reports on this site are stale-cache.
 
 ### v1.7.19 — 2026-05-16
 - Fix: Scoreboard detail rows were expanded by default on phones (≤600px). Root cause was a CSS specificity collision — the History tab's mobile row-collapse rule `.table-wrap tbody tr { display: flex; ... }` (specificity 0,0,1,2) was overriding `.scoreboard-detail { display: none; }` (0,0,1,0), because both tables share the `.table-wrap` wrapper. Scoped the History mobile block to `#history-table` so its rules no longer leak into the Scoreboard. Wider mobile audit of the other five tabs found no further issues — charts are responsive, the Picker grid reflows 3→2→1 col cleanly, and the nav strip already has an edge-fade hint at ≤700px.
