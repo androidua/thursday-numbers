@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.20**
+**Current version: v1.7.21**
 
 ---
 
@@ -215,6 +215,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.21
+- Number Picker: added PowerHit mode — generates 7 main numbers only; Powerball omitted for Oz Lotteries PowerHit entries.
 
 ### v1.7.20 — 2026-05-18
 - Chore: Added cache-bust query strings to `<link href="style.css?v=X.X.X">` and `<script src="app.js?v=X.X.X">` in `index.html`. Without this, Cloudflare Pages deploys correctly but iOS Safari keeps serving the old CSS/JS from local cache — users reported the v1.7.19 scoreboard fix as "still broken" while the bytes on the wire were already correct. Bumping the query string per release forces a clean fetch. Documented as a mandatory version-bump step in CLAUDE.md and MEMORY.md so this never recurs.

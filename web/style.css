@@ -293,6 +293,7 @@ main {
   transition: border-color 0.2s, background 0.2s, color 0.2s;
 }
 .count-btn:hover { border-color: #7c3aed; color: #f8fafc; }
+.count-btn.active-ph:hover { border-color: var(--pb); }
 .count-btn.active {
   border-color: #7c3aed;
   background: #1e1b4b;

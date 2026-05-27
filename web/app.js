@@ -623,7 +623,7 @@ function pairDiverse(candidate, existing, maxShared = 4) {
 //
 // For cold/random strategies, or single-game generation, Phase 1 is skipped
 // (cold deliberately samples from bottom-10 only; random covers in expectation).
-function generateGamesLocal(mode = "hot", count = 1) {
+function generateGamesLocal(mode = "hot", count = 1, powerHit = false) {
   const games = [];
   const seen  = new Set();
 
