@@ -21,3 +21,6 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# Superpowers brainstorming sessions
+.superpowers/

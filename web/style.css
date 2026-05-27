@@ -298,6 +298,18 @@ main {
   background: #1e1b4b;
   color: #f8fafc;
 }
+.count-btn.active-ph {
+  border-color: var(--pb);
+  background: #2d1b4e;
+  color: #e9d5ff;
+}
+.count-btn-sub {
+  display: block;
+  font-size: 9px;
+  font-weight: 400;
+  opacity: 0.7;
+  margin-top: 2px;
+}
 
 /* ── Picker — Generate button ── */
 .btn-generate-big {
@@ -400,6 +412,9 @@ main {
   gap: 10px;
 }
 .gc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 11px;
   font-weight: 700;
   color: var(--text-dim);
@@ -425,6 +440,25 @@ main {
   letter-spacing: 0.8px;
   color: var(--pb);
   flex-shrink: 0;
+}
+.ph-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #2d1b4e;
+  color: #c084fc;
+  text-transform: uppercase;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.gc-no-pb {
+  font-size: 10px;
+  color: #64748b;
+  text-align: center;
+  padding: 6px 0;
+  border-top: 1px dashed var(--border);
 }
 .ball-sm {
   display: inline-flex;

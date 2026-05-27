@@ -490,8 +490,9 @@ function renderTrends() {
 }
 
 // ─── Picker tab ──────────────────────────────────────────────────────────────
-let pickerMode      = "hot";  // hot | cold | mixed | random
-let pickerGameCount = 18;     // 1 | 18
+let pickerMode      = "hot";   // hot | cold | mixed | random
+let pickerGameCount = 18;      // 1 | 18
+let pickerPowerHit  = false;   // true when PowerHit mode is active
 
 function setupPicker() {
   // Strategy card selection
@@ -506,15 +507,25 @@ function setupPicker() {
   // Game count toggle
   document.querySelectorAll(".count-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".count-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      pickerGameCount = parseInt(btn.dataset.count, 10);
+      document.querySelectorAll(".count-btn").forEach(b => {
+        b.classList.remove("active");
+        b.classList.remove("active-ph");
+      });
+      if (btn.dataset.count === "powerhit") {
+        btn.classList.add("active-ph");
+        pickerGameCount = 1;
+        pickerPowerHit  = true;
+      } else {
+        btn.classList.add("active");
+        pickerGameCount = parseInt(btn.dataset.count, 10);
+        pickerPowerHit  = false;
+      }
     });
   });
 
   // Generate button
   document.getElementById("btn-generate").addEventListener("click", () => {
-    renderPickerResult(generateGamesLocal(pickerMode, pickerGameCount));
+    renderPickerResult(generateGamesLocal(pickerMode, pickerGameCount, pickerPowerHit));
   });
 }
 
