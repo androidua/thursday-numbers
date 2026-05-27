@@ -629,7 +629,7 @@ function generateGamesLocal(mode = "hot", count = 1, powerHit = false) {
 
   // Phase 1 — coverage guarantee for hot/mixed batches of 5+ games.
   // Never triggers in PowerHit mode (count is always 1).
-  const useTwoPhase = count >= 5 && (mode === "hot" || mode === "mixed");
+  const useTwoPhase = !powerHit && count >= 5 && (mode === "hot" || mode === "mixed");
   if (useTwoPhase) {
     const allMain = weightedSample(recencyWeightsArr, 35);  // EWMA-ordered, all 35
     for (let i = 0; i < 5; i++) {
@@ -663,7 +663,7 @@ function generateGamesLocal(mode = "hot", count = 1, powerHit = false) {
     strategy:       mode,
     hot_main_balls: hotMain,
     hot_powerballs: hotPb,
-    power_hit:      powerHit || undefined,
+    power_hit:      powerHit ? true : undefined,
     games,
   };
 }
