@@ -529,34 +529,29 @@ function setupPicker() {
   });
 }
 
-function generateGameWithStrategy(mode) {
+function generateGameWithStrategy(mode, powerHit = false) {
   let main, pb;
 
   if (mode === "hot") {
     // Recency-weighted sampling from all 35 balls — balls that appeared more
     // frequently in recent draws get proportionally higher selection probability.
     main = weightedSample(recencyWeightsArr, 7).sort((a, b) => a - b);
-    pb   = weightedSample(pbRecencyWeightsArr, 1)[0];
+    pb   = powerHit ? null : weightedSample(pbRecencyWeightsArr, 1)[0];
 
   } else if (mode === "cold") {
     // Flat frequency cold pool for main; cold Powerballs for PB.
     main = sample([...coldMain], 7).sort((a, b) => a - b);
-    pb   = coldPb[Math.floor(Math.random() * coldPb.length)];
+    pb   = powerHit ? null : coldPb[Math.floor(Math.random() * coldPb.length)];
 
   } else if (mode === "mixed") {
     // Balanced Draw: rejection sampling against the hypergeometric distribution.
-    // Constraints derived from 7-choose-35 theoretical distribution:
-    //   Sum  in [87, 165]  — central ~90th percentile  (E=126, SD≈24.3)
-    //   Odds in [2, 5]     — covers 91.2% of probability (17 odd in 1–35)
-    //   Lows in [2, 5]     — covers 91.2% (17 "low" = 1–17, 18 "high" = 18–35)
-    // ~85% of uniform random draws satisfy all three, so average ~1.2 iterations.
     main = generateBalancedMain();
-    pb   = weightedSample(pbRecencyWeightsArr, 1)[0];
+    pb   = powerHit ? null : weightedSample(pbRecencyWeightsArr, 1)[0];
 
   } else {
     // True Random: cryptographically-uniform over all valid combinations.
     main = sample(Array.from({ length: 35 }, (_, i) => i + 1), 7).sort((a, b) => a - b);
-    pb   = Math.floor(Math.random() * 20) + 1;
+    pb   = powerHit ? null : Math.floor(Math.random() * 20) + 1;
   }
 
   return { main, powerball: pb };
@@ -628,13 +623,12 @@ function generateGamesLocal(mode = "hot", count = 1, powerHit = false) {
   const seen  = new Set();
 
   // Pre-sample diverse Powerballs (up to count PBs without replacement from 20).
-  // With count=18 and 20 possible PBs this covers 18 distinct PBs — 90% of
-  // the PB pool — guaranteeing the winning PB appears in at least one game
-  // with 90% probability, vs the old formula's 25% (5 fixed PBs from 20).
-  const diversePbs = weightedSample(pbRecencyWeightsArr, Math.min(count, 20));
+  // Skipped entirely in PowerHit mode — no Powerball is generated.
+  const diversePbs = powerHit ? [] : weightedSample(pbRecencyWeightsArr, Math.min(count, 20));
   let pbIdx = 0;
 
   // Phase 1 — coverage guarantee for hot/mixed batches of 5+ games.
+  // Never triggers in PowerHit mode (count is always 1).
   const useTwoPhase = count >= 5 && (mode === "hot" || mode === "mixed");
   if (useTwoPhase) {
     const allMain = weightedSample(recencyWeightsArr, 35);  // EWMA-ordered, all 35
@@ -650,17 +644,15 @@ function generateGamesLocal(mode = "hot", count = 1, powerHit = false) {
     }
   }
 
-  // Phase 2 — diverse fill. Loop iteration cap is the same as the previous
-  // implementation; pair-diversity rejection is the new constraint (only active
-  // when useTwoPhase is true).
+  // Phase 2 — diverse fill.
   for (let i = 0; i < count * 1000 && games.length < count; i++) {
-    const g = generateGameWithStrategy(mode);
-    if (pbIdx < diversePbs.length) g.powerball = diversePbs[pbIdx];
+    const g = generateGameWithStrategy(mode, powerHit);
+    if (!powerHit && pbIdx < diversePbs.length) g.powerball = diversePbs[pbIdx];
     const key = g.main.join(",") + "|" + g.powerball;
     if (seen.has(key)) continue;
     if (useTwoPhase && !pairDiverse(g.main, games)) continue;
     seen.add(key);
-    pbIdx++;
+    if (!powerHit) pbIdx++;
     games.push({ game: games.length + 1, ...g });
   }
 
@@ -671,6 +663,7 @@ function generateGamesLocal(mode = "hot", count = 1, powerHit = false) {
     strategy:       mode,
     hot_main_balls: hotMain,
     hot_powerballs: hotPb,
+    power_hit:      powerHit || undefined,
     games,
   };
 }
@@ -692,9 +685,16 @@ function renderGamesGrid(container, result) {
   const label = STRATEGY_LABELS[result.strategy] || "";
   const panel = document.createElement("div");
   panel.className = "panel";
+
   const sub = document.createElement("p");
   sub.className = "panel-sub";
   sub.textContent = `${label} · ${result.draws_analysed} draws analysed · ${result.generated_at.slice(0, 10)}`;
+  if (result.power_hit) {
+    const chip = document.createElement("span");
+    chip.className = "ph-tag";
+    chip.textContent = "PowerHit";
+    sub.appendChild(chip);
+  }
   panel.appendChild(sub);
 
   const grid = document.createElement("div");
@@ -705,7 +705,17 @@ function renderGamesGrid(container, result) {
 
     const gcHeader = document.createElement("div");
     gcHeader.className = "gc-header";
-    gcHeader.textContent = `Game ${g.game}`;
+    if (result.power_hit) {
+      const gameLabel = document.createElement("span");
+      gameLabel.textContent = `Game ${g.game}`;
+      const badge = document.createElement("span");
+      badge.className = "ph-tag";
+      badge.textContent = "PowerHit";
+      gcHeader.appendChild(gameLabel);
+      gcHeader.appendChild(badge);
+    } else {
+      gcHeader.textContent = `Game ${g.game}`;
+    }
 
     const gcMain = document.createElement("div");
     gcMain.className = "gc-main";
@@ -716,20 +726,28 @@ function renderGamesGrid(container, result) {
       gcMain.appendChild(s);
     }
 
-    const gcPb = document.createElement("div");
-    gcPb.className = "gc-pb";
-    const gcPbLabel = document.createElement("span");
-    gcPbLabel.className = "gc-pb-label";
-    gcPbLabel.textContent = "Powerball";
-    const gcPbBall = document.createElement("span");
-    gcPbBall.className = "ball-sm pb";
-    gcPbBall.textContent = g.powerball;
-    gcPb.appendChild(gcPbLabel);
-    gcPb.appendChild(gcPbBall);
-
     card.appendChild(gcHeader);
     card.appendChild(gcMain);
-    card.appendChild(gcPb);
+
+    if (g.powerball !== null) {
+      const gcPb = document.createElement("div");
+      gcPb.className = "gc-pb";
+      const gcPbLabel = document.createElement("span");
+      gcPbLabel.className = "gc-pb-label";
+      gcPbLabel.textContent = "Powerball";
+      const gcPbBall = document.createElement("span");
+      gcPbBall.className = "ball-sm pb";
+      gcPbBall.textContent = g.powerball;
+      gcPb.appendChild(gcPbLabel);
+      gcPb.appendChild(gcPbBall);
+      card.appendChild(gcPb);
+    } else {
+      const noPb = document.createElement("div");
+      noPb.className = "gc-no-pb";
+      noPb.textContent = "Powerball picked by Oz Lotteries";
+      card.appendChild(noPb);
+    }
+
     grid.appendChild(card);
   }
 
