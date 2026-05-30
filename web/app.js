@@ -43,6 +43,7 @@ const POPULARITY_PENALTY_MAIN = {};
 for (let b = 1; b <= 31; b++) POPULARITY_PENALTY_MAIN[b] = 0.90;
 POPULARITY_PENALTY_MAIN[7]  = 0.85;
 POPULARITY_PENALTY_MAIN[11] = 0.85;
+POPULARITY_PENALTY_MAIN[13] = 1.00;  // exempt: 13 is underpicked (unlucky superstition), so keep it in play
 
 const POPULARITY_PENALTY_PB = {};
 for (let b = 1; b <= 20; b++) POPULARITY_PENALTY_PB[b] = 0.95;

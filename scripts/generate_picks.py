@@ -50,6 +50,7 @@ GREEDY_PHASE_GAMES = 5     # games dedicated to full-coverage greedy phase
 POPULARITY_PENALTY_MAIN = {b: 0.90 for b in range(1, 32)}
 POPULARITY_PENALTY_MAIN[7]  = 0.85
 POPULARITY_PENALTY_MAIN[11] = 0.85
+POPULARITY_PENALTY_MAIN[13] = 1.00  # exempt: 13 is underpicked (unlucky superstition), so keep it in play
 
 POPULARITY_PENALTY_PB = {b: 0.95 for b in range(1, 21)}
 POPULARITY_PENALTY_PB[7]  = 0.90
