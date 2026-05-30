@@ -815,3 +815,25 @@ footer {
   font-size: 14px;
   margin: 16px 0;
 }
+
+/* ─── No-JS fallback ──────────────────────────────────────────────────────────
+   The .no-js class is set on <html> in the markup and removed by app.js before
+   first paint. With JS enabled it's gone, so .noscript-msg stays hidden. With JS
+   disabled it persists — hiding the (non-functional) app and showing a styled
+   message. Styled here, not via an inline <style>, to satisfy the strict CSP
+   (style-src 'self', no unsafe-inline). */
+.noscript-msg { display: none; }
+.no-js nav,
+.no-js main,
+.no-js footer { display: none; }
+.no-js .noscript-msg {
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 24px;
+  text-align: center;
+  color: #e2e8f0;
+}
+.no-js .noscript-emoji { font-size: 48px; }
+.no-js .noscript-title { font-size: 24px; }

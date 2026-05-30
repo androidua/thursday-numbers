@@ -4,6 +4,10 @@
 
 "use strict";
 
+// Remove the no-JS guard class as early as possible (before first paint) so the
+// JS-disabled fallback (styled via .no-js in style.css) never flashes for JS users.
+document.documentElement.classList.remove("no-js");
+
 // ─── Data paths (relative to web/ folder) ───────────────────────────────────
 const DATA_URL       = "data/powerball_draws.json";
 const SCOREBOARD_URL = "scoreboard.json";
@@ -389,6 +393,8 @@ function renderDashboard() {
 
 // ─── Frequency tab ───────────────────────────────────────────────────────────
 function renderFrequency() {
+  if (!window.Chart) { ensureChart(renderFrequency); return; }
+
   // Main ball frequency bar chart
   const mainLabels = Array.from({ length: 35 }, (_, i) => i + 1);
   const mainData   = mainLabels.map(n => mainFreq[n]);
@@ -436,6 +442,8 @@ function renderFrequency() {
 
 // ─── Trends tab ──────────────────────────────────────────────────────────────
 function renderTrends() {
+  if (!window.Chart) { ensureChart(renderTrends); return; }
+
   // Use currentDraws so we're always looking at current-format draws (7/35)
   const recent = currentDraws.slice(-20);
 
@@ -839,6 +847,8 @@ function renderScoreboard(sb) {
 }
 
 function renderDivisionChart(divisionHits) {
+  if (!window.Chart) { ensureChart(() => renderDivisionChart(divisionHits)); return; }
+
   const labels = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
   const data   = labels.map(d => divisionHits[d] || 0);
 
@@ -1231,6 +1241,19 @@ function chartOptions(title, xLabel, yLabel) {
       },
     },
   };
+}
+
+// Chart.js loads async; defer chart rendering until it's available so a fast
+// tab-click on a slow connection can't throw + leave a permanently blank chart.
+// When Chart.js is already loaded (the normal case), cb runs immediately — no
+// behaviour change. Otherwise poll briefly and render as soon as it arrives.
+function ensureChart(cb) {
+  if (window.Chart) { cb(); return; }
+  let waited = 0;
+  const iv = setInterval(() => {
+    if (window.Chart) { clearInterval(iv); cb(); }
+    else if ((waited += 100) >= 10000) { clearInterval(iv); }  // give up after 10s
+  }, 100);
 }
 
 function destroyChart(key) {

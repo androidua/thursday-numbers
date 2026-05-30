@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.23**
+**Current version: v1.7.24**
 
 ---
 
@@ -215,6 +215,11 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.24 — 2026-05-30
+- Reliability: `app.js` — charts now wait for the async Chart.js library before rendering (`ensureChart` guard on the Frequency, Trends, and Scoreboard charts). Previously a fast tab-click on a slow connection could call `new Chart()` before the CDN script finished loading, throwing and leaving the chart blank until a full page reload. No behaviour change when Chart.js is already loaded.
+- Security/CSP: `<noscript>` fallback no longer relies on inline `<style>` / `style=` attributes (which the strict `style-src 'self'` CSP silently blocked) — switched to a `.no-js` class pattern styled from `style.css`, so the JS-disabled message renders correctly with no CSP violation and no flash for JS-enabled users.
+- Chore: pinned `playwright==1.59.0` and `python-dotenv==1.2.2` in `requirements.txt` (previously unpinned).
 
 ### v1.7.23 — 2026-05-30
 - Fix: ball 13 was being penalised by the split-pot prior — swept into the 1–31 date-cluster down-weight (0.90) — even though both the web app and the email pipeline carry a comment stating it should stay at 1.00. Players avoid 13 (unlucky-number superstition), so it is an *underpicked* number the strategy should keep in play, not steer away from. Exempted 13 back to weight 1.00 in `web/app.js` and `scripts/generate_picks.py`, so the code now matches its documented intent across the Hot and Balanced strategies and the seeded weekly email picks.
