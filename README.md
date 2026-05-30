@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.21**
+**Current version: v1.7.22**
 
 ---
 
@@ -215,6 +215,10 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.22 — 2026-05-30
+- Number Picker: replaced `Math.random()` with a `crypto.getRandomValues`-based `secureRandom()` across all sampling (hot/cold/mixed/random strategies + Powerball selection). This makes the existing "cryptographically-uniform" comment accurate and upgrades every strategy to a true CSPRNG. No change to win odds — purely a randomness-quality and honesty fix.
+- Number Picker: Balanced Draw now applies the split-pot avoidance prior (`POPULARITY_PENALTY_MAIN`) to its main-ball pool, so it also steers away from the numbers humans over-pick (calendar dates, lucky 7/11) while keeping its sum / odds / lows / consecutive shape constraints. Previously only the Hot strategy benefited from this higher-expected-payout prior. The seeded email pipeline (`generate_picks.py`) is intentionally left unchanged — it already applies the prior and must stay deterministic for reproducible weekly picks.
 
 ### v1.7.21
 - Number Picker: added PowerHit mode — generates 7 main numbers only; Powerball omitted for Oz Lotteries PowerHit entries.

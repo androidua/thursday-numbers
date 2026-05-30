@@ -49,6 +49,13 @@ for (let b = 1; b <= 20; b++) POPULARITY_PENALTY_PB[b] = 0.95;
 POPULARITY_PENALTY_PB[7]  = 0.90;
 POPULARITY_PENALTY_PB[11] = 0.90;
 
+// Penalty-only weight pool for Balanced Draw (v1.7.22). Lets generateBalancedMain
+// bias away from over-picked numbers (split-pot avoidance) without using EWMA
+// recency — balanced mode targets a typical *shape*, not "hot" numbers.
+const SPLIT_POT_WEIGHTS_MAIN = [];
+for (let b = 1; b <= 35; b++)
+  SPLIT_POT_WEIGHTS_MAIN.push({ ball: b, w: POPULARITY_PENALTY_MAIN[b] || 1.0 });
+
 let histPage = 1;
 let histPerPage = 20;
 let histFiltered = [];
@@ -541,7 +548,7 @@ function generateGameWithStrategy(mode, powerHit = false) {
   } else if (mode === "cold") {
     // Flat frequency cold pool for main; cold Powerballs for PB.
     main = sample([...coldMain], 7).sort((a, b) => a - b);
-    pb   = powerHit ? null : coldPb[Math.floor(Math.random() * coldPb.length)];
+    pb   = powerHit ? null : coldPb[Math.floor(secureRandom() * coldPb.length)];
 
   } else if (mode === "mixed") {
     // Balanced Draw: rejection sampling against the hypergeometric distribution.
@@ -551,13 +558,17 @@ function generateGameWithStrategy(mode, powerHit = false) {
   } else {
     // True Random: cryptographically-uniform over all valid combinations.
     main = sample(Array.from({ length: 35 }, (_, i) => i + 1), 7).sort((a, b) => a - b);
-    pb   = powerHit ? null : Math.floor(Math.random() * 20) + 1;
+    pb   = powerHit ? null : Math.floor(secureRandom() * 20) + 1;
   }
 
   return { main, powerball: pb };
 }
 
 // Rejection sampling for a statistically balanced main-ball pick.
+// Draws from a split-pot-weighted pool (SPLIT_POT_WEIGHTS_MAIN) so the pick also
+// avoids the numbers humans overpick — the same payout-maximizing prior the hot
+// strategy uses — while the rejection constraints below keep the pick's shape
+// typical. EWMA recency is intentionally NOT used here: balanced ≠ hot.
 // Constraints and their statistical basis (all derived from draw history):
 //
 //   Sum  in [sumP5, sumP95]  — empirical 5th/95th percentiles of observed draw sums.
@@ -576,9 +587,8 @@ function generateGameWithStrategy(mode, powerHit = false) {
 //                              ensures balanced mode reflects the actual draw
 //                              distribution (previously this was unconstrained).
 function generateBalancedMain() {
-  const allMain = Array.from({ length: 35 }, (_, i) => i + 1);
   for (let attempt = 0; attempt < 5000; attempt++) {
-    const pick  = sample(allMain, 7).sort((a, b) => a - b);
+    const pick  = weightedSample(SPLIT_POT_WEIGHTS_MAIN, 7).sort((a, b) => a - b);
     const sum   = pick.reduce((a, b) => a + b, 0);
     const odds  = pick.filter(n => n % 2 !== 0).length;
     const lows  = pick.filter(n => n <= 17).length;
@@ -592,7 +602,7 @@ function generateBalancedMain() {
       return pick;
     }
   }
-  return sample(allMain, 7).sort((a, b) => a - b); // fallback (essentially impossible)
+  return weightedSample(SPLIT_POT_WEIGHTS_MAIN, 7).sort((a, b) => a - b); // fallback (essentially impossible)
 }
 
 // Pair-diversity check (v1.6.0): true if candidate shares ≤ maxShared balls
@@ -1149,6 +1159,14 @@ function chiApproxPValue(z) {
   return z >= 0 ? upper : 1 - upper;
 }
 
+// Cryptographically-uniform float in [0, 1) via crypto.getRandomValues.
+// A full 32-bit integer divided by 2^32 maps each outcome to an equal-width bin
+// (no modulo bias); residual bias is below 2^-32 — immaterial, and a genuine
+// upgrade over the Math.random() PRNG it replaces.
+function secureRandom() {
+  return crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296; // 2^32
+}
+
 // Weighted sampling without replacement (probability proportional to .w field).
 // pool: [{ball, w}, ...]; returns array of n ball numbers.
 function weightedSample(pool, n) {
@@ -1156,7 +1174,7 @@ function weightedSample(pool, n) {
   const result = [];
   while (result.length < n && p.length > 0) {
     const total = p.reduce((s, x) => s + x.w, 0);
-    let r = Math.random() * total;
+    let r = secureRandom() * total;
     for (let i = 0; i < p.length; i++) {
       r -= p[i].w;
       if (r <= 0 || i === p.length - 1) {
@@ -1172,7 +1190,7 @@ function weightedSample(pool, n) {
 function sample(arr, n) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(secureRandom() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a.slice(0, n);
