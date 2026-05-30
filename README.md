@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.24**
+**Current version: v1.7.25**
 
 ---
 
@@ -191,7 +191,6 @@ All HTTP security headers are applied at the Cloudflare edge via `web/_headers`:
 | `Referrer-Policy` | `strict-origin-when-cross-origin` |
 | `Permissions-Policy` | Disables camera, mic, geolocation, payment, USB, and FLoC |
 | `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` — enforces HTTPS |
-| `X-XSS-Protection` | `1; mode=block` — legacy XSS filter for older browsers |
 
 Additional hardening:
 - **Subresource Integrity (SRI)** — Chart.js CDN locked to a SHA-384 hash; tampered files are rejected by the browser
@@ -215,6 +214,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.25 — 2026-05-30
+- Docs: removed the stale `X-XSS-Protection` row from the README and CLAUDE.md security tables — the header was retired in v1.5.4 and is absent from `web/_headers` and the live response, so listing it as an applied header was inaccurate (and the legacy filter is deprecated; a strict CSP is the correct replacement). No site or asset behaviour changes.
 
 ### v1.7.24 — 2026-05-30
 - Reliability: `app.js` — charts now wait for the async Chart.js library before rendering (`ensureChart` guard on the Frequency, Trends, and Scoreboard charts). Previously a fast tab-click on a slow connection could call `new Chart()` before the CDN script finished loading, throwing and leaving the chart blank until a full page reload. No behaviour change when Chart.js is already loaded.

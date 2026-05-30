@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.7.24** — see `web/VERSION` file.
+**v1.7.25** — see `web/VERSION` file.
 
 ---
 
@@ -246,7 +246,6 @@ This is a **public GitHub repo**. All web assets are intentionally public — no
 | Referrer-Policy | `web/_headers` + `index.html` | `strict-origin-when-cross-origin` |
 | Permissions-Policy | `web/_headers` | Blocks camera, mic, geolocation, payment, USB, FLoC |
 | HSTS | `web/_headers` | `max-age=31536000; includeSubDomains` (supplementary to Cloudflare's own HSTS) |
-| X-XSS-Protection | `web/_headers` | Legacy browser fallback |
 | SRI on Chart.js | `index.html` | `integrity="sha384-..."` + `crossorigin="anonymous"` — CDN tampering protection |
 | No inline styles | `app.js` + `style.css` | Inline styles replaced with CSS classes; enables clean CSP without `unsafe-inline` |
 
