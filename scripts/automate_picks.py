@@ -66,14 +66,15 @@ def print_games(entry):
 
 def do_login(page, email, password):
     page.goto(LOGIN_URL)
-    page.wait_for_load_state("networkidle")
+    page.wait_for_load_state("domcontentloaded")
 
-    # Step 1: submit email; wait for the email-check API call to settle
+    # Step 1: submit email; wait for the password field to appear (condition-based,
+    # not networkidle — the page keeps background requests open so it never idles).
     page.locator("#loginRegisterEmail_email").fill(email)
     page.locator('[data-id="loginRegisterEmail_submit"]').click()
-    page.wait_for_load_state("networkidle")
 
     # Step 2: fill password using type selector (avoids React remount ID issues)
+    page.locator('input[type="password"]').wait_for(state="visible", timeout=20_000)
     page.locator('input[type="password"]').fill(password)
     page.get_by_role("button", name="Login", exact=True).click()
 
@@ -143,9 +144,16 @@ def run_automation(playwright: Playwright, games: list):
 
     print("Navigating to Powerball...")
     page.goto(POWERBALL_URL)
-    page.wait_for_load_state("networkidle")
+    # Use domcontentloaded, not networkidle: the Powerball page runs continuous
+    # background requests (live jackpot poll, analytics), so it never reaches a
+    # 500ms network-idle window and networkidle times out at 30s. Rely on the
+    # condition-based waits below (visible manual-pick label + game rows) instead.
+    page.wait_for_load_state("domcontentloaded")
 
     # Switch to "Pick your numbers" mode (away from QuickPick default).
+    page.locator('label[for="chooseNumbers_manualPickGames"]').wait_for(
+        state="visible", timeout=20_000
+    )
     page.locator('label[for="chooseNumbers_manualPickGames"]').click()
     page.wait_for_timeout(500)
 

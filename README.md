@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.25**
+**Current version: v1.7.26**
 
 ---
 
@@ -214,6 +214,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.7.26 — 2026-07-02
+- Fix: `scripts/automate_picks.py` no longer uses `page.wait_for_load_state("networkidle")`. The Oz Lotteries Powerball page runs continuous background requests (live jackpot poll, analytics), so it never reaches a 500ms network-idle window and Playwright timed out at 30s while "Navigating to Powerball...". Replaced all three `networkidle` waits (login page ×2, Powerball page) with `domcontentloaded` plus condition-based `wait_for(state="visible")` on the elements the script actually interacts with (password field, manual-pick label). `networkidle` is discouraged by Playwright for exactly this reason. Script-only change; no site/asset behaviour changes.
 
 ### v1.7.25 — 2026-05-30
 - Docs: removed the stale `X-XSS-Protection` row from the README and CLAUDE.md security tables — the header was retired in v1.5.4 and is absent from `web/_headers` and the live response, so listing it as an applied header was inaccurate (and the legacy filter is deprecated; a strict CSP is the correct replacement). No site or asset behaviour changes.
