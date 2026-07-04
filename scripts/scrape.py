@@ -48,6 +48,38 @@ def thursdays_between(start: date, end: date):
         d += timedelta(weeks=1)
 
 
+def parse_draw_page(html):
+    """Extract (sorted_main_balls, powerball) from a results page, or None.
+
+    Validates the current-format ranges (7 unique mains in 1-35, PB 1-20) —
+    corrupt or partial pages must never append silently into the data file.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+
+    main_balls = []
+    powerball = None
+
+    for li in soup.find_all("li"):
+        classes = li.get("class", [])
+        text = li.get_text(strip=True)
+        if not text.isdigit():
+            continue
+        val = int(text)
+        if "powerball" in classes and "ball" in classes:
+            powerball = val
+        elif "ball" in classes and "pb" in classes and "powerball" not in classes:
+            main_balls.append(val)
+
+    if len(main_balls) != 7 or powerball is None:
+        return None
+    if any(b < 1 or b > 35 for b in main_balls) or len(set(main_balls)) != 7:
+        return None
+    if powerball < 1 or powerball > 20:
+        return None
+
+    return sorted(main_balls), powerball
+
+
 def fetch_draw(draw_date: date):
     """Fetch a single draw from the website. Returns (main_balls, powerball) or None.
     Retries up to 3 times with exponential backoff (2s, 4s, 8s) on transient errors.
@@ -67,36 +99,40 @@ def fetch_draw(draw_date: date):
                 print(f"  WARNING: All 3 attempts failed for {draw_date}: {e}")
                 return None
 
-    soup = BeautifulSoup(resp.text, "html.parser")
+    time.sleep(0.5)  # politeness delay between page fetches
 
-    main_balls = []
-    powerball = None
+    result = parse_draw_page(resp.text)
+    if result is None:
+        print(f"  WARNING: Unexpected or invalid data for {draw_date}")
+    return result
 
-    for li in soup.find_all("li"):
-        classes = li.get("class", [])
-        text = li.get_text(strip=True)
-        if not text.isdigit():
-            continue
-        val = int(text)
-        if "powerball" in classes and "ball" in classes:
-            powerball = val
-        elif "ball" in classes and "pb" in classes and "powerball" not in classes:
-            main_balls.append(val)
 
-    if len(main_balls) != 7 or powerball is None:
-        print(f"  WARNING: Unexpected data for {draw_date}: main={main_balls}, pb={powerball}")
-        return None
+def collect_new_draws(missing_thursdays, last_draw_num, fetch_fn):
+    """Fetch draws in date order, assigning consecutive draw numbers.
 
-    # Current-format range check: main balls 1–35, PB 1–20. Reject on any out-of-range
-    # or duplicate value — corrupt data would append silently into powerball_draws.json.
-    if any(b < 1 or b > 35 for b in main_balls) or len(set(main_balls)) != 7:
-        print(f"  WARNING: Invalid main balls for {draw_date}: {main_balls}")
-        return None
-    if powerball < 1 or powerball > 20:
-        print(f"  WARNING: Invalid powerball for {draw_date}: {powerball}")
-        return None
-
-    return sorted(main_balls), powerball
+    STOPS at the first failure and returns (new_draws, failed_date). Continuing
+    past a failure would assign the next draw the failed draw's number, and the
+    failed date — then older than the newest saved date — would never be
+    retried. Stopping keeps the file contiguous; the next run self-heals.
+    """
+    new_draws = []
+    next_num = last_draw_num + 1
+    for draw_date in missing_thursdays:
+        print(f"  Fetching draw for {draw_date}...", end="", flush=True)
+        result = fetch_fn(draw_date)
+        if result is None:
+            print(" ✗  failed")
+            return new_draws, draw_date
+        main_balls, powerball = result
+        new_draws.append({
+            "draw": next_num,
+            "date": draw_date.isoformat(),
+            "main": main_balls,
+            "powerball": powerball,
+        })
+        print(f" ✓  #{next_num}: main={main_balls}, pb={powerball}")
+        next_num += 1
+    return new_draws, None
 
 
 def main():
@@ -125,25 +161,10 @@ def main():
 
     print(f"  Fetching {len(missing_thursdays)} draw(s)...")
 
-    new_draws = []
-    next_draw_num = last_draw_num + 1
-
-    for draw_date in missing_thursdays:
-        print(f"  Fetching draw for {draw_date}...", end="", flush=True)
-        result = fetch_draw(draw_date)
-        if result:
-            main_balls, powerball = result
-            new_draws.append({
-                "draw": next_draw_num,
-                "date": draw_date.isoformat(),
-                "main": main_balls,
-                "powerball": powerball,
-            })
-            print(f" ✓  #{next_draw_num}: main={main_balls}, pb={powerball}")
-            next_draw_num += 1
-        else:
-            print(f" ✗  skipped")
-        time.sleep(0.5)
+    new_draws, failed_date = collect_new_draws(missing_thursdays, last_draw_num, fetch_draw)
+    if failed_date is not None:
+        print(f"\n  WARNING: Stopped at {failed_date} — this and any later Thursdays "
+              f"will be retried on the next run (keeps draw numbering contiguous).")
 
     if new_draws:
         print(f"\n  Found {len(new_draws)} new draw(s).")
