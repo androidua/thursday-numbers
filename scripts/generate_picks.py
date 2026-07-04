@@ -24,6 +24,7 @@ import argparse
 import datetime as _dt
 import json
 import math
+import os
 import random
 import sys
 from datetime import datetime
@@ -253,6 +254,16 @@ def top_balls(scores, n):
     return sorted(sorted(scores, key=scores.get, reverse=True)[:n])
 
 
+def run_source():
+    """'cron' when executing inside GitHub Actions, else 'local'.
+
+    Stored per picks entry so score_history.py can distinguish delivered
+    Thursday emails from local/dev runs by provenance instead of guessing
+    from the weekday — a local Thursday run must never be scored as an email.
+    """
+    return "cron" if os.environ.get("GITHUB_ACTIONS") == "true" else "local"
+
+
 def build_result(draws, games, main_scores, pb_scores,
                  chi2_main, p_main, chi2_pb, p_pb, seed_string=None):
     first_date = draws[0]["date"]
@@ -264,6 +275,7 @@ def build_result(draws, games, main_scores, pb_scores,
         "ewma_alpha":      EWMA_ALPHA,
         "popularity_prior": "v1.5.23",
         "seed":            seed_string,
+        "source":          run_source(),
         "hot_main_balls":  top_balls(main_scores, 10),
         "hot_powerballs":  top_balls(pb_scores, 5),
         "freq_significant": p_main is not None and p_main < 0.05,
