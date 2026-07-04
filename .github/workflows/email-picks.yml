@@ -57,5 +57,6 @@ jobs:
             echo "No staged changes — nothing to commit."
           else
             git commit -m "auto: update picks history [skip actions]"
+            git pull --rebase origin main
             git push
           fi

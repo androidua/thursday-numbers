@@ -69,7 +69,13 @@ jobs:
             echo "No staged changes — nothing to commit."
           else
             git commit -m "auto: update draws and picks [skip actions]"
+            git pull --rebase origin main
             git push
           fi
+
+      - name: Verify data integrity and freshness
+        run: |
+          set -euo pipefail
+          python scripts/check_data.py --strict
       # Deployment is handled automatically by Cloudflare Pages,
       # which watches the main branch and deploys on every push.
