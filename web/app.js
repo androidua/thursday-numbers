@@ -13,6 +13,14 @@ const DATA_URL       = "data/powerball_draws.json";
 const SCOREBOARD_URL = "scoreboard.json";
 const VERSION_URL    = "VERSION";
 
+// Probability that a single game wins ANY division, from the hypergeometric
+// distribution for 7-from-35 mains and a 1-in-20 Powerball:
+//   P(k matches) = C(7,k)·C(28,7−k) / C(35,7),  C(35,7) = 6,724,520
+//   P(any prize) = P(7) + P(6) + P(5) + [P(4) + P(3) + P(2)] / 20 ≈ 0.02274
+// (Divisions 1-4 and 7 don't require the PB; divisions 6, 8, 9 do.)
+// ≈ 1-in-44 — matches the game's published overall odds.
+const P_ANY_PRIZE = 0.02274;
+
 // ─── State ──────────────────────────────────────────────────────────────────
 let draws = [];         // ALL draws (1996–present, all formats)
 let currentDraws = [];  // Current-format only: 7 main from 1–35, PB from 1–20 (Apr 2018+)
@@ -147,7 +155,7 @@ async function loadData() {
       throw new Error("Draw data format is invalid");
     }
   } catch (e) {
-    showError(`Could not load draw data: ${e.message}. Are you running this from GitHub Pages or a local server?`);
+    showError(`Could not load draw data: ${e.message}. If developing locally, serve the web/ folder over HTTP (e.g. python3 -m http.server) — fetch() cannot read local files.`);
     return;
   }
   hideLoading();
@@ -808,7 +816,7 @@ async function loadScoreboard() {
       tbody.innerHTML = "";
       const tr = document.createElement("tr");
       const td = document.createElement("td");
-      td.colSpan = 5;
+      td.colSpan = 6;
       td.className = "scoreboard-empty";
       td.textContent = "Scoreboard data not yet available. It updates every Thursday evening AEST after each draw.";
       tr.appendChild(td);
@@ -839,6 +847,23 @@ function renderScoreboard(sb) {
     if (Array.isArray(sb.pending_weeks) && sb.pending_weeks.length > 0) {
       pendEl.textContent =
         `${sb.pending_weeks.length} pick batch(es) generated after the most recent recorded draw — waiting for the next draw to score.`;
+    }
+  }
+
+  // Pure-chance baseline: what a random player buying the same number of
+  // games would expect. Matching it is the expected outcome — the whole
+  // point of publishing this scoreboard.
+  const baselineEl = document.getElementById("sb-baseline");
+  if (baselineEl) {
+    const games = sb.games_scored ?? 0;
+    if (games > 0) {
+      const expected = (games * P_ANY_PRIZE).toFixed(1);
+      baselineEl.textContent =
+        `Pure-chance baseline: ~${expected} prize wins expected from ${games} games ` +
+        `(≈1-in-44 odds per game). Actual: ${prizeCount}. Tracking the baseline is the ` +
+        `expected result — no pick strategy changes the odds.`;
+    } else {
+      baselineEl.textContent = "";
     }
   }
 
