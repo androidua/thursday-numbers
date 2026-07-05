@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.7.26**
+**Current version: v1.8.0**
 
 ---
 
@@ -221,6 +221,16 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.8.0
+- Fix: `scrape.py` now stops at the first failed Thursday instead of continuing — continuing assigned later draws the failed draw's number and permanently orphaned the failed date. Data file numbering can no longer silently corrupt.
+- Feature: `scripts/check_data.py` validates draw-file integrity (contiguous numbering, ascending dates, valid ranges) and freshness; `powerball-update.yml` runs it with `--strict` AFTER the data commit, so a broken scrape turns the workflow red (GitHub emails on failure) without blocking data.
+- Feature: pytest suite (`tests/`) covering scraper parsing/numbering, scorer division mapping and double-count guard, generator invariants (coverage, diversity, uniqueness), data validation, and version-stamp consistency; new `tests.yml` CI workflow runs it on every human push.
+- Feature: picks entries now record `source: "cron" | "local"`; `score_history.py` uses it (with a weekday fallback for legacy entries) plus a same-draw dedupe guard, eliminating the scoreboard double-count risk from local Thursday runs.
+- Feature: Scoreboard shows the pure-chance baseline (~1-in-44 per game) next to actual prize wins.
+- Feature: `scripts/bump_version.py` updates all six version stamps atomically; a consistency test fails the suite if any stamp drifts.
+- Fix: strategy explainer copy updated to match the actual algorithms (EWMA half-life, adaptive sum bounds, consecutive-pair constraint; removed the false "avoids popular combinations" claim on True Random); scoreboard fetch-error placeholder colSpan corrected; stale "GitHub Pages" error message replaced.
+- Chore: removed stale tracked root-level `powerball_draws.json`, `picks/`, and `VERSION` (frozen since v1.5.x); `requests` bumped past CVE-2024-35195/CVE-2024-47081; `git pull --rebase` before push in both workflows; docs truth pass on CLAUDE.md/README (removed volatile stats, fixed run_all/email-subject/tab-list/fetch-list drift).
 
 ### v1.7.26 — 2026-07-02
 - Fix: `scripts/automate_picks.py` no longer uses `page.wait_for_load_state("networkidle")`. The Oz Lotteries Powerball page runs continuous background requests (live jackpot poll, analytics), so it never reaches a 500ms network-idle window and Playwright timed out at 30s while "Navigating to Powerball...". Replaced all three `networkidle` waits (login page ×2, Powerball page) with `domcontentloaded` plus condition-based `wait_for(state="visible")` on the elements the script actually interacts with (password field, manual-pick label). `networkidle` is discouraged by Playwright for exactly this reason. Script-only change; no site/asset behaviour changes.
