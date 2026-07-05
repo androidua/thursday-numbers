@@ -68,12 +68,15 @@ Two separate GitHub Actions workflows run on schedule:
 **`email-picks.yml`** — Thursday 00:00 UTC (= 10am AEST / 11am AEDT):
 1. Runs `scripts/generate_picks.py` — generates 18 fresh hot-number games
 2. Runs `scripts/email_picks.py` — sends HTML email via Brevo
-3. Commits `web/picks/picks_history.json` if updated — powers the web app's History tab
+3. Commits `web/picks/picks_history.json` if updated — consumed by `score_history.py` (Scoreboard) and `automate_picks.py` (cart fill); NOT fetched by the web frontend
 
 **`powerball-update.yml`** — Thursday 18:00 UTC (= Friday 4am AEST / 5am AEDT):
-1. Runs `scripts/scrape.py` — fetches any new draws since last recorded
-2. Commits `web/data/powerball_draws.json` if new draws were found
-3. Cloudflare Pages auto-deploys on every push to `main`
+1. Runs `scripts/scrape.py` — fetches any new draws since last recorded (stops at the first failed Thursday to keep numbering contiguous)
+2. Runs `scripts/score_history.py` — rescores picks history → `web/scoreboard.json`
+3. Updates `web/sitemap.xml` lastmod
+4. Commits `web/data/powerball_draws.json`, `web/scoreboard.json`, `web/sitemap.xml` if changed
+5. Runs `scripts/check_data.py --strict` AFTER the commit — a stale or corrupt data file turns the workflow red (GitHub emails on failure) without blocking the data commit
+6. Cloudflare Pages auto-deploys on every push to `main`
 
 **Why the two-workflow split?** Email sends *before* the draw (10am) using prior data. Scrape runs *after* the draw (4am next day) to capture results. These are deliberately separate cron jobs.
 
@@ -88,11 +91,13 @@ thursday-numbers/
 ├── CLAUDE.md                              ← this file
 ├── README.md                              ← public-facing project description
 ├── requirements.txt                       ← Python dependencies
+├── requirements-dev.txt                   ← dev-only dependencies (pytest)
 ├── Fill Powerball Numbers.command         ← macOS double-clickable shortcut → scripts/automate_picks.py
 ├── .github/
 │   └── workflows/
 │       ├── powerball-update.yml           ← GitHub Actions scrape (Thursday 18:00 UTC = Friday 4am AEST)
-│       └── email-picks.yml               ← GitHub Actions email (Thursday 00:00 UTC = 10am AEST)
+│       ├── email-picks.yml               ← GitHub Actions email (Thursday 00:00 UTC = 10am AEST)
+│       └── tests.yml                      ← CI: pytest on every human push
 ├── scripts/
 │   ├── scrape.py                          ← fetches new draws since last known draw
 │   ├── scrape_historical.py               ← one-time backfill: year-archive pages 1996–2018
@@ -100,7 +105,10 @@ thursday-numbers/
 │   ├── email_picks.py                     ← sends picks via Brevo REST API
 │   ├── score_history.py                   ← scores picks_history against draws → scoreboard.json (v1.6.0)
 │   ├── automate_picks.py                  ← Playwright: log in to ozlotteries.com, fill 18 games, stop at cart (v1.7.0+)
-│   └── run_all.py                         ← entry point: scrape → generate → email
+│   ├── run_all.py                         ← entry point: scrape → generate → email
+│   ├── check_data.py                      ← data integrity + freshness validation (v1.8.0; --strict in CI)
+│   └── bump_version.py                    ← updates every version stamp atomically (v1.8.0)
+├── tests/                                 ← pytest suite (run: pytest -q); CI via .github/workflows/tests.yml
 └── web/                                   ← served by Cloudflare Pages
     ├── VERSION                            ← current version number (read by app.js)
     ├── index.html                         ← static site
@@ -123,9 +131,7 @@ thursday-numbers/
 ## What Has Been Built
 
 ### Data
-- **1,556 draws** scraped from `australia.national-lottery.com` (complete history)
-- Full range: **#1 (1996-05-23) → #1556 (2026-03-12)**
-- Current-format draws used for analysis: **413** (#1144 2018-04-19 → #1556 2026-03-12)
+- Complete history since #1 (1996-05-23), auto-appended weekly; current-format draws (Apr 2018+) are the analysis basis.
 - Stored in `web/data/powerball_draws.json` (single location — no root-level copy)
 - Format: `{"draw": 1144, "date": "2018-04-19", "main": [4,5,9,13,25,32,33], "powerball": 7}`
 - Pre-2018 draws have fewer main balls (5 or 6); `app.js` filters to `main.length === 7` for all analysis
@@ -135,15 +141,15 @@ thursday-numbers/
 - `scrape_historical.py` — one-time backfill via year-archive pages; supports `--dry-run` and `--start-year`
 - `generate_picks.py` — frequency analysis, top-10 hot main + top-5 hot PBs, 18 unique games
 - `email_picks.py` — HTML email via Brevo REST API with coloured ball layout (indigo main, purple PB)
-- `run_all.py` — full pipeline with `--dry-run` and `--force` flags, 3-week gap check
+- `run_all.py` — local convenience pipeline (scrape → generate → email) with `--dry-run`; NOT used by the workflows, which run the steps individually. No gap check.
 - `automate_picks.py` — Playwright: opens Chrome, logs in to ozlotteries.com using `OZ_EMAIL`/`OZ_PASSWORD` from `.env`, switches to manual pick mode, selects 18 games, fills all from the latest `picks_history.json` entry, clicks Add to cart, leaves browser open for the user to complete payment (see "load-bearing patterns" under Script Details — do not regress)
 
 ### Web App
-- Dark-themed single-page app: Dashboard, Frequency, Recent Trends, Number Picker, History
-- Number Picker supports 1-game or 18-game generation with 4 strategies (hot/cold/mixed/random)
+- Dark-themed single-page app: Dashboard, Frequency, Recent Trends, Number Picker, Scoreboard, History
+- Number Picker supports 1-game, 18-game, or PowerHit generation with 4 strategies (hot/cold/mixed/random)
 - Game results displayed as card grid (3-col desktop, 2-col tablet, 1-col mobile)
 - Chart.js from CDN with SRI integrity check — no build step
-- Loads `data/powerball_draws.json` and `picks/picks_history.json` via `fetch()` (paths relative to `web/`)
+- Loads `data/powerball_draws.json`, `scoreboard.json`, and `VERSION` via `fetch()` (paths relative to `web/`)
 - Version displayed in footer (read at runtime from `web/VERSION`)
 
 ---
@@ -172,13 +178,12 @@ Output format per run:
 ```
 
 ### `scripts/email_picks.py`
-- Subject: `🎱 Your Powerball Picks — Draw Week of [date]`
+- Subject: `Thursday Numbers — your weekly games (YYYY-MM-DD)`
 - HTML email with coloured ball table + plain text fallback
 - Env vars: `BREVO_API_KEY`, `EMAIL_RECIPIENT`, `EMAIL_SENDER`
 
 ### `scripts/run_all.py`
 - `--dry-run`: skip email send and data file writes
-- `--force`: bypass the 3-week gap check
 - Exits with code 1 on failure (GitHub Actions marks run as failed)
 
 ### `scripts/automate_picks.py` — load-bearing patterns
@@ -210,13 +215,10 @@ Repo → Settings → Secrets and variables → Actions → New repository secre
 
 ## Current Data Stats
 
-- **Total draws (all eras):** 1,556
-- **Full range:** Draw #1 (1996-05-23) → Draw #1556 (2026-03-12)
-- **Current-format draws (used for analysis):** 413 (Draw #1144, 2018-04-19 → Draw #1556, 2026-03-12)
-- **Format eras:** 5-ball 1–45 (1996–2013, ~876 draws), 6-ball 1–40 (2013–2018, ~267 draws), 7-ball 1–35 + PB 1–20 (2018–present, 413 draws)
-- **Hot main balls (current format):** 9, 7, 17, 11, 19, 18, 23, 14, 12, 30
-- **Cold main balls (current format):** 31, 13, 26, 29, 8, 33, 35, 15, 34, 5
-- **Hot Powerballs (current format):** 2, 4, 6, 10, 3
+Live counts change weekly — read them from the data, don't record them here:
+- **Total / latest draw:** `python3 -c "import json; d=json.load(open('web/data/powerball_draws.json')); print(len(d), d[-1])"`
+- **Format eras:** 5-ball 1–45 (1996–2013), 6-ball 1–40 (2013–2018), 7-ball 1–35 + PB 1–20 (Apr 2018–present, `main.length === 7` filter)
+- Hot/cold lists are computed at runtime by `app.js` and per-run by `generate_picks.py`; they are never authoritative in docs.
 
 ---
 
@@ -269,7 +271,6 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 | Email | Brevo REST API (via `requests`) | Free forever (300/day); no SDK needed; API key safe for public repos |
 | Email schedule | Thursday 00:00 UTC (`email-picks.yml`) | 10am AEST — sends picks before that evening's draw |
 | Scrape schedule | Thursday 18:00 UTC (`powerball-update.yml`) | Friday 4am AEST — after draw results are published |
-| 3-week gap | Checked in `run_all.py` | cron can't do "every N weeks"; script skips if not enough time has passed |
 | Number strategy | Hot numbers for all 18 games | User preference |
 | Games per run | 18 | User buys 18 standard games per draw |
 | Web framework | Vanilla JS + Chart.js CDN | No build step; Cloudflare Pages serves static files directly |
@@ -309,3 +310,5 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 - **Workflow auto-commits must use `[skip actions]`, never `[skip ci]`** — Cloudflare Pages respects `[skip ci]` and will silently skip the deployment. `[skip actions]` prevents GitHub Actions re-runs without blocking Cloudflare Pages. Also, never mention `[skip ci]` anywhere in a commit message body, as Cloudflare Pages scans the full message.
 - **Do not "simplify" the click strategy in `scripts/automate_picks.py`** — the `input[data-id="..."]` + `dispatch_event("click")` + per-row scoping is load-bearing (see Script Details for `automate_picks.py`). Reverting to `label[for=N].click()` silently breaks PB selection because the page has duplicate `id` attributes; reverting to `.click()` instead of `dispatch_event` re-introduces occlusion failures. Verify against the live page before changing any selector here.
 - **For Playwright/DOM-integration bugs, inspect the live target before iterating** — v1.7.11-15 shipped five failed patches for the cart-fill because no one verified `pbsChecked` actually changed after a PB click. Use the Playwright MCP (`browser_navigate`, `browser_evaluate`) to read real state before forming a hypothesis.
+- **Run `pytest -q` before every push** — the suite covers scraper parsing/numbering, scorer division mapping and dedupe, generator invariants, data validation, and version-stamp consistency
+- **Use `python scripts/bump_version.py X.Y.Z` for version bumps** — it updates `web/VERSION`, both cache-bust query strings, the footer fallback, the README badge, and the CLAUDE.md version line atomically, and aborts if any stamp is missing. The changelog entry and git tag remain manual.

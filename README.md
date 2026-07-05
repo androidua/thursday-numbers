@@ -18,7 +18,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 | 🎯 Number picker | 18 hot-number games per run (7 main + 1 Powerball each) |
 | 🤖 Auto-update | GitHub Actions runs every Friday at 4am AEST; full pipeline runs every week |
 | 📧 Email delivery | HTML email via Brevo with all 18 games beautifully formatted |
-| 📂 Data | 1,555 draws from May 1996 onward (complete history); analysis uses current-format draws (2018–present) |
+| 📂 Data | Complete draw history since May 1996, auto-appended weekly; analysis uses current-format draws (2018–present) |
 
 ---
 
@@ -41,6 +41,10 @@ thursday-numbers/
 │   ├── scrape.py                     ← Fetch new draws from the web
 │   ├── generate_picks.py             ← Generate 18 hot-number games
 │   ├── email_picks.py                ← Send picks via Brevo
+│   ├── score_history.py              ← Score emailed picks vs actual draws → scoreboard.json
+│   ├── automate_picks.py             ← Playwright cart-fill for ozlotteries.com
+│   ├── check_data.py                 ← Data integrity + freshness validation
+│   ├── bump_version.py               ← Atomic version-stamp updater
 │   └── run_all.py                    ← Full pipeline entry point
 ├── web/                              ← Served by Cloudflare Pages
 │   ├── VERSION                       ← Current version number
@@ -50,6 +54,7 @@ thursday-numbers/
 │   ├── _headers                      ← Cloudflare Pages HTTP security headers
 │   ├── robots.txt                    ← Crawler policy
 │   ├── sitemap.xml                   ← XML sitemap
+│   ├── scoreboard.json               ← Public pick-performance record
 │   ├── data/
 │   │   └── powerball_draws.json      ← Draw data served to the web app
 │   └── picks/
@@ -57,6 +62,8 @@ thursday-numbers/
 ├── .github/workflows/
 │   ├── powerball-update.yml          ← GitHub Actions scrape (Friday 4am AEST)
 │   └── email-picks.yml               ← GitHub Actions email (Thursday 10am AEST)
+├── tests/                            ← pytest suite
+├── requirements-dev.txt
 └── requirements.txt
 ```
 
