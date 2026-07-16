@@ -2,11 +2,11 @@
 
 > **Every Thursday, smarter numbers.**
 
-Statistical analysis of Australian Powerball historical draw data. Generates 18 hot-number game picks and emails them weekly via Brevo — all driven by a free GitHub Actions workflow.
+Statistical analysis of Australian Powerball historical draw data. Generates 18 EWMA-weighted, full-coverage game picks and emails them weekly via Brevo — all driven by a free GitHub Actions workflow.
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.8.0**
+**Current version: v1.8.1**
 
 ---
 
@@ -15,7 +15,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 | Feature | Detail |
 |---|---|
 | 📊 Web dashboard | Frequency charts, hot/cold numbers, recent trends, full draw history |
-| 🎯 Number picker | 18 hot-number games per run (7 main + 1 Powerball each) |
+| 🎯 Number picker | 18 games per run — EWMA-weighted with full ball coverage (7 main + 1 Powerball each) |
 | 🤖 Auto-update | GitHub Actions runs every Friday at 4am AEST; full pipeline runs every week |
 | 📧 Email delivery | HTML email via Brevo with all 18 games beautifully formatted |
 | 📂 Data | Complete draw history since May 1996, auto-appended weekly; analysis uses current-format draws (2018–present) |
@@ -28,6 +28,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 2. **Chi-squared test** — the dashboard shows whether observed frequencies significantly deviate from a fair uniform distribution. With ~415 draws the answer is typically "no" — hot/cold labels are entertainment, not prediction.
 3. **Greedy portfolio coverage (games 1–5)** — all 35 main balls are sampled without replacement in EWMA-probability order and partitioned into 5 games of 7, guaranteeing every ball appears at least once in the weekly batch.
 4. **Diverse fill (games 6–18)** — EWMA-weighted random sampling with pair-diversity rejection: no two games share more than 4 main balls, preventing redundant near-duplicate picks.
+5. **Powerball spread** — all 18 Powerballs are pre-sampled without replacement, so each weekly batch covers 18 of the 20 possible Powerballs. The coverage + diversity structure maximises the chance of winning *something* in a given week (~40%); it cannot and does not change the fixed per-game odds (1 in 44).
 
 > ⚠️ **Important disclaimer:** Powerball is a game of pure chance. Each draw is completely independent. Past frequencies have **zero** influence on future draws. This tool is for entertainment only. If gambling is causing you problems, contact [Gambling Help Online](https://www.gamblinghelponline.org.au) or call **1800 858 858**.
 
@@ -39,7 +40,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 thursday-numbers/
 ├── scripts/
 │   ├── scrape.py                     ← Fetch new draws from the web
-│   ├── generate_picks.py             ← Generate 18 hot-number games
+│   ├── generate_picks.py             ← Generate 18 EWMA-weighted coverage games
 │   ├── email_picks.py                ← Send picks via Brevo
 │   ├── score_history.py              ← Score emailed picks vs actual draws → scoreboard.json
 │   ├── automate_picks.py             ← Playwright cart-fill for ozlotteries.com
@@ -58,7 +59,7 @@ thursday-numbers/
 │   ├── data/
 │   │   └── powerball_draws.json      ← Draw data served to the web app
 │   └── picks/
-│       └── picks_history.json        ← Pick history served to the web app
+│       └── picks_history.json        ← Pick history log (scorer + cart-fill input)
 ├── .github/workflows/
 │   ├── powerball-update.yml          ← GitHub Actions scrape (Friday 4am AEST)
 │   └── email-picks.yml               ← GitHub Actions email (Thursday 10am AEST)
@@ -147,9 +148,9 @@ Every push to `main` triggers an automatic Cloudflare Pages redeploy.
 Two separate GitHub Actions workflows run on a schedule:
 
 **`email-picks.yml`** — Thursday 10am AEST (Thursday 00:00 UTC)
-- Generates 18 fresh hot-number picks from current draw data
+- Generates 18 fresh picks (EWMA-weighted, full coverage) from current draw data
 - Sends a formatted HTML email via Brevo
-- Commits updated `web/picks/picks_history.json` (powers the History tab)
+- Commits updated `web/picks/picks_history.json` (consumed by the scorer and the cart-fill script; not fetched by the web app)
 
 **`powerball-update.yml`** — Friday 4am AEST (Thursday 18:00 UTC)
 - Scrapes any new draws published after Thursday evening's draw
@@ -221,6 +222,10 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.8.1
+- Docs: corrected pick-generator description drift — CLAUDE.md (automation summary, project tree, script list, Script Details output example, Key Technical Decisions) and README one-liners still described the pre-v1.5.16 generator ("top-10 hot mains + top-5 hot PBs" / "hot-number games"). Replaced with the actual algorithm shipped in v1.5.16/17: EWMA scoring (α=0.03, ≈23-draw half-life), two-phase full-coverage generation, ≤4-ball pair diversity, 18 distinct Powerballs per batch, split-pot prior (v1.5.23), chi-squared uniformity reporting. Also fixed the README claim that `picks_history.json` powers the History tab (it is consumed by the scorer and cart-fill script, not fetched by the web app).
+- No code changes. Backed by a 1M-week Monte Carlo audit of the production generator (P(≥1 prize/week) ≈ 40% now vs ≈16% pre-rewrite; per-game odds strategy-invariant at 1-in-44) and an independent re-score of all 17 scoreboard weeks (0 mismatches).
 
 ### v1.8.0
 - Fix: `scrape.py` now stops at the first failed Thursday instead of continuing — continuing assigned later draws the failed draw's number and permanently orphaned the failed date. Data file numbering can no longer silently corrupt.

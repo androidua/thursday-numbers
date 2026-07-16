@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.8.0** — see `web/VERSION` file.
+**v1.8.1** — see `web/VERSION` file.
 
 ---
 
@@ -66,7 +66,7 @@ The site is deployed via **Cloudflare Pages** (not GitHub Pages).
 Two separate GitHub Actions workflows run on schedule:
 
 **`email-picks.yml`** — Thursday 00:00 UTC (= 10am AEST / 11am AEDT):
-1. Runs `scripts/generate_picks.py` — generates 18 fresh hot-number games
+1. Runs `scripts/generate_picks.py` — generates 18 fresh games (EWMA-weighted, full coverage, 18 distinct PBs)
 2. Runs `scripts/email_picks.py` — sends HTML email via Brevo
 3. Commits `web/picks/picks_history.json` if updated — consumed by `score_history.py` (Scoreboard) and `automate_picks.py` (cart fill); NOT fetched by the web frontend
 
@@ -101,7 +101,7 @@ thursday-numbers/
 ├── scripts/
 │   ├── scrape.py                          ← fetches new draws since last known draw
 │   ├── scrape_historical.py               ← one-time backfill: year-archive pages 1996–2018
-│   ├── generate_picks.py                  ← generates 18 hot-number games (seeded since v1.6.0)
+│   ├── generate_picks.py                  ← generates 18 games — EWMA + coverage portfolio (seeded since v1.6.0)
 │   ├── email_picks.py                     ← sends picks via Brevo REST API
 │   ├── score_history.py                   ← scores picks_history against draws → scoreboard.json (v1.6.0)
 │   ├── automate_picks.py                  ← Playwright: log in to ozlotteries.com, fill 18 games, stop at cart (v1.7.0+)
@@ -121,7 +121,7 @@ thursday-numbers/
     ├── data/
     │   └── powerball_draws.json           ← draw history; read/written by scripts; served to web app
     └── picks/
-        └── picks_history.json             ← generated picks log; written by scripts; served to web app
+        └── picks_history.json             ← generated picks log; written by scripts; public but not fetched by the web app
 ```
 
 **Single source of truth:** all scripts read from and write to `web/data/` and `web/picks/` directly. There is no separate root-level `data/` or `picks/` directory.
@@ -139,7 +139,7 @@ thursday-numbers/
 ### Python Scripts
 - `scrape.py` — finds missing Thursdays, fetches each from australia.national-lottery.com
 - `scrape_historical.py` — one-time backfill via year-archive pages; supports `--dry-run` and `--start-year`
-- `generate_picks.py` — frequency analysis, top-10 hot main + top-5 hot PBs, 18 unique games
+- `generate_picks.py` — EWMA-weighted two-phase coverage portfolio: 18 games spanning all 35 mains and 18 distinct PBs (the original top-10-main/top-5-PB hot pool was replaced in v1.5.16/17)
 - `email_picks.py` — HTML email via Brevo REST API with coloured ball layout (indigo main, purple PB)
 - `run_all.py` — local convenience pipeline (scrape → generate → email) with `--dry-run`; NOT used by the workflows, which run the steps individually. No gap check.
 - `automate_picks.py` — Playwright: opens Chrome, logs in to ozlotteries.com using `OZ_EMAIL`/`OZ_PASSWORD` from `.env`, switches to manual pick mode, selects 18 games, fills all from the latest `picks_history.json` entry, clicks Add to cart, leaves browser open for the user to complete payment (see "load-bearing patterns" under Script Details — do not regress)
@@ -163,16 +163,34 @@ thursday-numbers/
 - `time.sleep(0.5)` between requests; User-Agent: `Mozilla/5.0`
 
 ### `scripts/generate_picks.py`
+Two-phase EWMA generator (v1.5.16/17 replaced the original top-10-main/top-5-PB hot pool):
+- **EWMA scoring** per ball (α=0.03, half-life ≈23 draws ≈ 6 months) + split-pot popularity prior (v1.5.23)
+- **Phase 1 (games 1–5):** all 35 main balls sampled without replacement in EWMA order, partitioned into 5 games — every main ball appears in every weekly batch
+- **Phase 2 (games 6–18):** EWMA-weighted sampling; a candidate is rejected if it shares >4 mains with any existing game
+- **Powerballs:** 18 distinct PBs pre-sampled without replacement (18/20 = 90% weekly PB coverage)
+- **Determinism:** seed `YYYY-MM-DD-<draw count>` (v1.6.0); `source: "cron" | "local"` provenance (v1.8.0)
+- **Honesty check:** chi-squared uniformity test attached to every entry — `freq_significant` has been false on all real data (observed frequencies are consistent with a fair draw), so the "hot" labels are presentation, not signal
+- **Structure rationale** (audited v1.8.1 with a 1M-week Monte Carlo of this module): per-game odds are strategy-invariant (1 in 44); the coverage + diversity + PB-spread structure maximises P(≥1 prize per week) ≈ 40%, vs ≈16% for the old concentrated pool, at identical expected value
+
 Output format per run:
 ```json
 {
-  "generated_at": "2026-03-05T10:00:00",
-  "draws_analysed": 412,
-  "data_range": "2018-04-19 to 2026-03-05",
-  "hot_main_balls": [9, 7, 17, 11, 19, 18, 23, 14, 12, 30],
-  "hot_powerballs": [2, 4, 6, 10, 3],
+  "generated_at": "2026-07-16T02:03:33",
+  "draws_analysed": 430,
+  "data_range": "2018-04-19 to 2026-07-09",
+  "ewma_alpha": 0.03,
+  "popularity_prior": "v1.5.23",
+  "seed": "2026-07-16-430",
+  "source": "cron",
+  "hot_main_balls": [1, 12, 15, 17, 22, 25, 27, 30, 32, 34],
+  "hot_powerballs": [10, 14, 17, 18, 20],
+  "freq_significant": false,
+  "chi2_main": 21.6,
+  "chi2_main_p": 0.951,
+  "chi2_pb": 23.49,
+  "chi2_pb_p": 0.2165,
   "games": [
-    {"game": 1, "main": [7, 9, 11, 17, 18, 19, 23], "powerball": 2}
+    {"game": 1, "main": [6, 14, 25, 29, 30, 32, 33], "powerball": 14}
   ]
 }
 ```
@@ -271,7 +289,7 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 | Email | Brevo REST API (via `requests`) | Free forever (300/day); no SDK needed; API key safe for public repos |
 | Email schedule | Thursday 00:00 UTC (`email-picks.yml`) | 10am AEST — sends picks before that evening's draw |
 | Scrape schedule | Thursday 18:00 UTC (`powerball-update.yml`) | Friday 4am AEST — after draw results are published |
-| Number strategy | Hot numbers for all 18 games | User preference |
+| Number strategy | EWMA-weighted coverage portfolio (v1.5.16/17): all 35 mains covered, 18 distinct PBs, ≤4-ball inter-game overlap, split-pot prior (v1.5.23) | Per-game odds are fixed at 1-in-44 regardless of numbers — the structure instead maximises P(≥1 prize per week) (~40% vs ~16% for the old top-10/top-5 hot pool) at identical EV |
 | Games per run | 18 | User buys 18 standard games per draw |
 | Web framework | Vanilla JS + Chart.js CDN | No build step; Cloudflare Pages serves static files directly |
 | Data storage | JSON files in repo | Simple, version-controlled, human-readable diffs |
