@@ -10,6 +10,21 @@
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://thursdaynumbers.com/" />
 
+  <!-- Icons (v1.8.4). All three are the same artwork; favicon.svg is the
+       source and the rasters are generated from it, so whichever a browser
+       picks looks identical.
+       - sizes="any" is the recommended idiom for a scalable icon: browsers
+         score candidates against the pixel size they need, and a bare SVG can
+         lose to a raster advertising an explicit size. It's a hint, not a
+         guarantee — Chromium still chose favicon.ico when this was tested.
+       - favicon.ico also answers the implicit /favicon.ico request that
+         browsers and crawlers make regardless of these tags.
+       - apple-touch-icon.png is rendered on an opaque #0f1117 background
+         (--bg) because iOS composites transparency onto black. -->
+  <link rel="icon"             href="/favicon.svg" type="image/svg+xml" sizes="any" />
+  <link rel="icon"             href="/favicon.ico" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
   <!-- Security -->
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="theme-color" content="#1a1d27" />
@@ -97,13 +112,12 @@
   }
   </script>
 
-  <!-- Favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎱</text></svg>" />
+  <!-- Favicon moved to the Icons block at the top of <head> in v1.8.4. -->
 
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
   <link rel="preload" href="data/powerball_draws.json" as="fetch" crossorigin="anonymous" />
-  <link rel="stylesheet" href="style.css?v=1.8.3" />
+  <link rel="stylesheet" href="style.css?v=1.8.4" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
           integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g"
           crossorigin="anonymous" async></script>
@@ -391,11 +405,11 @@
       <p>🎱 Thursday Numbers &mdash; Statistical analysis of Australian Powerball draws</p>
       <p>Data: <a href="https://australia.national-lottery.com/powerball" target="_blank" rel="noopener noreferrer">australia.national-lottery.com</a> &nbsp;|&nbsp; <a href="https://github.com/androidua/thursday-numbers" target="_blank" rel="noopener noreferrer">GitHub</a></p>
       <p class="footer-disclaimer">For entertainment only. Not financial or gambling advice. Gamble responsibly.</p>
-      <p class="footer-version" id="footer-version">v1.8.3</p>
+      <p class="footer-version" id="footer-version">v1.8.4</p>
     </div>
   </footer>
 
-  <script src="app.js?v=1.8.3"></script>
+  <script src="app.js?v=1.8.4"></script>
   <div class="noscript-msg">
     <p class="noscript-emoji">🎱</p>
     <h1 class="noscript-title">Thursday Numbers requires JavaScript</h1>

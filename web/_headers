@@ -14,11 +14,14 @@
   # Content Security Policy
   # - script-src: local JS + Chart.js CDN only
   # - style-src:  local CSS only (no inline styles in use)
-  # - img-src:    local + data URI (emoji favicon)
+  # - img-src:    local only. `data:` was dropped in v1.8.4 when the inline
+  #               data-URI emoji favicon was replaced by /favicon.svg. The site
+  #               loads no other images — no <img> tags, no CSS url(), no
+  #               JS-created images — so nothing else needed the allowance.
   # - connect-src: local fetch() calls only (draws JSON, picks JSON, VERSION)
   # - object-src: explicit deny (redundant with default-src 'none' but auditor-friendly)
   # - frame-ancestors: deny all iframing (duplicates X-Frame-Options for modern browsers)
-  Content-Security-Policy: default-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
 
   # HTTPS enforcement (supplementary — Cloudflare also enforces this at the edge)
   # preload: submittable to hstspreload.org for browser-native HSTS preloading
@@ -58,4 +61,18 @@
 
 # OG images — long cache; filename changes when image regenerates
 /og-image.*
+  Cache-Control: public, max-age=604800
+
+# Icons — 1 week, matching the OG images. Deliberately NOT cache-busted with a
+# ?v= query string like style.css/app.js: those query strings are bumped by
+# bump_version.py and checked by test_version_consistency.py, and adding a
+# stamp neither of them knows about would silently drift out of sync. Icons
+# change once every few years; when one does, rename it or purge the edge cache.
+/favicon.svg
+  Cache-Control: public, max-age=604800
+
+/favicon.ico
+  Cache-Control: public, max-age=604800
+
+/apple-touch-icon.png
   Cache-Control: public, max-age=604800

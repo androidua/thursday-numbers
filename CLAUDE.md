@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.8.3** — see `web/VERSION` file.
+**v1.8.4** — see `web/VERSION` file.
 
 ---
 
@@ -117,6 +117,9 @@ thursday-numbers/
     ├── _headers                           ← Cloudflare Pages HTTP security headers (CSP, HSTS, etc.)
     ├── robots.txt                         ← crawler policy + sitemap reference
     ├── sitemap.xml                        ← XML sitemap for search engine indexing
+    ├── favicon.svg                        ← site icon, source of truth (v1.8.4; was web/option1.svg)
+    ├── favicon.ico                        ← 16/32/48 raster fallback, generated from favicon.svg
+    ├── apple-touch-icon.png               ← 180×180 iOS home-screen icon, opaque #0f1117 background
     ├── scoreboard.json                    ← pick-vs-draw performance log (v1.6.0); served to web app
     ├── data/
     │   └── powerball_draws.json           ← draw history; read/written by scripts; served to web app
@@ -273,7 +276,7 @@ This is a **public GitHub repo**. All web assets are intentionally public — no
 ### Security implemented
 | Header / Feature | Where | Detail |
 |---|---|---|
-| Content-Security-Policy | `web/_headers` | `default-src 'none'`; allows only local scripts/styles, jsDelivr CDN, same-origin fetch |
+| Content-Security-Policy | `web/_headers` | `default-src 'none'`; allows only local scripts/styles, jsDelivr CDN, same-origin fetch. `img-src` is `'self'` only — `data:` was dropped in v1.8.4 when the inline data-URI emoji favicon was replaced by `/favicon.svg`. The site loads no other images, so don't re-add `data:` without a real consumer. |
 | X-Frame-Options | `web/_headers` | `DENY` — prevents all iframe embedding (clickjacking) |
 | X-Content-Type-Options | `web/_headers` | `nosniff` — prevents MIME-type confusion attacks |
 | Referrer-Policy | `web/_headers` + `index.html` | `strict-origin-when-cross-origin` |
@@ -339,6 +342,8 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 - **Scope mobile table-collapse rules to a table ID, not `.table-wrap`** — multiple tables (`#history-table`, `#scoreboard-table`) share the `.table-wrap` parent. A `@media` rule like `.table-wrap tbody tr { display: flex }` will silently leak across tables and beat lower-specificity defaults like `.scoreboard-detail { display: none }`. v1.7.19 fixed exactly this regression. When adding a new responsive table, use `#that-table tbody tr { ... }`.
 - **After every visible fix, hard-refresh the live site** — Cloudflare Pages deploys in seconds, but iOS Safari aggressively caches `style.css` / `app.js` until next reload. The cache-bust query strings in `<link>` and `<script>` (bumped per release) are what makes returning users see the fix. If a user reports a fix isn't live, check the deployed `/VERSION` and the live CSS contents before re-debugging — it's usually their cache.
 - **If upgrading Chart.js**, recompute the SRI hash (see SRI maintenance rule above) and update `integrity` in `index.html`
+- **Do not add a `?v=X.X.X` cache-bust to the favicon/icon links** — the CSS and JS query strings are managed by `bump_version.py` and enforced by `tests/test_version_consistency.py`; an icon stamp neither of them knows about would silently drift out of sync on the next release. Icons carry a 1-week `Cache-Control` in `web/_headers` instead. If an icon ever changes, rename the file or purge the Cloudflare cache.
+- **Icons are all generated from `web/favicon.svg`** — if you change the artwork, regenerate `favicon.ico` and `apple-touch-icon.png` from it rather than editing them separately, or the variants drift apart. The touch icon needs an opaque `#0f1117` background; iOS renders transparency as black.
 - The `web/_headers` file controls all HTTP security headers — edit there, not in `index.html` meta tags (meta tags are a fallback only)
 - **Workflow auto-commits must use `[skip actions]`, never `[skip ci]`** — Cloudflare Pages respects `[skip ci]` and will silently skip the deployment. `[skip actions]` prevents GitHub Actions re-runs without blocking Cloudflare Pages. Also, never mention `[skip ci]` anywhere in a commit message body, as Cloudflare Pages scans the full message.
 - **Do not "simplify" the click strategy in `scripts/automate_picks.py`** — the `input[data-id="..."]` + `dispatch_event("click")` + per-row scoping is load-bearing (see Script Details for `automate_picks.py`). Reverting to `label[for=N].click()` silently breaks PB selection because the page has duplicate `id` attributes; reverting to `.click()` instead of `dispatch_event` re-introduces occlusion failures. Verify against the live page before changing any selector here.

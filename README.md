@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.8.3**
+**Current version: v1.8.4**
 
 ---
 
@@ -222,6 +222,11 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.8.4
+- Feature: real favicon replacing the inline data-URI 🎱 emoji. `web/favicon.svg` (the former `option1.svg` — indigo ball, purple→pink orbit arc, amber accent, matching the header gradient) plus `favicon.ico` (16/32/48) and `apple-touch-icon.png` (180×180), both rasterised from the same SVG so every variant is identical artwork. The touch icon is composited on an opaque `#0f1117` (`--bg`) because iOS renders transparency as black on the home screen.
+- Security: dropped `data:` from the `img-src` CSP directive in `web/_headers`. The emoji favicon was its only consumer — the site loads no other images (no `<img>` tags, no CSS `url()`, no JS-created images, and Chart.js draws to `<canvas>`, which `img-src` does not govern). Verified by loading the page under the exact production policy: `/favicon.svg` fetched 200 with zero CSP violations.
+- Note: icons are deliberately **not** cache-busted with a `?v=` query string like `style.css`/`app.js`. Those two are bumped by `bump_version.py` and enforced by `test_version_consistency.py`; a third stamp neither knows about would silently drift. Icons get a 1-week `Cache-Control` instead — rename or purge the edge cache if one ever changes.
 
 ### v1.8.3
 - Chore: repo hygiene only — **no site or script changes**. Removed two stale Playwright debug screenshots (`login_debug.png`, `powerball_debug.png`, left over from the v1.7.x cart-fill work) and a stray `.DS_Store`. Gitignored three sets of files that are kept on disk but deliberately untracked: `docs/superpowers/` (implementation plans and specs for already-shipped work — not published to the public repo), `doc/banner/` (5 unused banner candidates), and `web/option*.svg` (3 unused logo/favicon candidates — `web/` is the Cloudflare Pages deploy root, so tracking them would publish dead assets). `git status` is now clean.
