@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.8.5**
+**Current version: v1.8.6**
 
 ---
 
@@ -222,6 +222,10 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.8.6
+- Fix (deploy hygiene): ships the v1.8.5 header fix for real. The v1.8.5 deploy served correct HTML with **stale CSS** — a verification request for `style.css?v=1.8.5` fired ~20s after the push, while the origin was still on the previous build, which wrote pre-deploy CSS into Cloudflare's edge cache under the new key with a 4-hour TTL. The result looked worse than no deploy: new markup (`.header-logo-emoji` / `.header-logo-text` spans) with none of the rules that style it. Bumping the version mints a fresh cache key and resolves it.
+- Docs: recorded the rule in CLAUDE.md — never fetch a versioned asset URL to verify a deploy until `/VERSION` already reports the new version. Verify the origin with a throwaway query string (`?zzz=<random>`, its own disposable cache key) first. Recovery from a poisoned key is a dashboard purge or the next patch release.
 
 ### v1.8.5
 - Fix: the 🎱 in the header logo rendered as a flat orange circle instead of a pool ball. `.header-logo` carried the gradient text effect (`-webkit-background-clip: text` + `-webkit-text-fill-color: transparent`), which applies to *every* glyph in the element — including colour emoji, whose own bitmap gets suppressed so the gradient shows through the silhouette. The gradient now lives on a `.header-logo-text` span wrapping only the words; the emoji sits in its own span and renders natively. The emoji span is `aria-hidden="true"`, since it is decorative and was previously read out as part of the page's `<h1>`.

@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.8.5** — see `web/VERSION` file.
+**v1.8.6** — see `web/VERSION` file.
 
 ---
 
@@ -340,6 +340,8 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 - The web app needs an HTTP server to run locally (uses `fetch()` for JSON)
 - **Never add inline `style="..."` attributes to JS-generated HTML** — use CSS classes to preserve the strict CSP
 - **Scope mobile table-collapse rules to a table ID, not `.table-wrap`** — multiple tables (`#history-table`, `#scoreboard-table`) share the `.table-wrap` parent. A `@media` rule like `.table-wrap tbody tr { display: flex }` will silently leak across tables and beat lower-specificity defaults like `.scoreboard-detail { display: none }`. v1.7.19 fixed exactly this regression. When adding a new responsive table, use `#that-table tbody tr { ... }`.
+- **Never fetch `style.css?v=X.X.X` / `app.js?v=X.X.X` to verify a deploy until `/VERSION` already reports the new version.** Cloudflare caches per exact URL including the query string, with `max-age` in the hours. Requesting the *new* versioned URL while the origin still serves the *old* build writes stale content into the edge cache under the new key — pinning the very URL `index.html` references to pre-deploy assets for the full TTL, and defeating the cache-bust entirely. This happened in v1.8.5: a verification curl fired ~20s after the push, and the site then served new HTML with old CSS (which looks *more* broken than not deploying at all, since new markup meets missing rules).
+  **Correct order:** poll `/VERSION` until it flips → confirm the origin is current by fetching the asset with a *throwaway* query string (`style.css?zzz=<random>`, its own cache key, harmless to poison) → only then touch the real versioned URL. To recover from a poisoned key: purge that URL in the Cloudflare dashboard, or ship the next patch version so the URL changes.
 - **After every visible fix, hard-refresh the live site** — Cloudflare Pages deploys in seconds, but iOS Safari aggressively caches `style.css` / `app.js` until next reload. The cache-bust query strings in `<link>` and `<script>` (bumped per release) are what makes returning users see the fix. If a user reports a fix isn't live, check the deployed `/VERSION` and the live CSS contents before re-debugging — it's usually their cache.
 - **If upgrading Chart.js**, recompute the SRI hash (see SRI maintenance rule above) and update `integrity` in `index.html`
 - **Do not add a `?v=X.X.X` cache-bust to the favicon/icon links** — the CSS and JS query strings are managed by `bump_version.py` and enforced by `tests/test_version_consistency.py`; an icon stamp neither of them knows about would silently drift out of sync on the next release. Icons carry a 1-week `Cache-Control` in `web/_headers` instead. If an icon ever changes, rename the file or purge the Cloudflare cache.
