@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.8.2**
+**Current version: v1.8.3**
 
 ---
 
@@ -222,6 +222,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.8.3
+- Chore: repo hygiene only — **no site or script changes**. Removed two stale Playwright debug screenshots (`login_debug.png`, `powerball_debug.png`, left over from the v1.7.x cart-fill work) and a stray `.DS_Store`. Gitignored three sets of files that are kept on disk but deliberately untracked: `docs/superpowers/` (implementation plans and specs for already-shipped work — not published to the public repo), `doc/banner/` (5 unused banner candidates), and `web/option*.svg` (3 unused logo/favicon candidates — `web/` is the Cloudflare Pages deploy root, so tracking them would publish dead assets). `git status` is now clean.
 
 ### v1.8.2
 - **Fix (wrong numbers in the cart):** `automate_picks.py` regenerated picks locally whenever the saved set looked ≥6 days old. Because `generate_picks.py` seeds on `<date>-<draw count>`, a checkout behind on draws produced a different seed and therefore 18 entirely different games — so the cart got filled with numbers that appeared in no email. Observed 2026-07-30: a stale `.git/index.lock` from 10 days earlier had blocked every `git pull`, freezing the checkout 5 commits / 2 draws back; the script regenerated off 430 draws instead of 432 and every game differed from the emailed set.

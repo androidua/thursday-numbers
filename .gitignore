@@ -24,3 +24,16 @@ Thumbs.db
 
 # Superpowers brainstorming sessions
 .superpowers/
+
+# Superpowers plans and specs — kept on disk for reference, not published to
+# the public repo. Currently the v1.8.0 hardening plan and the approved
+# PowerHit picker design spec, both for work that has already shipped.
+docs/superpowers/
+
+# Unused design exploration, kept on disk in case it's revisited: 5 banner
+# candidates, and 3 logo/favicon candidates from before the site settled on
+# its current header. Nothing in the repo references any of them, and web/ is
+# the Cloudflare Pages deploy root — so these must stay untracked to avoid
+# publishing dead assets.
+doc/banner/
+web/option*.svg
