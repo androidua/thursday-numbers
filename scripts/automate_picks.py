@@ -6,9 +6,13 @@ Reads the latest 18 picks from web/picks/picks_history.json, opens Chrome,
 logs in to ozlotteries.com, selects "Pick your numbers" mode, fills all 18
 games, and stops at the cart. You handle payment.
 
+This script is a pure consumer: it fills the cart with the numbers the
+Thursday email delivered, or it stops. It never generates numbers of its own.
+
 Usage:
-    python scripts/automate_picks.py           # opens browser, fills games
-    python scripts/automate_picks.py --dry-run  # prints games, no browser
+    python scripts/automate_picks.py               # opens browser, fills games
+    python scripts/automate_picks.py --dry-run     # prints games, no browser
+    python scripts/automate_picks.py --allow-stale # fill picks that aren't today's email
 """
 
 import argparse
@@ -16,11 +20,17 @@ import json
 import os
 import subprocess
 import sys
-from datetime import datetime
+import textwrap
+from datetime import date
 from pathlib import Path
 
 from dotenv import load_dotenv
-from playwright.sync_api import Playwright, TimeoutError as PlaywrightTimeout, sync_playwright
+from playwright.sync_api import (
+    Error as PlaywrightError,
+    Playwright,
+    TimeoutError as PlaywrightTimeout,
+    sync_playwright,
+)
 
 ROOT = Path(__file__).parent.parent
 load_dotenv(ROOT / ".env")
@@ -31,35 +41,133 @@ POWERBALL_URL = "https://www.ozlotteries.com/powerball"
 GAME_COUNT = "18"
 
 
-def load_latest_picks():
+def today():
+    """Indirection so tests can pin the date."""
+    return date.today()
+
+
+def picks_rejection_reason(entry, on_date):
+    """Why `entry` must not be filled into the cart, or None if it's the real thing.
+
+    Two conditions, both required:
+
+    * Dated today. email-picks.yml generates and commits Thursday's picks at
+      00:00 UTC (10am AEST) on the morning of the draw, so anything older
+      belongs to a draw that has already been drawn.
+    * source "cron" — proof the entry came from the GitHub Actions run that
+      actually sent the email. A "local" entry is a *different* portfolio even
+      when it carries today's date: generate_picks.py seeds on
+      "<date>-<draw count>", so a checkout that is behind on draws produces a
+      different seed and therefore 18 entirely different games.
+
+    Both halves are load-bearing. On 2026-07-30 a stale .git/index.lock had
+    frozen the checkout 2 draws back; the old code saw picks "14 days old",
+    regenerated locally off 430 draws instead of 432, and filled the cart with
+    numbers that appeared in no email.
+    """
+    generated_on = (entry.get("generated_at") or "")[:10]
+    if generated_on != on_date.isoformat():
+        return (f"the newest saved picks are dated {generated_on or 'unknown'}, "
+                f"not today ({on_date.isoformat()})")
+    if entry.get("source") != "cron":
+        return (f"the newest saved picks are dated today but were generated "
+                f"locally (source: {entry.get('source') or 'unknown'}), so they are "
+                f"not the numbers the email delivered")
+    return None
+
+
+def commits_behind_origin():
+    """How many commits origin/main is ahead of this checkout, or None if git can't say.
+
+    Called only on the abort path, to convert a bare "wrong numbers" into the
+    one fact that explains it. Failure to answer is not itself an error.
+    """
+    try:
+        subprocess.run(
+            ["git", "fetch", "--quiet", "origin", "main"],
+            cwd=ROOT, timeout=30, check=True,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        out = subprocess.run(
+            ["git", "rev-list", "--count", "HEAD..origin/main"],
+            cwd=ROOT, timeout=15, check=True, capture_output=True, text=True,
+        ).stdout.strip()
+    except (subprocess.SubprocessError, OSError):
+        return None
+    return int(out) if out.isdigit() else None
+
+
+def analysis_line(entry):
+    """The picks email's own header line, so it can be eyeballed against the inbox."""
+    return (f"{entry.get('draws_analysed', '?')} draws "
+            f"({entry.get('data_range', 'unknown range')})")
+
+
+def refuse_stale_picks(entry, reason):
+    print("")
+    print("=" * 70)
+    print("  STOPPED — these are not today's emailed numbers")
+    print("=" * 70)
+    print("")
+    # Wrapped: this window is a double-clicked Terminal at its default width.
+    print(textwrap.fill(f"{reason}.", width=68,
+                        initial_indent="  Reason: ", subsequent_indent="          "))
+    print("")
+    print(f"  On disk: {analysis_line(entry)}")
+    print(f"           generated {entry.get('generated_at', '?')}, "
+          f"seed {entry.get('seed', '?')}, source {entry.get('source', '?')}")
+
+    behind = commits_behind_origin()
+    if behind:
+        print("")
+        print(f"  This checkout is {behind} commit(s) behind origin/main. Today's picks")
+        print("  were committed there by the email workflow and have not arrived yet.")
+    elif behind == 0:
+        print("")
+        print("  This checkout is level with origin/main, so the email workflow itself")
+        print("  may not have run. Check the Actions tab for email-picks.yml.")
+
+    print("")
+    print("  Filling the cart now would buy numbers that match no email, so nothing")
+    print("  has been filled. To get today's numbers:")
+    print("")
+    print(f'      cd "{ROOT}"')
+    print("      git pull --ff-only origin main")
+    print(f'      "{ROOT}/Fill Powerball Numbers.command"')
+    print("")
+    print("  If you really do want fresh locally-generated numbers (they will NOT")
+    print("  match any email, and score_history.py will not score them):")
+    print("")
+    print("      python3 scripts/generate_picks.py")
+    print("      python3 scripts/automate_picks.py --allow-stale")
+    print("")
+    sys.exit(1)
+
+
+def load_latest_picks(allow_stale=False):
     with open(PICKS_PATH) as f:
         history = json.load(f)
     if not history:
-        print("ERROR: picks_history.json is empty.")
+        print("ERROR: picks_history.json is empty — nothing to fill.")
         sys.exit(1)
 
     latest = history[-1]
-    age_days = (datetime.now() - datetime.fromisoformat(latest["generated_at"])).days
-    if age_days >= 6:
-        print(f"  Picks are {age_days} days old — generating fresh picks for today...")
-        result = subprocess.run(
-            [sys.executable, str(ROOT / "scripts" / "generate_picks.py")],
-            cwd=ROOT,
-        )
-        if result.returncode != 0:
-            print("  WARNING: generate_picks.py failed. Proceeding with existing picks.")
-        else:
-            with open(PICKS_PATH) as f:
-                history = json.load(f)
-            latest = history[-1]
-            print(f"  Fresh picks ready ({latest['generated_at'][:10]}).")
+    reason = picks_rejection_reason(latest, today())
+    if reason is None:
+        return latest
 
-    return latest
+    if allow_stale:
+        print(f"  --allow-stale: {reason}.")
+        print("  Filling them anyway, as you asked. Check them against your email.")
+        return latest
+
+    refuse_stale_picks(latest, reason)
 
 
 def print_games(entry):
-    print(f"  Generated : {entry['generated_at'][:10]}")
-    print(f"  Draws used: {entry['draws_analysed']}")
+    print(f"  Generated : {entry['generated_at'][:10]} (source: {entry.get('source', '?')})")
+    print(f"  Analysis  : {analysis_line(entry)}")
+    print("              ^ must match the 'Analysis based on ...' line in your email")
     for g in entry["games"]:
         print(f"  Game {g['game']:2d}: main={g['main']}  pb={g['powerball']}")
 
@@ -201,12 +309,26 @@ def run_automation(playwright: Playwright, games: list):
     return 0
 
 
+def browser_was_closed(exc):
+    """True when a Playwright error is just the user shutting the browser window.
+
+    Matched on the message rather than the TargetClosedError class: that class
+    lives in playwright._impl and is not re-exported from playwright.sync_api,
+    but it subclasses the public Error and carries a stable message.
+    """
+    return "has been closed" in str(exc).lower()
+
+
 def main():
     parser = argparse.ArgumentParser(description="Auto-fill Oz Lotteries Powerball picks")
     parser.add_argument("--dry-run", action="store_true", help="Print games without opening browser")
+    parser.add_argument(
+        "--allow-stale", action="store_true",
+        help="Fill picks that are not today's emailed set (they will not match your email)",
+    )
     args = parser.parse_args()
 
-    entry = load_latest_picks()
+    entry = load_latest_picks(allow_stale=args.allow_stale)
     games = entry["games"]
 
     print(f"\nLoaded {len(games)} games from picks_history.json:")
@@ -217,7 +339,16 @@ def main():
         return 0
 
     with sync_playwright() as playwright:
-        return run_automation(playwright, games)
+        try:
+            return run_automation(playwright, games)
+        except PlaywrightError as exc:
+            # Anything other than a closed browser is a real automation bug —
+            # let the traceback through, it is the only lead for a DOM change.
+            if not browser_was_closed(exc):
+                raise
+            print("\nThe browser was closed before the cart was submitted.")
+            print("Nothing was purchased. Re-run when you're ready to finish.")
+            return 1
 
 
 if __name__ == "__main__":

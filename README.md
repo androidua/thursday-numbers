@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.8.1**
+**Current version: v1.8.2**
 
 ---
 
@@ -222,6 +222,14 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.8.2
+- **Fix (wrong numbers in the cart):** `automate_picks.py` regenerated picks locally whenever the saved set looked ≥6 days old. Because `generate_picks.py` seeds on `<date>-<draw count>`, a checkout behind on draws produced a different seed and therefore 18 entirely different games — so the cart got filled with numbers that appeared in no email. Observed 2026-07-30: a stale `.git/index.lock` from 10 days earlier had blocked every `git pull`, freezing the checkout 5 commits / 2 draws back; the script regenerated off 430 draws instead of 432 and every game differed from the emailed set.
+- **Fix:** the local-regeneration path is gone. `automate_picks.py` is now a pure consumer — it fills the cart only with picks dated today *and* carrying `source: "cron"` (proof they came from the GitHub Actions run that sent the email). Anything else aborts with a diagnosis (what is on disk, how many commits behind `origin/main`, the exact commands to fix it) and fills nothing. `--allow-stale` is the single explicit opt-out.
+- **Fix:** `Fill Powerball Numbers.command` clears a provably-orphaned `.git/index.lock` (unowned per `lsof` *and* older than 60s, so a live git is never disturbed), sets aside local `picks_history.json` edits that would block the merge, and reports sync state instead of swallowing a failed pull. Sync is deliberately best-effort and non-fatal — the authoritative check is the picks gate downstream, which a network hiccup cannot weaken.
+- **Fix:** closing the browser mid-fill now prints one clear line instead of a 40-line `TargetClosedError` traceback; genuine Playwright failures still raise with a full traceback.
+- Feature: the run header prints `Analysis : N draws (range)` — the same line as the picks email header, so the two can be compared at a glance.
+- Tests: `tests/test_automate_picks.py` (11 cases) covers the gate, including a regression test built from the exact 2026-07-30 incident entry and one asserting no code path can shell out to `generate_picks.py`.
 
 ### v1.8.1
 - Docs: corrected pick-generator description drift — CLAUDE.md (automation summary, project tree, script list, Script Details output example, Key Technical Decisions) and README one-liners still described the pre-v1.5.16 generator ("top-10 hot mains + top-5 hot PBs" / "hot-number games"). Replaced with the actual algorithm shipped in v1.5.16/17: EWMA scoring (α=0.03, ≈23-draw half-life), two-phase full-coverage generation, ≤4-ball pair diversity, 18 distinct Powerballs per batch, split-pot prior (v1.5.23), chi-squared uniformity reporting. Also fixed the README claim that `picks_history.json` powers the History tab (it is consumed by the scorer and cart-fill script, not fetched by the web app).

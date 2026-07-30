@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.8.1** — see `web/VERSION` file.
+**v1.8.2** — see `web/VERSION` file.
 
 ---
 
@@ -92,7 +92,7 @@ thursday-numbers/
 ├── README.md                              ← public-facing project description
 ├── requirements.txt                       ← Python dependencies
 ├── requirements-dev.txt                   ← dev-only dependencies (pytest)
-├── Fill Powerball Numbers.command         ← macOS double-clickable shortcut → scripts/automate_picks.py
+├── Fill Powerball Numbers.command         ← macOS double-clickable shortcut → scripts/automate_picks.py (clears orphaned index.lock, syncs, then fills)
 ├── .github/
 │   └── workflows/
 │       ├── powerball-update.yml           ← GitHub Actions scrape (Thursday 18:00 UTC = Friday 4am AEST)
@@ -104,7 +104,7 @@ thursday-numbers/
 │   ├── generate_picks.py                  ← generates 18 games — EWMA + coverage portfolio (seeded since v1.6.0)
 │   ├── email_picks.py                     ← sends picks via Brevo REST API
 │   ├── score_history.py                   ← scores picks_history against draws → scoreboard.json (v1.6.0)
-│   ├── automate_picks.py                  ← Playwright: log in to ozlotteries.com, fill 18 games, stop at cart (v1.7.0+)
+│   ├── automate_picks.py                  ← Playwright: log in to ozlotteries.com, fill 18 games, stop at cart (v1.7.0+); refuses anything but today's emailed picks (v1.8.2)
 │   ├── run_all.py                         ← entry point: scrape → generate → email
 │   ├── check_data.py                      ← data integrity + freshness validation (v1.8.0; --strict in CI)
 │   └── bump_version.py                    ← updates every version stamp atomically (v1.8.0)
@@ -142,7 +142,7 @@ thursday-numbers/
 - `generate_picks.py` — EWMA-weighted two-phase coverage portfolio: 18 games spanning all 35 mains and 18 distinct PBs (the original top-10-main/top-5-PB hot pool was replaced in v1.5.16/17)
 - `email_picks.py` — HTML email via Brevo REST API with coloured ball layout (indigo main, purple PB)
 - `run_all.py` — local convenience pipeline (scrape → generate → email) with `--dry-run`; NOT used by the workflows, which run the steps individually. No gap check.
-- `automate_picks.py` — Playwright: opens Chrome, logs in to ozlotteries.com using `OZ_EMAIL`/`OZ_PASSWORD` from `.env`, switches to manual pick mode, selects 18 games, fills all from the latest `picks_history.json` entry, clicks Add to cart, leaves browser open for the user to complete payment (see "load-bearing patterns" under Script Details — do not regress)
+- `automate_picks.py` — Playwright: opens Chrome, logs in to ozlotteries.com using `OZ_EMAIL`/`OZ_PASSWORD` from `.env`, switches to manual pick mode, selects 18 games, fills all from the latest `picks_history.json` entry, clicks Add to cart, leaves browser open for the user to complete payment. Aborts unless those picks are today's emailed set (dated today + `source: "cron"`) — see "load-bearing patterns" and "The picks gate" under Script Details; do not regress either
 
 ### Web App
 - Dark-themed single-page app: Dashboard, Frequency, Recent Trends, Number Picker, Scoreboard, History
@@ -215,7 +215,20 @@ This script fills the Oz Lotteries cart end-to-end. Several patterns inside `sel
 | No `cellsContainer.click()` to switch games | Page auto-advances after PB click. Use a condition-based `wait_for(state="visible")` for `nth(game_index + 1)`'s picker; skip for the last game. |
 | No `wait_for_url` after Add to cart | The waiter is set up after the click, misses the navigation event, times out at 15s, and the exception tears down the browser context — erasing the filled cart. Use `wait_for_load_state("domcontentloaded")` in try/except and print the final URL. |
 
-Env vars: `OZ_EMAIL`, `OZ_PASSWORD` in `.env` at the repo root (gitignored). See `.env.example`. CLI flag: `--dry-run` prints picks without opening the browser. Triggered manually via `Fill Powerball Numbers.command` (macOS double-clickable).
+Env vars: `OZ_EMAIL`, `OZ_PASSWORD` in `.env` at the repo root (gitignored). See `.env.example`. CLI flags: `--dry-run` prints picks without opening the browser; `--allow-stale` fills picks that are not today's emailed set. Triggered manually via `Fill Powerball Numbers.command` (macOS double-clickable).
+
+#### The picks gate (v1.8.2) — do not weaken it
+`automate_picks.py` is a **pure consumer**. Its job is to buy the numbers the Thursday email delivered, and it must have **no code path that generates numbers of its own.**
+
+`picks_rejection_reason()` requires both:
+- **dated today** — `email-picks.yml` generates and commits Thursday's picks at 00:00 UTC (10am AEST) on the morning of the draw, so an older entry belongs to a draw already drawn
+- **`source: "cron"`** — proof the entry came from the Actions run that actually sent the email
+
+The second half is the non-obvious one. `generate_picks.py` seeds on `<date>-<draw count>`, so a checkout behind by even one draw yields a different seed and therefore **18 completely different games under today's date**. A `source: "local"` entry dated today is not "close enough" — it is a different portfolio.
+
+**Why this exists (2026-07-30):** a `.git/index.lock` left by a crashed git 10 days earlier blocked every `git pull`, freezing the checkout 5 commits / 2 draws behind. The old code saw picks "14 days old", silently regenerated off 430 draws instead of 432, and filled the cart with 18 games matching no email. The user caught it only by comparing against the email screenshot. **Reintroducing "regenerate when stale" recreates a silent wrong-numbers bug — the worst failure this repo can have, because the output looks confident and correct.** `tests/test_automate_picks.py` pins this, including a test asserting no subprocess call can reach `generate_picks.py`.
+
+Layering: `Fill Powerball Numbers.command` fixes the *cause* (clears an orphaned `index.lock`, sets aside `picks_history.json` edits that block the merge, pulls) and is deliberately **best-effort and non-fatal** — a dropped wifi connection must not block a legitimate run whose picks are already correct on disk. The **hard gate is in Python**, on the picks themselves, where no sync outcome can weaken it and no git success can let wrong numbers through. Don't move the gate into the shell wrapper.
 
 ---
 
@@ -297,6 +310,8 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 | Security headers | `web/_headers` file | Cloudflare Pages native approach — zero infrastructure, applied at edge |
 | No inline styles in JS | CSS classes only | Keeps CSP clean (`style-src 'self'` with no `unsafe-inline`) |
 | Oz Lotteries cart-fill clicks | `input[data-id="numberGrids_*_hiddenCheckbox"]` + `dispatch_event("click")` scoped to `gameRow.nth(i)` | Page has duplicate `id="N"` across main/PB grids (silent wrong-toggle on `label[for=N]`), input/sticky-nav occlude labels, and the picker animation briefly mounts two grids. See `automate_picks.py` script details. |
+| Cart-fill picks source | Abort unless the newest entry is dated today AND `source: "cron"`; never generate locally | The seed is `<date>-<draw count>`, so a checkout behind on draws produces 18 different games under today's date. Regenerating on staleness fills the cart with numbers matching no email — and looks successful while doing it (2026-07-30). |
+| Where the picks gate lives | Python (`automate_picks.py`), not the `.command` wrapper | The wrapper's sync is best-effort: an offline run whose picks are already correct must not be blocked. Only a check on the picks themselves is sound in every case. |
 
 ---
 
@@ -327,6 +342,8 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 - The `web/_headers` file controls all HTTP security headers — edit there, not in `index.html` meta tags (meta tags are a fallback only)
 - **Workflow auto-commits must use `[skip actions]`, never `[skip ci]`** — Cloudflare Pages respects `[skip ci]` and will silently skip the deployment. `[skip actions]` prevents GitHub Actions re-runs without blocking Cloudflare Pages. Also, never mention `[skip ci]` anywhere in a commit message body, as Cloudflare Pages scans the full message.
 - **Do not "simplify" the click strategy in `scripts/automate_picks.py`** — the `input[data-id="..."]` + `dispatch_event("click")` + per-row scoping is load-bearing (see Script Details for `automate_picks.py`). Reverting to `label[for=N].click()` silently breaks PB selection because the page has duplicate `id` attributes; reverting to `.click()` instead of `dispatch_event` re-introduces occlusion failures. Verify against the live page before changing any selector here.
+- **Never let `automate_picks.py` generate picks** — it must fill the cart only with picks dated today and carrying `source: "cron"`, and abort otherwise (see "The picks gate" in Script Details). "Regenerate when the saved picks look stale" reads like a convenience and is actually a silent wrong-numbers bug: the seed is `<date>-<draw count>`, so a checkout one draw behind yields 18 entirely different games under the same date. This shipped and reached the cart on 2026-07-30.
+- **When a git operation fails inside a user-facing script, do not `|| echo "continuing anyway"`** — verify the outcome (`HEAD` vs `origin/main`) rather than trusting an exit code, and make the downstream step prove its own inputs are right. A stale `.git/index.lock` silently froze this repo 5 commits back for 10 days because a failed pull was reported as a shrug.
 - **For Playwright/DOM-integration bugs, inspect the live target before iterating** — v1.7.11-15 shipped five failed patches for the cart-fill because no one verified `pbsChecked` actually changed after a PB click. Use the Playwright MCP (`browser_navigate`, `browser_evaluate`) to read real state before forming a hypothesis.
 - **Run `pytest -q` before every push** — the suite covers scraper parsing/numbering, scorer division mapping and dedupe, generator invariants, data validation, and version-stamp consistency
 - **Use `python scripts/bump_version.py X.Y.Z` for version bumps** — it updates `web/VERSION`, both cache-bust query strings, the footer fallback, the README badge, and the CLAUDE.md version line atomically, and aborts if any stamp is missing. The changelog entry and git tag remain manual.
