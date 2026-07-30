@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.8.4**
+**Current version: v1.8.5**
 
 ---
 
@@ -222,6 +222,9 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.8.5
+- Fix: the 🎱 in the header logo rendered as a flat orange circle instead of a pool ball. `.header-logo` carried the gradient text effect (`-webkit-background-clip: text` + `-webkit-text-fill-color: transparent`), which applies to *every* glyph in the element — including colour emoji, whose own bitmap gets suppressed so the gradient shows through the silhouette. The gradient now lives on a `.header-logo-text` span wrapping only the words; the emoji sits in its own span and renders natively. The emoji span is `aria-hidden="true"`, since it is decorative and was previously read out as part of the page's `<h1>`.
 
 ### v1.8.4
 - Feature: real favicon replacing the inline data-URI 🎱 emoji. `web/favicon.svg` (the former `option1.svg` — indigo ball, purple→pink orbit arc, amber accent, matching the header gradient) plus `favicon.ico` (16/32/48) and `apple-touch-icon.png` (180×180), both rasterised from the same SVG so every variant is identical artwork. The touch icon is composited on an opaque `#0f1117` (`--bg`) because iOS renders transparency as black on the home screen.

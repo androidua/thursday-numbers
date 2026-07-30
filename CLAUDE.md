@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.8.4** — see `web/VERSION` file.
+**v1.8.5** — see `web/VERSION` file.
 
 ---
 
@@ -343,6 +343,7 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 - **After every visible fix, hard-refresh the live site** — Cloudflare Pages deploys in seconds, but iOS Safari aggressively caches `style.css` / `app.js` until next reload. The cache-bust query strings in `<link>` and `<script>` (bumped per release) are what makes returning users see the fix. If a user reports a fix isn't live, check the deployed `/VERSION` and the live CSS contents before re-debugging — it's usually their cache.
 - **If upgrading Chart.js**, recompute the SRI hash (see SRI maintenance rule above) and update `integrity` in `index.html`
 - **Do not add a `?v=X.X.X` cache-bust to the favicon/icon links** — the CSS and JS query strings are managed by `bump_version.py` and enforced by `tests/test_version_consistency.py`; an icon stamp neither of them knows about would silently drift out of sync on the next release. Icons carry a 1-week `Cache-Control` in `web/_headers` instead. If an icon ever changes, rename the file or purge the Cloudflare cache.
+- **Never put a `background-clip: text` gradient on an element that also contains emoji** — `-webkit-text-fill-color: transparent` suppresses a colour emoji's own bitmap, so the gradient shows through its silhouette and the emoji renders as a flat blob. This is what made the header 🎱 a plain orange circle until v1.8.5. Scope the effect to a span wrapping only the words (`.header-logo-text`), and keep decorative emoji in a sibling span marked `aria-hidden="true"`.
 - **Icons are all generated from `web/favicon.svg`** — if you change the artwork, regenerate `favicon.ico` and `apple-touch-icon.png` from it rather than editing them separately, or the variants drift apart. The touch icon needs an opaque `#0f1117` background; iOS renders transparency as black.
 - The `web/_headers` file controls all HTTP security headers — edit there, not in `index.html` meta tags (meta tags are a fallback only)
 - **Workflow auto-commits must use `[skip actions]`, never `[skip ci]`** — Cloudflare Pages respects `[skip ci]` and will silently skip the deployment. `[skip actions]` prevents GitHub Actions re-runs without blocking Cloudflare Pages. Also, never mention `[skip ci]` anywhere in a commit message body, as Cloudflare Pages scans the full message.

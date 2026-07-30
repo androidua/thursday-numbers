@@ -55,10 +55,20 @@ header {
   font-size: clamp(22px, 5vw, 34px);
   font-weight: 900;
   letter-spacing: -0.5px;
+}
+/* The gradient is scoped to the words, never the whole <h1>. Applied to the
+   heading it also clipped the 🎱 glyph: -webkit-text-fill-color: transparent
+   suppresses a colour-emoji's own bitmap, so the gradient showed through its
+   silhouette and the ball rendered as a flat orange circle (v1.8.5). Keep any
+   future background-clip text effect on .header-logo-text only. */
+.header-logo-text {
   background: linear-gradient(90deg, #fbbf24, #f97316, #ec4899);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+.header-logo-emoji {
+  margin-right: 0.25em;
 }
 .header-tagline {
   color: #94a3b8;
