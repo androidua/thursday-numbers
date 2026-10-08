@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.8.6** — see `web/VERSION` file.
+**v1.8.7** — see `web/VERSION` file.
 
 ---
 
@@ -217,6 +217,7 @@ This script fills the Oz Lotteries cart end-to-end. Several patterns inside `sel
 | Scope locators to `game_row = page.locator('[data-id="gameNumberSelect_gameRow"]').nth(game_index)` | The page's picker slide animation briefly mounts both old and new pickers, so global `input[id="N"]` matches 2 elements → strict-mode violation. |
 | No `cellsContainer.click()` to switch games | Page auto-advances after PB click. Use a condition-based `wait_for(state="visible")` for `nth(game_index + 1)`'s picker; skip for the last game. |
 | No `wait_for_url` after Add to cart | The waiter is set up after the click, misses the navigation event, times out at 15s, and the exception tears down the browser context — erasing the filled cart. Use `wait_for_load_state("domcontentloaded")` in try/except and print the final URL. |
+| Confirm login by `LOGGED_IN_MARKER` (header `[data-id="mainNavigation_userNavIcon"][aria-labelledby="accountLabel"]`), never by the login form disappearing; re-check it on `/powerball` before filling | The email and password steps are separate components, so `#loginRegisterEmail_email` is gone *before* Login is clicked. The old check passed instantly and the next `goto` raced `POST /login`; when the API was slow the games went into a guest cart and checkout asked to log in again (v1.8.7). The marker renders only when the site's store has `customer.isAuthenticated`. |
 
 Env vars: `OZ_EMAIL`, `OZ_PASSWORD` in `.env` at the repo root (gitignored). See `.env.example`. CLI flags: `--dry-run` prints picks without opening the browser; `--allow-stale` fills picks that are not today's emailed set. Triggered manually via `Fill Powerball Numbers.command` (macOS double-clickable).
 

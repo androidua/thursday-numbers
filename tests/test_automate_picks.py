@@ -155,3 +155,132 @@ def test_empty_history_aborts(picks_file, monkeypatch):
 
     with pytest.raises(SystemExit):
         automate_picks.load_latest_picks()
+
+
+# ─── Login: proof of a session, not absence of a form ────────────────────────
+#
+# Oz Lotteries renders the email step and the password step as separate
+# components, so the email field is already gone before Login is clicked. The
+# old "logged in once the email field disappears" check therefore passed
+# instantly, the next navigation raced the in-flight POST /login, and the cart
+# was sometimes filled under a guest session — surfacing only at checkout as a
+# second login prompt (2026-10-08). These fakes reproduce that: every element
+# "exists" and every wait succeeds, except the header's logged-in variant.
+
+from types import SimpleNamespace
+
+from playwright.sync_api import TimeoutError as PlaywrightTimeout
+
+
+class FakeLocator:
+    def __init__(self, page, selector):
+        self.page, self.selector = page, selector
+
+    def wait_for(self, **kwargs):
+        if self.selector == automate_picks.LOGGED_IN_MARKER and not self.page.logged_in:
+            raise PlaywrightTimeout("header never showed a signed-in account")
+
+    @property
+    def first(self):
+        return self
+
+    def __getattr__(self, name):  # fill, click, select_option, nth, locator, ...
+        return lambda *args, **kwargs: self
+
+
+class FakePage:
+    url = automate_picks.POWERBALL_URL
+
+    def __init__(self, logged_in, session_survives_navigation=True):
+        self.logged_in = logged_in
+        self.session_survives_navigation = session_survives_navigation
+
+    def locator(self, selector):
+        return FakeLocator(self, selector)
+
+    def get_by_role(self, *args, **kwargs):
+        return FakeLocator(self, "role")
+
+    def goto(self, url):
+        if url == automate_picks.POWERBALL_URL and not self.session_survives_navigation:
+            self.logged_in = False
+
+    def __getattr__(self, name):  # wait_for_load_state, wait_for_function, ...
+        return lambda *args, **kwargs: None
+
+
+class FakeBrowser:
+    def __init__(self, page):
+        self.page, self.closed = page, False
+
+    def new_context(self):
+        return self
+
+    def new_page(self):
+        return self.page
+
+    def close(self):
+        self.closed = True
+
+
+GAMES = [{"game": i + 1, "main": [1, 2, 3, 4, 5, 6, 7], "powerball": 1} for i in range(18)]
+
+
+@pytest.fixture
+def cart(monkeypatch):
+    """Run run_automation against a fake page; record which games got filled."""
+    monkeypatch.setenv("OZ_EMAIL", "test@example.com")
+    monkeypatch.setenv("OZ_PASSWORD", "not-a-real-password")
+    monkeypatch.setattr("builtins.input", lambda *args: "")
+    filled = []
+    monkeypatch.setattr(
+        automate_picks, "select_numbers_for_game",
+        lambda page, i, total, main, pb: filled.append(i),
+    )
+
+    def run(page):
+        browser = FakeBrowser(page)
+        playwright = SimpleNamespace(chromium=SimpleNamespace(launch=lambda **kw: browser))
+        return automate_picks.run_automation(playwright, GAMES), filled, browser
+
+    return run
+
+
+def test_login_is_not_reported_when_the_session_never_appears(capsys):
+    """Regression: the email field vanishing is not evidence of a login."""
+    ok = automate_picks.do_login(FakePage(logged_in=False), "test@example.com", "x")
+
+    assert ok is False
+    assert "Logged in." not in capsys.readouterr().out
+
+
+def test_login_is_reported_once_the_header_shows_an_account(capsys):
+    ok = automate_picks.do_login(FakePage(logged_in=True), "test@example.com", "x")
+
+    assert ok is True
+    assert "Logged in." in capsys.readouterr().out
+
+
+def test_fills_nothing_when_login_is_not_confirmed(cart, capsys):
+    code, filled, browser = cart(FakePage(logged_in=False))
+
+    assert code == 1
+    assert filled == []
+    assert browser.closed
+    assert "not logged in" in capsys.readouterr().out.lower()
+
+
+def test_fills_nothing_when_the_session_is_lost_loading_powerball(cart, capsys):
+    code, filled, browser = cart(FakePage(logged_in=True, session_survives_navigation=False))
+
+    assert code == 1
+    assert filled == []
+    assert "not logged in" in capsys.readouterr().out.lower()
+
+
+def test_fills_every_game_when_logged_in(cart):
+    """Guards the fakes: the two refusals above must be refusals, not crashes."""
+    code, filled, _ = cart(FakePage(logged_in=True))
+
+    assert code == 0
+    assert filled == list(range(18))

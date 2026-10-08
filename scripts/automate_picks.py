@@ -40,6 +40,12 @@ LOGIN_URL = "https://www.ozlotteries.com/my-account"
 POWERBALL_URL = "https://www.ozlotteries.com/powerball"
 GAME_COUNT = "18"
 
+# The header's user icon is a "Login" link (aria-labelledby="loginLabel") while
+# signed out and becomes an "Account" button (aria-labelledby="accountLabel")
+# only when the site's store has customer.isAuthenticated. Verified against the
+# live bundle 2026-10-08; it is the one signal that a session actually exists.
+LOGGED_IN_MARKER = '[data-id="mainNavigation_userNavIcon"][aria-labelledby="accountLabel"]'
+
 
 def today():
     """Indirection so tests can pin the date."""
@@ -186,15 +192,34 @@ def do_login(page, email, password):
     page.locator('input[type="password"]').fill(password)
     page.get_by_role("button", name="Login", exact=True).click()
 
-    # Wait until the login form disappears (redirected away or account loaded)
+    # Wait for proof of a session, never for the email field to disappear. The
+    # password step is a separate component from the email step, so
+    # #loginRegisterEmail_email is already gone before Login is clicked: that
+    # old check passed instantly, and the page.goto that followed could abort
+    # the in-flight POST /login. The cart then filled under a guest session and
+    # checkout asked to log in again (2026-10-08).
+    if not is_logged_in(page, timeout=30_000):
+        return False
+    print("  Logged in.")
+    return True
+
+
+def is_logged_in(page, timeout):
     try:
-        page.wait_for_function(
-            "!document.querySelector('#loginRegisterEmail_email')",
-            timeout=20_000,
-        )
-        print("  Logged in.")
+        page.locator(LOGGED_IN_MARKER).wait_for(state="attached", timeout=timeout)
     except PlaywrightTimeout:
-        print("WARNING: Login may have failed or is taking too long. Check the browser.")
+        return False
+    return True
+
+
+def stop_not_logged_in(browser, reason):
+    print(f"\nERROR: Not logged in to Oz Lotteries — {reason}.")
+    print("       Nothing has been filled. Usual causes: wrong OZ_EMAIL / OZ_PASSWORD")
+    print("       in .env, a 2FA code prompt, or the site being slow. The browser")
+    print("       window shows what the site said.")
+    input("Press Enter here to close the browser...")
+    browser.close()
+    return 1
 
 
 def select_numbers_for_game(page, game_index, total_games, main_balls, powerball):
@@ -248,7 +273,8 @@ def run_automation(playwright: Playwright, games: list):
         return 1
 
     print("\nLogging in...")
-    do_login(page, email, password)
+    if not do_login(page, email, password):
+        return stop_not_logged_in(browser, "the site never confirmed the login")
 
     print("Navigating to Powerball...")
     page.goto(POWERBALL_URL)
@@ -262,6 +288,12 @@ def run_automation(playwright: Playwright, games: list):
     page.locator('label[for="chooseNumbers_manualPickGames"]').wait_for(
         state="visible", timeout=20_000
     )
+
+    # Check again on the page the cart is filled from: the session has to have
+    # survived a full page load, and a guest cart only reveals itself at checkout.
+    if not is_logged_in(page, timeout=15_000):
+        return stop_not_logged_in(browser, "the session was lost loading the Powerball page")
+
     page.locator('label[for="chooseNumbers_manualPickGames"]').click()
     page.wait_for_timeout(500)
 

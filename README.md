@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.8.6**
+**Current version: v1.8.7**
 
 ---
 
@@ -222,6 +222,11 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.8.7
+- **Fix (cart filled while logged out):** `automate_picks.py` sometimes printed "Logged in.", filled all 18 games, then hit a second login prompt at checkout. Its login check waited for the email field to disappear, but Oz Lotteries renders the email step and the password step as separate components, so that field is already gone before Login is clicked. The check passed instantly, and the `page.goto` to `/powerball` that followed raced the in-flight `POST /login`. When the API was slower than the ~250ms gap, the navigation aborted it and the games went into a guest cart (`anonymous_cart_token`), which only showed up at checkout.
+- **Fix:** login is now confirmed positively by the header's account button (`[data-id="mainNavigation_userNavIcon"][aria-labelledby="accountLabel"]`, rendered only when the site's store has `customer.isAuthenticated`). It is checked again on `/powerball` before any game is filled. If either check fails, the script fills nothing and stops with the likely causes (credentials, a 2FA prompt, a slow site), leaving the browser open so you can see what the site said. Previously a wrong password also printed "Logged in.".
+- Tests: 5 new cases in `tests/test_automate_picks.py` use a fake page in which the email field is gone but no session exists. On the old code that run exits 0 after filling all 18 games.
 
 ### v1.8.6
 - Fix (deploy hygiene): ships the v1.8.5 header fix for real. The v1.8.5 deploy served correct HTML with **stale CSS** — a verification request for `style.css?v=1.8.5` fired ~20s after the push, while the origin was still on the previous build, which wrote pre-deploy CSS into Cloudflare's edge cache under the new key with a 4-hour TTL. The result looked worse than no deploy: new markup (`.header-logo-emoji` / `.header-logo-text` spans) with none of the rules that style it. Bumping the version mints a fresh cache key and resolves it.
