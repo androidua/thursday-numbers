@@ -1,8 +1,10 @@
 {
-  "generated_at": "2026-10-01T22:13:36",
+  "generated_at": "2026-10-08T22:45:22",
   "weeks_scored": 29,
   "games_scored": 522,
-  "pending_weeks": [],
+  "pending_weeks": [
+    "2026-10-08T04:02:36"
+  ],
   "skipped_non_email": [
     "2026-03-15T00:53:15",
     "2026-03-15T01:03:37",
