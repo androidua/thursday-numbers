@@ -2,9 +2,15 @@ name: Email Powerball Picks
 
 on:
   schedule:
-    # Thursday at 10am AEST (UTC+10) = Thursday 00:00 UTC
-    # Note: during AEDT (daylight saving, Oct–Apr) this fires at 11am AEDT instead.
-    - cron: '0 0 * * 4'
+    # Thursday 2pm Sydney time, all year round. `timezone` makes GitHub follow
+    # the AEST/AEDT switch, so this is 04:07 UTC in winter and 03:07 UTC in summer.
+    # The UTC date is still Thursday either way, which generate_picks.py's seed
+    # and automate_picks.py's "dated today" gate both depend on.
+    # Minute 7, not 0: GitHub delays (and sometimes drops) runs scheduled at the
+    # top of the hour. The old '0 0 * * 4' (midnight UTC) was its busiest slot and
+    # landed up to ~6h late by Nov 2026.
+    - cron: '7 14 * * 4'
+      timezone: "Australia/Sydney"
   workflow_dispatch:   # Allow manual trigger from the GitHub Actions UI for testing
 
 concurrency:

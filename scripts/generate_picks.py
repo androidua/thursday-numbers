@@ -335,7 +335,7 @@ def main():
     # Deterministic seed: same UTC date + same dataset size → same 18 numbers.
     # Lets the user reproduce locally what the workflow emailed Thursday morning
     # using only the public data, with no hidden state. Two distinct components:
-    #   • date  — workflow runs Thursday 00:00 UTC, so this is stable within a run
+    #   • date  — workflow runs Thursday 2pm Sydney (03:07/04:07 UTC), so this is stable within a run
     #   • len(draws) — changes after a new draw is scraped, producing a fresh
     #                  (still reproducible) seed for the following week
     seed_string = f"{_dt.date.today().isoformat()}-{len(draws)}"

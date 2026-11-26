@@ -6,7 +6,7 @@ Statistical analysis of Australian Powerball historical draw data. Generates 18 
 
 🌐 **Live site:** [thursdaynumbers.com](https://thursdaynumbers.com) — hosted on Cloudflare Pages
 
-**Current version: v1.8.7**
+**Current version: v1.8.8**
 
 ---
 
@@ -62,7 +62,7 @@ thursday-numbers/
 │       └── picks_history.json        ← Pick history log (scorer + cart-fill input)
 ├── .github/workflows/
 │   ├── powerball-update.yml          ← GitHub Actions scrape (Friday 4am AEST)
-│   └── email-picks.yml               ← GitHub Actions email (Thursday 10am AEST)
+│   └── email-picks.yml               ← GitHub Actions email (Thursday 2pm Sydney time)
 ├── tests/                            ← pytest suite
 ├── requirements-dev.txt
 └── requirements.txt
@@ -147,7 +147,7 @@ Every push to `main` triggers an automatic Cloudflare Pages redeploy.
 
 Two separate GitHub Actions workflows run on a schedule:
 
-**`email-picks.yml`** — Thursday 10am AEST (Thursday 00:00 UTC)
+**`email-picks.yml`** — Thursday 2pm Sydney time (cron `7 14 * * 4` with `timezone: Australia/Sydney`, so it follows AEST/AEDT)
 - Generates 18 fresh picks (EWMA-weighted, full coverage) from current draw data
 - Sends a formatted HTML email via Brevo
 - Commits updated `web/picks/picks_history.json` (consumed by the scorer and the cart-fill script; not fetched by the web app)
@@ -222,6 +222,11 @@ Additional hardening:
 ---
 
 ## Changelog
+
+### v1.8.8
+- **Schedule:** the picks email now goes out at **Thursday 2pm Sydney time** all year, instead of 00:00 UTC (10am AEST / 11am AEDT). `email-picks.yml` uses GitHub's `timezone:` schedule key (`cron: '7 14 * * 4'`, `timezone: "Australia/Sydney"`), so the daylight-saving switch is handled for us.
+- **Why:** midnight UTC is GitHub Actions' busiest scheduling slot. Runs there drifted from ~3h late in October to ~5.5h late by November, and on 2026-11-26 the run hadn't started 5h50m in, so it had to be triggered by hand. The new slot is minute 7, off the top of the hour, where GitHub's delays are worst.
+- The UTC date of the run is still Thursday in both AEST and AEDT, so the picks seed (`<date>-<draw count>`) and `automate_picks.py`'s "dated today" gate are unchanged. Updated the schedule comments in `generate_picks.py`, `score_history.py`, `automate_picks.py`, and the Scoreboard blurb on the site.
 
 ### v1.8.7
 - **Fix (cart filled while logged out):** `automate_picks.py` sometimes printed "Logged in.", filled all 18 games, then hit a second login prompt at checkout. Its login check waited for the email field to disappear, but Oz Lotteries renders the email step and the password step as separate components, so that field is already gone before Login is clicked. The check passed instantly, and the `page.goto` to `/powerball` that followed raced the in-flight `POST /login`. When the API was slower than the ~250ms gap, the navigation aborted it and the games went into a guest cart (`anonymous_cart_token`), which only showed up at checkout.

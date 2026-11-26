@@ -13,8 +13,8 @@ predictive value. See CLAUDE.md.)
 Pick-to-draw matching:
     For each entry in picks_history.json, find the earliest draw in
     powerball_draws.json with date >= generated_at[:10]. The email workflow
-    runs Thursday 00:00 UTC (~10am AEST) and the draw is Thursday evening
-    AEST, so this normally matches same-day. Entries generated after the
+    runs Thursday 2pm Sydney time (03:07 UTC AEDT / 04:07 UTC AEST) and the
+    draw is Thursday evening, so this normally matches same-day. Entries generated after the
     most recent recorded draw are flagged "pending" and excluded from
     aggregates.
 
@@ -47,8 +47,8 @@ DIVISIONS = ("1", "2", "3", "4", "5", "6", "7", "8", "9")
 # ─── Email-run filter (v1.6.1) ───────────────────────────────────────────────
 # The Scoreboard is a record of what was emailed to the user every Thursday,
 # scored against the actual draw. The email workflow (`email-picks.yml`) is
-# cron-scheduled `0 0 * * 4` — Thursday 00:00 UTC. With GitHub Actions latency
-# the runs land at Thursday 01:00–03:00 UTC. Any entry generated on a different
+# cron-scheduled for Thursday 2pm Sydney time (v1.8.8; was `0 0 * * 4` UTC). With
+# GitHub Actions latency the runs land later on Thursday UTC. Any entry generated on a different
 # weekday is a dev/test run (e.g., the 8 entries from Sunday 2026-03-15 written
 # while the v1.5.5 commit-after-email fix was being tested) and must not be
 # scored as if it were a delivered email — otherwise one real draw gets
@@ -58,7 +58,7 @@ def is_email_run(entry):
 
     Entries from v1.8.0 onward carry an explicit `source` field ("cron" |
     "local") — trust it. Legacy entries fall back to the weekday heuristic:
-    the email cron fires Thursday 00:00 UTC and lands 01:00-03:00 UTC, so a
+    the email cron fired Thursday 00:00 UTC and landed 01:00-06:00 UTC, so a
     Thursday generated_at means a delivered email for pre-v1.8.0 data.
     """
     source = entry.get("source")

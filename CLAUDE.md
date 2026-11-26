@@ -16,7 +16,7 @@ The project lives at:
 
 ## Current Version
 
-**v1.8.7** — see `web/VERSION` file.
+**v1.8.8** — see `web/VERSION` file.
 
 ---
 
@@ -65,7 +65,7 @@ The site is deployed via **Cloudflare Pages** (not GitHub Pages).
 
 Two separate GitHub Actions workflows run on schedule:
 
-**`email-picks.yml`** — Thursday 00:00 UTC (= 10am AEST / 11am AEDT):
+**`email-picks.yml`** — Thursday 2pm Sydney time (`cron: '7 14 * * 4'` + `timezone: "Australia/Sydney"`, v1.8.8; = 03:07 UTC in AEDT, 04:07 UTC in AEST):
 1. Runs `scripts/generate_picks.py` — generates 18 fresh games (EWMA-weighted, full coverage, 18 distinct PBs)
 2. Runs `scripts/email_picks.py` — sends HTML email via Brevo
 3. Commits `web/picks/picks_history.json` if updated — consumed by `score_history.py` (Scoreboard) and `automate_picks.py` (cart fill); NOT fetched by the web frontend
@@ -78,7 +78,7 @@ Two separate GitHub Actions workflows run on schedule:
 5. Runs `scripts/check_data.py --strict` AFTER the commit — a stale or corrupt data file turns the workflow red (GitHub emails on failure) without blocking the data commit
 6. Cloudflare Pages auto-deploys on every push to `main`
 
-**Why the two-workflow split?** Email sends *before* the draw (10am) using prior data. Scrape runs *after* the draw (4am next day) to capture results. These are deliberately separate cron jobs.
+**Why the two-workflow split?** Email sends *before* the draw (2pm) using prior data. Scrape runs *after* the draw (4am next day) to capture results. These are deliberately separate cron jobs.
 
 **Actions versions (Node.js 24):** `actions/checkout@v5`, `actions/setup-python@v6`
 
@@ -96,7 +96,7 @@ thursday-numbers/
 ├── .github/
 │   └── workflows/
 │       ├── powerball-update.yml           ← GitHub Actions scrape (Thursday 18:00 UTC = Friday 4am AEST)
-│       ├── email-picks.yml               ← GitHub Actions email (Thursday 00:00 UTC = 10am AEST)
+│       ├── email-picks.yml               ← GitHub Actions email (Thursday 2pm Sydney time)
 │       └── tests.yml                      ← CI: pytest on every human push
 ├── scripts/
 │   ├── scrape.py                          ← fetches new draws since last known draw
@@ -225,7 +225,7 @@ Env vars: `OZ_EMAIL`, `OZ_PASSWORD` in `.env` at the repo root (gitignored). See
 `automate_picks.py` is a **pure consumer**. Its job is to buy the numbers the Thursday email delivered, and it must have **no code path that generates numbers of its own.**
 
 `picks_rejection_reason()` requires both:
-- **dated today** — `email-picks.yml` generates and commits Thursday's picks at 00:00 UTC (10am AEST) on the morning of the draw, so an older entry belongs to a draw already drawn
+- **dated today** — `email-picks.yml` generates and commits Thursday's picks at 2pm Sydney time on the day of the draw, so an older entry belongs to a draw already drawn
 - **`source: "cron"`** — proof the entry came from the Actions run that actually sent the email
 
 The second half is the non-obvious one. `generate_picks.py` seeds on `<date>-<draw count>`, so a checkout behind by even one draw yields a different seed and therefore **18 completely different games under today's date**. A `source: "local"` entry dated today is not "close enough" — it is a different portfolio.
@@ -304,7 +304,7 @@ Current hash: `sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pm
 |---|---|---|
 | Hosting | Cloudflare Pages | Domain is on Cloudflare; auto-deploys on push; no A record setup needed |
 | Email | Brevo REST API (via `requests`) | Free forever (300/day); no SDK needed; API key safe for public repos |
-| Email schedule | Thursday 00:00 UTC (`email-picks.yml`) | 10am AEST — sends picks before that evening's draw |
+| Email schedule | Thursday 2pm Sydney via `timezone: "Australia/Sydney"` (`email-picks.yml`, v1.8.8) | Sends picks before that evening's draw; the timezone key tracks AEST/AEDT. Minute 7, off the top of the hour: the old midnight-UTC slot was GitHub's busiest and ran up to ~6h late. The UTC date stays Thursday in both seasons, which the seed and the cart-fill "dated today" gate rely on |
 | Scrape schedule | Thursday 18:00 UTC (`powerball-update.yml`) | Friday 4am AEST — after draw results are published |
 | Number strategy | EWMA-weighted coverage portfolio (v1.5.16/17): all 35 mains covered, 18 distinct PBs, ≤4-ball inter-game overlap, split-pot prior (v1.5.23) | Per-game odds are fixed at 1-in-44 regardless of numbers — the structure instead maximises P(≥1 prize per week) (~40% vs ~16% for the old top-10/top-5 hot pool) at identical EV |
 | Games per run | 18 | User buys 18 standard games per draw |

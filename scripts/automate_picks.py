@@ -58,7 +58,7 @@ def picks_rejection_reason(entry, on_date):
     Two conditions, both required:
 
     * Dated today. email-picks.yml generates and commits Thursday's picks at
-      00:00 UTC (10am AEST) on the morning of the draw, so anything older
+      2pm Sydney time on the day of the draw, so anything older
       belongs to a draw that has already been drawn.
     * source "cron" — proof the entry came from the GitHub Actions run that
       actually sent the email. A "local" entry is a *different* portfolio even
